@@ -1,0 +1,71 @@
+div.su > th, td {
+    border-bottom: 0px solid #ddd !important;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    width: 60px;
+}
+
+span.ui-dialog-title {
+    font-weight: bold;
+}
+
+.ui-widget-overlay {
+    background: #1d2327 !important;
+}
+
+.first-cloud-box {
+    background: #ffffff85;
+    border: 1px solid #dbdbdb;
+    padding: 20px;
+    padding-top: 10px;
+    border-radius: 60px 15px 15px 15px;
+}
+
+.cloud-tab {
+    padding-top: 0 !important;
+    background: #f9f9f9 !important;
+}
+
+/* dialog */
+.custom-dialog {
+    position: fixed;
+    top: 50px;
+    right: 25px;
+    z-index: 9999;
+    width: 320px;
+    padding: 20px;
+    background: #333;
+    border-radius: 15px 15px 15px 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.custom-dialog {
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    color: #fff;
+}
+
+.custom-dialog-success {
+    border-left: 5px solid #4CAF50; /* Green */
+    background-color: #2e7d32;
+    color: #d4edda;
+    filter:grayscale(25%);
+}
+
+.custom-dialog-error {
+    border-left: 5px solid #F44336; /* Red */
+    background-color: #c62828;
+    color: #f8d7da;
+    filter:grayscale(25%);
+}
+
+.custom-dialog-processing {
+    border-left: 5px solid #FFA500; /* Orange */
+    background-color: #ff8c00;
+    color: #fff3cd;
+    filter:grayscale(25%);
+}

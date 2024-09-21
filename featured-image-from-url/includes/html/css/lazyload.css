@@ -1,0 +1,5 @@
+img[fifu-lazy="1"] {
+    display: block;
+    width: 100%; /* Set a default width, e.g., 100% of the container */
+    height: auto; /* Maintain aspect ratio */
+}
