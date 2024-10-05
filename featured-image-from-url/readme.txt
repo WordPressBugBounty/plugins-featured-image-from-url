@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.6.2
-Stable tag: 4.9.1
+Stable tag: 4.9.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -247,14 +247,14 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 4.9.2 =
+* Enhancement: FIFU Cloud (automatic delete); fix: possibility of a fatal error on WooCommerce hook.
+
 = 4.9.1 =
 * Enhancements: FIFU Cloud (5x cheaper, multiple payment methods, simpler pricing, UI adjustments).
 
 = 4.9.0 =
 * Enhancements: FIFU Cloud (easier sign-up and credential reset, automatic login, and a few improvements in the user interface); Fix: Optimized Images (conflict with AVIF images).
-
-= 4.8.9 =
-* New feature: Auto set product images from ASIN; Enhancements: Settings (saves text fields automatically now, icons added); Enhancement: FIFU Cloud (easier login).
 
 = others =
 * [more](https://fifu.app/changelog)
@@ -262,5 +262,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 4.9.1 =
-* Enhancements: FIFU Cloud (5x cheaper, multiple payment methods, simpler pricing, UI adjustments).
+= 4.9.2 =
+* Enhancement: FIFU Cloud (automatic delete); fix: possibility of a fatal error on WooCommerce hook.

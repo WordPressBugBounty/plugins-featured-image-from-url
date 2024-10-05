@@ -2346,6 +2346,12 @@ function fifu_get_strings_cloud() {
     $fifu['delete']['desc'] = function () {
         _e("When an image is deleted from the cloud, you are no longer charged from the next day.", FIFU_SLUG);
     };
+    $fifu['delete']['automatic']['title'] = function () {
+        _e("Automatic delete", FIFU_SLUG);
+    };
+    $fifu['delete']['automatic']['desc'] = function () {
+        _e("Automatically delete images from the cloud when they are no longer in use on the site, for example, due to a deleted post.", FIFU_SLUG);
+    };
 
     // media
     $fifu['media']['desc'] = function () {

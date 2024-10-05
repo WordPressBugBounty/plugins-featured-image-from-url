@@ -345,6 +345,46 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <div id="delete-auto-box">
+                        <br>
+                        <div style="background: white; padding: 10px; border-radius: 1em;">                        
+                            <div style="background-color:#32373c; text-align:center; width:98%; color:white; padding:6px; border-radius:5px;">
+                                <b><?php $fifucloud['delete']['automatic']['title']() ?></b>
+                            </div>
+                            <table style="text-align:left; width:100%">
+
+                                <tr class="color">
+                                    <th style="width:20px;">
+                                        <form
+                                            id="fifu_form_cloud_delete_auto"
+                                            action="javascript:void(0)"
+                                            method="post">
+                                                <?php wp_nonce_field(FIFU_ACTION_CLOUD, 'nonce_fifu_form_cloud_delete_auto'); ?>
+                                            <input
+                                                type="submit"
+                                                href="javascript:void(0)"
+                                                id="fifu_toggle_cloud_delete_auto"
+                                                onclick="invert('cloud_delete_auto');set_delete_auto();fifu_api_cron('fifu_toggle_cloud_delete_auto')"
+                                                name="fifu_toggle_cloud_delete_auto"
+                                                class="<?php echo $enable_cloud_delete_auto; ?>"
+                                                value=""
+                                                style="display:block;border:none">
+
+                                            <input
+                                                type="hidden"
+                                                id="fifu_input_cloud_delete_auto"
+                                                name="fifu_input_cloud_delete_auto"
+                                                value="" >
+                                        </form>
+                                    </th>
+                                    <th>
+                                        <?php $fifucloud['delete']['automatic']['desc']() ?>
+                                    </th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

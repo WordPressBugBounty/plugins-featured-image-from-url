@@ -4,11 +4,11 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use an external image/video/audio as featured image of a post or WooCommerce product.
- * Version: 4.9.1
+ * Version: 4.9.2
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0
- * WC tested up to: 9.2.3
+ * WC tested up to: 9.3.3
  * Text Domain: featured-image-from-url
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -87,6 +87,7 @@ register_deactivation_hook(__FILE__, 'fifu_deactivation');
 
 function fifu_deactivation() {
     wp_clear_scheduled_hook('fifu_create_cloud_upload_auto_event');
+    wp_clear_scheduled_hook('fifu_create_cloud_delete_auto_event');
 }
 
 add_action('upgrader_process_complete', 'fifu_upgrade', 10, 2);

@@ -154,7 +154,9 @@ function fifu_wp_get_attachment_image_attributes($attr, $attachment, $size) {
 
 add_filter('woocommerce_product_get_image', 'fifu_woo_replace', 10, 5);
 
-function fifu_woo_replace($html, $product, $woosize) {
+function fifu_woo_replace($html, $product, $woosize, $attr, $placeholder) {
+    if (empty($product) || !is_object($product))
+        return $html;
     return fifu_replace($html, $product->get_id(), null, null, null);
 }
 

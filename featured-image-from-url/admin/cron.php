@@ -7,6 +7,12 @@ function fifu_add_cron_schedules($schedules) {
             'display' => 'fifu-cloud-upload-auto'
         );
     }
+    if (!isset($schedules["fifu_schedule_cloud_delete_auto"])) {
+        $schedules['fifu_schedule_cloud_delete_auto'] = array(
+            'interval' => 24 * 60 * 60,
+            'display' => 'fifu-cloud-delete-auto'
+        );
+    }
     return $schedules;
 }
 
@@ -21,12 +27,25 @@ function fifu_create_cloud_upload_auto_hook() {
     // Limit the number of URLs to 100
     $urls = array_slice($urls, 0, 100);
 
-    fifu_create_thumbnails_list($urls, null, true);
+    fifu_create_thumbnails_list($urls, true);
 
     fifu_delete_transient('fifu_cloud_upload_auto_semaphore');
 }
 
 add_action('fifu_create_cloud_upload_auto_event', 'fifu_create_cloud_upload_auto_hook');
+
+function fifu_create_cloud_delete_auto_hook() {
+    if (fifu_active_job('fifu_cloud_delete_auto_semaphore', 5))
+        return;
+
+    $hex_ids = fifu_db_get_all_hex_ids();
+
+    fifu_delete_thumbnails($hex_ids);
+
+    fifu_delete_transient('fifu_cloud_delete_auto_semaphore');
+}
+
+add_action('fifu_create_cloud_delete_auto_event', 'fifu_create_cloud_delete_auto_hook');
 
 function fifu_active_job($semaphore, $minutes) {
     $date = fifu_get_transient($semaphore);

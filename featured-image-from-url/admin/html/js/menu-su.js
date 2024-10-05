@@ -603,6 +603,7 @@ function fifu_show_login() {
     jQuery("#su-payment-info-button").attr('disabled', true);
     jQuery("#su-cancel-button").attr('disabled', true);
     jQuery("#upload-auto-box").hide();
+    jQuery("#delete-auto-box").hide();
     jQuery("#hotlink-box").hide();
     jQuery("#su-sign-up-button").removeAttr('disabled');
 }
@@ -611,6 +612,7 @@ function fifu_hide_log_in() {
     jQuery("#su-payment-info-button").removeAttr('disabled');
     jQuery("#su-cancel-button").removeAttr('disabled');
     jQuery("#upload-auto-box").show();
+    jQuery("#delete-auto-box").show();
     jQuery("#hotlink-box").show();
     jQuery("#su-sign-up-button").attr('disabled', true);
 }
@@ -797,6 +799,38 @@ function set_upload_auto() {
     jQuery.ajax({
         method: "POST",
         url: restUrl + 'featured-image-from-url/v2/cloud_upload_auto/',
+        data: {
+            "toggle": toggle,
+        },
+        async: true,
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
+        },
+        success: function (data) {
+            code = data['code'];
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log(jqXHR);
+            console.log(textStatus);
+            console.log(errorThrown);
+        },
+        complete: function (data) {
+            fifu_unblock();
+        }
+    });
+    return code;
+}
+
+function set_delete_auto() {
+    toggle = jQuery("#fifu_toggle_cloud_delete_auto").attr('class');
+
+    var code = null;
+
+    fifu_block();
+
+    jQuery.ajax({
+        method: "POST",
+        url: restUrl + 'featured-image-from-url/v2/cloud_delete_auto/',
         data: {
             "toggle": toggle,
         },

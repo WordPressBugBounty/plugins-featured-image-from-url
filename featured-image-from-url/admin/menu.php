@@ -1,6 +1,6 @@
 <?php
 
-define('FIFU_SETTINGS', serialize(array('fifu_skip', 'fifu_html_cpt', 'fifu_debug', 'fifu_photon', 'fifu_cdn_content', 'fifu_reset', 'fifu_enable_default_url', 'fifu_fake', 'fifu_default_url', 'fifu_default_cpt', 'fifu_pcontent_types', 'fifu_hide_format', 'fifu_hide_type', 'fifu_wc_lbox', 'fifu_wc_zoom', 'fifu_hide', 'fifu_pcontent_add', 'fifu_pcontent_remove', 'fifu_get_first', 'fifu_ovw_first', 'fifu_run_delete_all', 'fifu_data_clean', 'fifu_cloud_upload_auto', 'fifu_cloud_hotlink')));
+define('FIFU_SETTINGS', serialize(array('fifu_skip', 'fifu_html_cpt', 'fifu_debug', 'fifu_photon', 'fifu_cdn_content', 'fifu_reset', 'fifu_enable_default_url', 'fifu_fake', 'fifu_default_url', 'fifu_default_cpt', 'fifu_pcontent_types', 'fifu_hide_format', 'fifu_hide_type', 'fifu_wc_lbox', 'fifu_wc_zoom', 'fifu_hide', 'fifu_pcontent_add', 'fifu_pcontent_remove', 'fifu_get_first', 'fifu_ovw_first', 'fifu_run_delete_all', 'fifu_data_clean', 'fifu_cloud_upload_auto', 'fifu_cloud_delete_auto', 'fifu_cloud_hotlink')));
 define('FIFU_ACTION_SETTINGS', '/wp-admin/admin.php?page=featured-image-from-url');
 define('FIFU_ACTION_CLOUD', '/wp-admin/admin.php?page=fifu-cloud');
 
@@ -92,12 +92,16 @@ function fifu_cloud() {
     ]);
 
     $enable_cloud_upload_auto = get_option('fifu_cloud_upload_auto');
+    $enable_cloud_delete_auto = get_option('fifu_cloud_delete_auto');
     $enable_cloud_hotlink = get_option('fifu_cloud_hotlink');
 
     include 'html/cloud.html';
 
     if (fifu_is_valid_nonce('nonce_fifu_form_cloud_upload_auto', FIFU_ACTION_CLOUD))
         fifu_update_option('fifu_input_cloud_upload_auto', 'fifu_cloud_upload_auto');
+
+    if (fifu_is_valid_nonce('nonce_fifu_form_cloud_delete_auto', FIFU_ACTION_CLOUD))
+        fifu_update_option('fifu_input_cloud_delete_auto', 'fifu_cloud_delete_auto');
 
     if (fifu_is_valid_nonce('nonce_fifu_form_cloud_hotlink', FIFU_ACTION_CLOUD))
         fifu_update_option('fifu_input_cloud_hotlink', 'fifu_cloud_hotlink');
@@ -112,6 +116,17 @@ function fifu_cloud() {
         wp_clear_scheduled_hook('fifu_create_cloud_upload_auto_event');
         fifu_delete_transient('fifu_cloud_upload_auto_semaphore');
         fifu_stop_job('fifu_cloud_upload_auto');
+    }
+
+    if (fifu_is_on('fifu_cloud_delete_auto')) {
+        if (!wp_next_scheduled('fifu_create_cloud_delete_auto_event')) {
+            wp_schedule_event(time(), 'fifu_schedule_cloud_delete_auto', 'fifu_create_cloud_delete_auto_event');
+            fifu_run_cron_now();
+        }
+    } else {
+        wp_clear_scheduled_hook('fifu_create_cloud_delete_auto_event');
+        fifu_delete_transient('fifu_cloud_delete_auto_semaphore');
+        fifu_stop_job('fifu_cloud_delete_auto');
     }
 }
 
@@ -159,6 +174,7 @@ function fifu_support_data() {
     $enable_run_delete_all_time = get_option('fifu_run_delete_all_time');
     $enable_data_clean = 'toggleoff';
     $enable_cloud_upload_auto = get_option('fifu_cloud_upload_auto');
+    $enable_cloud_delete_auto = get_option('fifu_cloud_delete_auto');
     $enable_cloud_hotlink = get_option('fifu_cloud_hotlink');
 
     include 'html/support-data.html';
@@ -383,7 +399,7 @@ function fifu_update_option($input, $field) {
 
     $value = $_POST[$input];
 
-    $arr_boolean = array('fifu_auto_alt', 'fifu_cdn_content', 'fifu_check', 'fifu_data_clean', 'fifu_decode', 'fifu_enable_default_url', 'fifu_fake', 'fifu_get_first', 'fifu_hide', 'fifu_pcontent_add', 'fifu_pcontent_remove', 'fifu_debug', 'fifu_ovw_first', 'fifu_photon', 'fifu_pop_first', 'fifu_reset', 'fifu_run_delete_all', 'fifu_wc_lbox', 'fifu_wc_zoom', 'fifu_cloud_upload_auto', 'fifu_cloud_hotlink');
+    $arr_boolean = array('fifu_auto_alt', 'fifu_cdn_content', 'fifu_check', 'fifu_data_clean', 'fifu_decode', 'fifu_enable_default_url', 'fifu_fake', 'fifu_get_first', 'fifu_hide', 'fifu_pcontent_add', 'fifu_pcontent_remove', 'fifu_debug', 'fifu_ovw_first', 'fifu_photon', 'fifu_pop_first', 'fifu_reset', 'fifu_run_delete_all', 'fifu_wc_lbox', 'fifu_wc_zoom', 'fifu_cloud_upload_auto', 'fifu_cloud_delete_auto', 'fifu_cloud_hotlink');
     if (in_array($field, $arr_boolean)) {
         if (in_array($value, array('on', 'off')))
             update_option($field, 'toggle' . $value);
