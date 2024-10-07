@@ -126,7 +126,11 @@ function fifu_image_downsize($out, $att_id, $size) {
             // Use a small width to quickly get the height
             $small_width = 100;
 
-            $small_resized_url = fifu_resize_with_photon($image_url, $small_width, 9999);
+            $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+            if (strpos($user_agent, 'Googlebot') !== false)
+                $small_resized_url = $image_url;
+            else
+                $small_resized_url = fifu_resize_with_photon($image_url, $small_width, 9999);
 
             list(, $small_height) = @getimagesize($small_resized_url);
 

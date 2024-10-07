@@ -877,6 +877,9 @@ function fifu_get_strings_settings() {
     $fifu['customfield']['desc'] = function () {
         _e("Set featured images automatically. The plugin checks every minute for post types without featured images and performs searches on the informed custom fields to retrieve the image URLs. With that, you can integrate FIFU with any third-party plugin or theme that stores image URLs in the database.", FIFU_SLUG);
     };
+    $fifu['customfield']['prefix'] = function () {
+        _e("Most users will simply add the custom field name, which is expected to contain an image URL. However, if all your image URLs follow the same pattern, i.e., have the same prefix and suffix, you could add something like this into the field above: https://domain/{custom_field}.webp, where custom_field is some kind of ID instead of a URL.", FIFU_SLUG);
+    };
     $fifu['customfield']['tab']['auto'] = function () {
         _e("Auto set", FIFU_SLUG);
     };
@@ -1458,7 +1461,7 @@ function fifu_get_strings_settings() {
 
     // category
     $fifu['category']['desc'] = function () {
-        _e("Set one image for each category. The chosen image is the featured image from the most recent product in that category.", FIFU_SLUG);
+        _e("Set one image for each category. The chosen image will be a random featured image from the products in that category.", FIFU_SLUG);
     };
 
     // gallery
