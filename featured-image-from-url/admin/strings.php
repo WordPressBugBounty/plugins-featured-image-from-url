@@ -1214,6 +1214,9 @@ function fifu_get_strings_settings() {
     $fifu['api']['custom']['finder'] = function () {
         _e("Media finder (webpage URL)", FIFU_SLUG);
     };
+    $fifu['api']['custom']['redirection'] = function () {
+        _e("Page redirection (forwarding URL)", FIFU_SLUG);
+    };
     $fifu['api']['custom']['key'] = function () {
         _e("Key", FIFU_SLUG);
     };
@@ -1542,6 +1545,9 @@ function fifu_get_strings_settings() {
     };
     $fifu['import']['custom']['finder'] = function () {
         _e("Media finder (webpage URL)", FIFU_SLUG);
+    };
+    $fifu['import']['custom']['redirection'] = function () {
+        _e("Page redirection (forwarding URL)", FIFU_SLUG);
     };
     $fifu['import']['custom']['iframes'] = function () {
         _e("iframe URLs", FIFU_SLUG);
@@ -1953,6 +1959,9 @@ function fifu_get_strings_wai() {
     };
     $fifu['title']['finder'] = function () {
         return __("Media finder (webpage URL)", FIFU_SLUG);
+    };
+    $fifu['title']['redirection'] = function () {
+        return __("Page redirection (forwarding URL)", FIFU_SLUG);
     };
 
     // info
