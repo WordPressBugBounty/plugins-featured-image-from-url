@@ -30,6 +30,9 @@ function fifu_get_strings_settings() {
     $fifu['php']['message']['wait'] = function () {
         return __("Please wait a few seconds...", FIFU_SLUG);
     };
+    $fifu['php']['message']['wait1'] = function () {
+        return __("Please wait 1 minute...", FIFU_SLUG);
+    };
 
     // buttons
     $fifu['button']['submit'] = function () {
@@ -66,12 +69,6 @@ function fifu_get_strings_settings() {
     };
 
     // words
-    $fifu['word']['attribute'] = function () {
-        _e("attribute", FIFU_SLUG);
-    };
-    $fifu['word']['selector'] = function () {
-        _e("selector", FIFU_SLUG);
-    };
     $fifu['word']['cover'] = function () {
         _e("cover", FIFU_SLUG);
     };
@@ -137,6 +134,15 @@ function fifu_get_strings_settings() {
     };
     $fifu['word']['troubleshooting'] = function () {
         _e("Troubleshooting", FIFU_SLUG);
+    };
+    $fifu['word']['name'] = function () {
+        _e("Name", FIFU_SLUG);
+    };
+    $fifu['word']['type'] = function () {
+        _e("Type", FIFU_SLUG);
+    };
+    $fifu['word']['data'] = function () {
+        _e("Data", FIFU_SLUG);
     };
     $fifu['word']['saving'] = function () {
         return __("Saving", FIFU_SLUG);
@@ -288,9 +294,6 @@ function fifu_get_strings_settings() {
     $fifu['title']['media'] = function () {
         _e("Save in the Media Library", FIFU_SLUG);
     };
-    $fifu['title']['height'] = function () {
-        _e("Same Height", FIFU_SLUG);
-    };
     $fifu['title']['auto'] = function () {
         _e("Auto set featured image using post title and search engine", FIFU_SLUG);
     };
@@ -368,9 +371,6 @@ function fifu_get_strings_settings() {
     };
     $fifu['title']['bbpress'] = function () {
         _e("bbPress and BuddyBoss Platform", FIFU_SLUG);
-    };
-    $fifu['title']['cloak'] = function () {
-        _e("Cloak Links", FIFU_SLUG);
     };
     $fifu['title']['taxonomy'] = function () {
         _e("Taxonomy Image", FIFU_SLUG);
@@ -668,62 +668,6 @@ function fifu_get_strings_settings() {
     };
     $fifu['media']['domain']['desc'] = function () {
         _e("Only save images from specific domains.", FIFU_SLUG);
-    };
-
-    // height
-    $fifu['height']['desc'] = function () {
-        _e("If you have different sizes of images on your homepage (or shop), enable the toggle below to display them at the same height. Depending on your theme, you may need to provide a selector to specify the group of images you want to resize.", FIFU_SLUG);
-    };
-    $fifu['height']['tab']['height'] = function () {
-        _e("Same height", FIFU_SLUG);
-    };
-    $fifu['height']['tab']['selector'] = function () {
-        _e("Add selector", FIFU_SLUG);
-    };
-    $fifu['height']['tab']['default'] = function () {
-        _e("Default selectors", FIFU_SLUG);
-    };
-    $fifu['height']['tab']['ignore'] = function () {
-        _e("Ignore images", FIFU_SLUG);
-    };
-    $fifu['height']['tab']['ratio'] = function () {
-        _e("Size ratio", FIFU_SLUG);
-    };
-    $fifu['height']['tab']['fit'] = function () {
-        _e("Object fit", FIFU_SLUG);
-    };
-    $fifu['height']['tab']['delay'] = function () {
-        _e("Delay", FIFU_SLUG);
-    };
-    $fifu['height']['selector']['desc'] = function () {
-        _e("Examples of selectors...", FIFU_SLUG);
-    };
-    $fifu['height']['ignore']['desc'] = function () {
-        _e("Ignore images...", FIFU_SLUG);
-    };
-    $fifu['height']['ignore']['parent'] = function () {
-        _e("Parent selectors:", FIFU_SLUG);
-    };
-    $fifu['height']['height']['ratio'] = function () {
-        _e("and you want a 4:3 size ratio", FIFU_SLUG);
-    };
-    $fifu['height']['height']['fit'] = function () {
-        _e("and you want a 4:3 size ratio with object fit set to cover", FIFU_SLUG);
-    };
-    $fifu['height']['ratio']['desc'] = function () {
-        _e("Examples of valid size ratios", FIFU_SLUG);
-    };
-    $fifu['height']['fit']['cover'] = function () {
-        _e("crops the images;", FIFU_SLUG);
-    };
-    $fifu['height']['fit']['contain'] = function () {
-        _e("shows full images (in smaller sizes);", FIFU_SLUG);
-    };
-    $fifu['height']['fit']['fill'] = function () {
-        _e("deforms the images.", FIFU_SLUG);
-    };
-    $fifu['height']['delay']['time'] = function () {
-        _e("time (in ms)", FIFU_SLUG);
     };
 
     // auto set
@@ -1106,14 +1050,68 @@ function fifu_get_strings_settings() {
     };
 
     // jetpack
+    $fifu['jetpack']['tab']['optimize'] = function () {
+        _e("Optimize", FIFU_SLUG);
+    };
+    $fifu['jetpack']['tab']['fifu'] = function () {
+        _e("FIFU CDN (beta)", FIFU_SLUG);
+    };
     $fifu['jetpack']['desc'] = function () {
-        _e("Your external images will be automatically optimized and served from a free CDN. In addition, the plugin will load the thumbnails in the exact size your site requires, further enhancing performance.", FIFU_SLUG);
+        _e("Your external images will be automatically optimized and served from a public CDN. In addition, the plugin will load the thumbnails in the exact size your site requires, further enhancing performance.", FIFU_SLUG);
     };
     $fifu['jetpack']['toggle']['cdn'] = function () {
         _e("optimize featured images", FIFU_SLUG);
     };
     $fifu['jetpack']['toggle']['content'] = function () {
         _e("optimize secondary images", FIFU_SLUG);
+    };
+    $fifu['jetpack']['toggle']['otfcdn'] = function () {
+        _e("optimize images with FIFU CDN", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['desc'] = function () {
+        _e("For a long time, the 'Optimized Images' feature relied solely on a public third-party CDN. While this approach offered cost advantages, it also introduced several challenges. Now, FIFU provides its own CDN, designed to achieve the following goals:", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['domain'] = function () {
+        _e("Serve remote images using your site's domain", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['source'] = function () {
+        _e("Support any image sources", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['format'] = function () {
+        _e("Render images in a modern and efficient web format (WebP)", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['time'] = function () {
+        _e("Retrieve cached images in under 100ms", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['first'] = function () {
+        _e("Provide first-request images (non-cached) in less than 1 second", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['process'] = function () {
+        _e("Expand image processing capabilities", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['seo'] = function () {
+        _e("Optimize image URLs for SEO", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['replication'] = function () {
+        _e("Enhance content replication", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['regional'] = function () {
+        _e("Improve regional availability", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['cache'] = function () {
+        _e("Enable cache purging", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['support'] = function () {
+        _e("Provide dedicated technical support", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['replace'] = function () {
+        _e("Seamlessly replace or integrate with other features", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['cost'] = function () {
+        _e("Due to the costs associated with processing and serving millions of images daily, this feature is not currently available in the free version of FIFU or on staging sites using the PRO version. However, a small fee may soon be introduced to ensure its sustainability. For PRO users, the FIFU CDN will initially work only with the production site, unless the key has expired.", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['setup'] = function () {
+        _e("To integrate your site with the FIFU CDN, simply create a DNS record for your domain with the following details:", FIFU_SLUG);
     };
 
     // audio
@@ -1346,11 +1344,6 @@ function fifu_get_strings_settings() {
         _e("Enable the addition of featured images to forums, topics, and replies.", FIFU_SLUG);
     };
 
-    // cloak
-    $fifu['cloak']['desc'] = function () {
-        _e("Replace remote image URLs with local addresses like this:", FIFU_SLUG);
-    };
-
     // taxonomy
     $fifu['taxonomy']['desc'] = function () {
         _e("Enables the featured image field for taxonomies. It's automatically integrated with the 'Variation Swatches for WooCommerce' plugin. To display the image for taxonomies from different plugins or themes, use a shortcode like this:", FIFU_SLUG);
@@ -1469,7 +1462,7 @@ function fifu_get_strings_settings() {
 
     // gallery
     $fifu['gallery']['desc'] = function () {
-        _e("To work correctly, some galleries provided by some themes require that the dimensions of the images are saved in the database, which can be impractical due to the slowness of this process. So the plugin offers its own product gallery that does not depend on the dimensions of external images to function properly. You can configure the behavior of this gallery in the \"Featured slider\" tab. To change the aspect ratio, go to \"Featured image → Same Height → Size ratio\".", FIFU_SLUG);
+        _e("To work correctly, some galleries provided by some themes require that the dimensions of the images are saved in the database, which can be impractical due to the slowness of this process. So the plugin offers its own product gallery that does not depend on the dimensions of external images to function properly. You can configure the behavior of this gallery in the \"Featured slider\" tab.", FIFU_SLUG);
     };
     $fifu['gallery']['toggle'] = function () {
         _e("FIFU product gallery", FIFU_SLUG);
@@ -1666,9 +1659,6 @@ function fifu_get_strings_settings() {
     };
     $fifu['cloud']['details']['library'] = function () {
         _e("FIFU Cloud can work as an alternative to the WordPress media library. Both store images, but FIFU Cloud processes them in the cloud, while the WordPress core consumes a lot of your website's resources. Additionally, FIFU Cloud is able to process and store thousands of images simultaneously in a few seconds, while the media library works with one image at a time.", FIFU_SLUG);
-    };
-    $fifu['cloud']['details']['crop'] = function () {
-        _e("FIFU Cloud overcomes this feature by serving real cropped thumbnails in the exact size requested by your theme. FIFU Cloud doesn't require any configuration or CSS knowledge and will load your images much faster. Moreover, its smart cropping makes use of AI to make your cropped images more attractive.", FIFU_SLUG);
     };
     $fifu['cloud']['details']['replace'] = function () {
         _e("FIFU Cloud prevents image loss by saving your local or external images in the cloud.", FIFU_SLUG);

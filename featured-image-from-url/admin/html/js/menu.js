@@ -27,11 +27,9 @@ jQuery(function () {
     jQuery("#fifu_input_slider_pause").spinner({min: 0});
     jQuery("#fifu_input_auto_set_width").spinner({min: 0});
     jQuery("#fifu_input_auto_set_height").spinner({min: 0});
-    jQuery("#fifu_input_crop_delay").spinner({min: 0, step: 50});
     jQuery("#tabsApi").addClass("ui-tabs-vertical ui-helper-clearfix");
     jQuery("#tabsApi li").removeClass("ui-corner-top").addClass("ui-corner-left");
     jQuery("#tabsApi").tabs();
-    jQuery("#tabsCrop").tabs();
     jQuery("#tabsMedia").tabs();
     jQuery("#tabsPremium").tabs();
     jQuery("#tabsWooImport").tabs();
@@ -39,6 +37,7 @@ jQuery(function () {
     jQuery("#tabsDefault").tabs();
     jQuery("#tabsHide").tabs();
     jQuery("#tabsPcontent").tabs();
+    jQuery("#tabsJetpack").tabs();
     jQuery("#tabsShortcode").tabs();
     jQuery("#tabsFifuShortcode").tabs();
     jQuery("#tabsAutoSet").tabs();

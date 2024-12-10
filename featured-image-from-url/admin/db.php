@@ -730,6 +730,8 @@ class FifuDb {
         foreach ($thumbnails as $thumbnail) {
             if (!isset($att_ids_map[$thumbnail->meta_id])) // no metadata, only custom field
                 continue;
+            if (!isset($attid_metaid_map[$att_ids_map[$thumbnail->meta_id]])) // no metadata, only custom field
+                continue;
             $att_meta_id = $attid_metaid_map[$att_ids_map[$thumbnail->meta_id]];
             $map[$thumbnail->meta_id] = $att_meta_id;
         }
@@ -818,18 +820,11 @@ class FifuDb {
     }
 
     public function usage_verification_su($hex_ids) {
-        $conditions = [];
-        foreach ($hex_ids as $hex_id) {
-            $conditions[] = "meta_value LIKE '%" . esc_sql($hex_id) . "%'";
-        }
-        $condition_string = implode(' OR ', $conditions);
-
         $postmeta_results = $this->wpdb->get_col("
             SELECT meta_value
             FROM {$this->postmeta}
             WHERE meta_key LIKE 'fifu_%'
             AND meta_value LIKE 'https://cdn.fifu.app/%'
-            AND ($condition_string)
         ");
 
         $termmeta_results = $this->wpdb->get_col("
@@ -837,10 +832,25 @@ class FifuDb {
             FROM {$this->termmeta}
             WHERE meta_key LIKE 'fifu_%'
             AND meta_value LIKE 'https://cdn.fifu.app/%'
-            AND ($condition_string)
         ");
 
-        return array_merge($postmeta_results, $termmeta_results);
+        $all_results = array_merge($postmeta_results, $termmeta_results);
+
+        // Filter results using PHP
+        $filtered_results = array_filter($all_results, function ($meta_value) use ($hex_ids) {
+            // Split by "-" and take the first part
+            $dash_split = explode('-', $meta_value);
+            $first_part = $dash_split[0] ?? '';
+
+            // Split the first part by "/" and take the last segment
+            $slash_split = explode('/', $first_part);
+            $hex_id = end($slash_split);
+
+            // Check if the extracted hex_id is in the provided list
+            return in_array($hex_id, $hex_ids, true);
+        });
+
+        return $filtered_results;
     }
 
     /* speed up (add custom fields) */

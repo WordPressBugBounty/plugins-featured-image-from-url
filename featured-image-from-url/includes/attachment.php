@@ -178,7 +178,7 @@ function fifu_get_photon_url($image, $size, $att_id) {
         
     }
 
-    $image[0] = fifu_jetpack_photon_url($image[0], $args);
+    $image[0] = fifu_jetpack_photon_url($image[0], $args, $att_id);
     $image[0] = fifu_process_external_url($image[0], $att_id, $size);
 
     return $image;
@@ -330,7 +330,7 @@ function fifu_add_url_parameters($url, $att_id, $size) {
 
     // "categories" page
     if (function_exists('get_current_screen') && isset(get_current_screen()->parent_file) && get_current_screen()->parent_file == 'edit.php?post_type=product' && get_current_screen()->id == 'edit-product_cat')
-        return fifu_optimized_column_image($url);
+        return fifu_optimized_column_image($url, $att_id);
 
     $post_thumbnail_id = get_post_thumbnail_id($post_id);
 
@@ -383,19 +383,9 @@ function fifu_add_url_parameters($url, $att_id, $size) {
     return $url;
 }
 
-function fifu_get_photon_args($w, $h) {
+function fifu_get_photon_args($h) {
     $args = array();
-    if ($w > 0 && $h > 0) {
-        $args['resize'] = $w . ',' . $h;
-    } elseif ($w > 0) {
-        $args['resize'] = $w;
-        $args['w'] = $w;
-    } elseif ($h > 0) {
-        $args['resize'] = $h;
-        $args['h'] = $h;
-    } else {
-        $args = null;
-    }
+    $args['resize'] = $h . ',' . $h;
     return $args;
 }
 

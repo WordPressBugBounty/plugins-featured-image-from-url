@@ -7,7 +7,7 @@ function fifu_is_from_speedup($url) {
 }
 
 function fifu_resize_speedup_image_size($size, $url, $width, $height, $is_video) {
-    $new_height = intval($size * $height / $width);
+    $new_height = $width ? intval($size * $height / $width) : $height;
     return fifu_speedup_get_signed_url($url, $size, $new_height, null, null, $is_video);
 }
 
@@ -71,6 +71,9 @@ function fifu_speedup_has_video_thumb($url) {
 }
 
 function fifu_speedup_get_signed_url($url, $width, $height, $bucket_id, $storage_id, $is_video) {
+    if (!fifu_is_from_speedup($url))
+        return $url;
+
     list($width, $height) = fifu_speedup_fix_size($width, $height);
 
     if ($url)
@@ -87,6 +90,9 @@ function fifu_speedup_get_signed_url($url, $width, $height, $bucket_id, $storage
     }
 
     $aux = explode('-', $storage_id);
+    if (count($aux) < 7)
+        return $url;
+
     $original_width = (int) $aux[1];
     $original_height = (int) $aux[2];
     $center_x = (int) $aux[3];

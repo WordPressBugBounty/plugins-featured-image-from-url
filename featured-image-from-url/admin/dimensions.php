@@ -110,7 +110,7 @@ function fifu_image_downsize($out, $att_id, $size) {
                 $new_width = intval($new_height / $aspect_ratio);
             }
 
-            $new_url = fifu_resize_with_photon($image_url, $new_width, $new_height);
+            $new_url = fifu_resize_with_photon($image_url, $new_width, $new_height, null, $att_id, $size);
 
             $FIFU_SESSION['cdn-new-old'][$new_url] = $original_image_url;
             return array($new_url, $new_width, $new_height, false);
@@ -130,7 +130,7 @@ function fifu_image_downsize($out, $att_id, $size) {
             if (strpos($user_agent, 'Googlebot') !== false)
                 $small_resized_url = $image_url;
             else
-                $small_resized_url = fifu_resize_with_photon($image_url, $small_width, 9999);
+                $small_resized_url = fifu_resize_with_photon($image_url, $small_width, 9999, null, $att_id, $size);
 
             list(, $small_height) = @getimagesize($small_resized_url);
 
@@ -139,7 +139,7 @@ function fifu_image_downsize($out, $att_id, $size) {
             $aspect_ratio = $small_height / $small_width;
             $large_height = intval($large_width * $aspect_ratio);
 
-            $resized_url = fifu_resize_with_photon($image_url, $large_width, $large_height);
+            $resized_url = fifu_resize_with_photon($image_url, $large_width, $large_height, null, $att_id, $size);
 
             $FIFU_SESSION['cdn-new-old'][$resized_url] = $original_image_url;
             return array($resized_url, $large_width, $large_height, false);
@@ -151,13 +151,14 @@ function fifu_image_downsize($out, $att_id, $size) {
         $additional_sizes = wp_get_registered_image_subsizes();
 
         // Determine the size dimensions
-        $width = $height = 0;
+        $width = $height = $crop = 0;
         if (is_array($size)) {
             list($width, $height) = $size;
         } elseif (in_array($size, $image_sizes)) {
             if (isset($additional_sizes[$size])) {
                 $width = intval($additional_sizes[$size]['width']);
                 $height = intval($additional_sizes[$size]['height']);
+                $crop = intval($additional_sizes[$size]['crop']);
             } else {
                 $width = get_option("{$size}_size_w");
                 $height = get_option("{$size}_size_h");
@@ -167,7 +168,7 @@ function fifu_image_downsize($out, $att_id, $size) {
             fifu_plugin_log(['fifu-dimensions' => ['WARNING' => "Invalid size: $size"]]);
         }
 
-        $new_url = fifu_resize_with_photon($image_url, $width, $height);
+        $new_url = fifu_resize_with_photon($image_url, $width, $height, $crop, $att_id, $size);
 
         $FIFU_SESSION['cdn-new-old'][$new_url] = $original_image_url;
         return array($new_url, $width, $height, false);
@@ -176,7 +177,7 @@ function fifu_image_downsize($out, $att_id, $size) {
 
 add_filter('image_downsize', 'fifu_image_downsize', 10, 3);
 
-function fifu_resize_with_photon($url, $width, $height) {
+function fifu_resize_with_photon($url, $width, $height, $crop, $att_id, $size) {
     $photon_base_url = "https://i" . (hexdec(substr(md5($url), 0, 1)) % 4) . ".wp.com/";
 
     $delimiter = strpos($url, "?") !== false ? '&' : '?';

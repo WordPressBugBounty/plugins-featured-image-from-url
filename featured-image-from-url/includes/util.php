@@ -194,6 +194,10 @@ function fifu_get_author() {
     return $post_author ? $post_author : 77777;
 }
 
+function fifu_get_term_thumbnail_id($term_id) {
+    return get_term_meta($term_id, 'thumbnail_id', true);
+}
+
 function fifu_get_full_image_url($att_id) {
     if (!$att_id)
         return null;

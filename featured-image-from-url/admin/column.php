@@ -107,7 +107,7 @@ function fifu_ctgr_column_featured($term_id) {
         $image_url = wp_get_attachment_url($thumb_id);
         $border = 'border-color: #ca4a1f !important; border: 2px; border-style: dotted;';
     }
-    $url = fifu_optimized_column_image($image_url);
+    $url = fifu_optimized_column_image($image_url, fifu_get_term_thumbnail_id($term_id));
 
     $vars[$term_id]['fifu_image_url'] = $image_url;
     $vars[$term_id]['fifu_image_alt'] = $image_alt;
@@ -157,7 +157,7 @@ function fifu_column_featured($post_id, $is_variable) {
         $image_url = wp_get_attachment_url(get_post_thumbnail_id($post_id));
         $border = 'border-color: #ca4a1f !important; border: 2px; border-style: dotted;';
     }
-    $url = fifu_optimized_column_image($image_url);
+    $url = fifu_optimized_column_image($image_url, get_post_thumbnail_id($post_id));
 
     $vars[$post_id]['fifu_image_url'] = get_post_meta($post_id, 'fifu_image_url', true);
     $vars[$post_id]['fifu_image_alt'] = $image_alt;
@@ -255,7 +255,7 @@ function fifu_column_custom_post_type() {
         add_filter('manage_edit-' . $post_type . '_columns', 'fifu_column_head');
 }
 
-function fifu_optimized_column_image($url) {
+function fifu_optimized_column_image($url, $att_id) {
     $url = fifu_cdn_adjust($url);
 
     if (fifu_is_from_speedup($url)) {
@@ -263,10 +263,8 @@ function fifu_optimized_column_image($url) {
         return fifu_speedup_get_signed_url($url, 128, 128, null, null, false);
     }
 
-    if (fifu_is_on('fifu_photon')) {
-        $height = FIFU_COLUMN_HEIGHT;
-        return fifu_jetpack_photon_url($url, fifu_get_photon_args($height, $height));
-    }
+    if (fifu_is_on('fifu_photon'))
+        return fifu_jetpack_photon_url($url, fifu_get_photon_args(150), $att_id);
 
     return $url;
 }

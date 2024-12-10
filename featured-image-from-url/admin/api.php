@@ -1,7 +1,7 @@
 <?php
 
 define('FIFU_NO_CREDENTIALS', json_encode(array('code' => 'no_credentials')));
-define('FIFU_SU_ADDRESS', FIFU_CLOUD_DEBUG ? 'http://localhost' : 'https://ws.fifu.app');
+define('FIFU_SU_ADDRESS', FIFU_CLOUD_DEBUG ? 'http://192.168.0.31:8080' : 'https://ws.fifu.app');
 define('FIFU_SURVEY_ADDRESS', 'https://survey.featuredimagefromurl.com');
 define('FIFU_CLIENT', 'featured-image-from-url');
 
@@ -12,7 +12,7 @@ function fifu_try_again_later() {
 
 function fifu_is_local() {
     $query = 'http://localhost';
-    return substr(get_home_url(), 0, strlen($query)) === $query;
+    return substr(get_home_url(), 0, strlen($query)) === $query || FIFU_CLOUD_DEBUG;
 }
 
 function fifu_remote_post($endpoint, $array) {
@@ -363,6 +363,7 @@ function fifu_delete_thumbnails($hex_ids) {
         'timeout' => 300,
     );
     $response = fifu_remote_post(FIFU_SU_ADDRESS . '/delete-thumbnails/', $array);
+    fifu_cloud_log(['delete_auto (response)' => ['json' => $json]]);
     if (is_wp_error($response))
         return;
 
@@ -394,38 +395,43 @@ function fifu_delete_thumbnails($hex_ids) {
                 }
 
                 // 2 delete
-                $rows = array();
-                $total = count($hex_ids);
-                $id_sign = '';
-                foreach ($hex_ids as $hex_id) {
-                    array_push($rows, $hex_id);
-                    $id_sign .= $hex_id;
+                $batches = array_chunk($hex_ids, 1000); // Split hex_ids into batches of 1,000
+                foreach ($batches as $batch) {
+                    $rows = array();
+                    $id_sign = '';
+                    foreach ($batch as $hex_id) {
+                        array_push($rows, $hex_id);
+                        $id_sign .= $hex_id;
 
-                    fifu_cloud_log(['delete_auto (send unused back)' => ['hex_id' => $hex_id]]);
+                        fifu_cloud_log(['delete_auto (send unused back)' => ['hex_id' => $hex_id]]);
+                    }
+                    $time = time();
+                    $signature = fifu_create_signature($id_sign . $site . $time . $ip);
+                    $array = array(
+                        'headers' => array('Content-Type' => 'application/json; charset=utf-8'),
+                        'body' => json_encode(
+                                array(
+                                    'rows' => $rows,
+                                    'site' => $site,
+                                    'signature' => $signature,
+                                    'time' => $time,
+                                    'ip' => $ip,
+                                    'slug' => FIFU_CLIENT,
+                                    'version' => fifu_version_number()
+                                )
+                        ),
+                        'method' => 'POST',
+                        'data_format' => 'body',
+                        'blocking' => true,
+                        'timeout' => 300,
+                    );
+                    $response = fifu_remote_post(FIFU_SU_ADDRESS . '/delete-thumbnails-confirm/', $array);
+                    if (is_wp_error($response))
+                        return;
+
+                    // Delay of 5 seconds between each batch
+                    sleep(5);
                 }
-                $time = time();
-                $signature = fifu_create_signature($id_sign . $site . $time . $ip);
-                $array = array(
-                    'headers' => array('Content-Type' => 'application/json; charset=utf-8'),
-                    'body' => json_encode(
-                            array(
-                                'rows' => $rows,
-                                'site' => $site,
-                                'signature' => $signature,
-                                'time' => $time,
-                                'ip' => $ip,
-                                'slug' => FIFU_CLIENT,
-                                'version' => fifu_version_number()
-                            )
-                    ),
-                    'method' => 'POST',
-                    'data_format' => 'body',
-                    'blocking' => true,
-                    'timeout' => 300,
-                );
-                $response = fifu_remote_post(FIFU_SU_ADDRESS . '/delete-thumbnails-confirm/', $array);
-                if (is_wp_error($response))
-                    return;
             }
         }
     }
@@ -639,7 +645,8 @@ function fifu_api_list_all_su(WP_REST_Request $request) {
             } else
                 $post->title = $post->meta_id = $post->post_id = $post->meta_key = '';
             $is_video = strpos($post->meta_key, 'video') !== false;
-            $post->proxy_url = fifu_speedup_get_signed_url(null, 128, 128, $json->bucket_id, $post->storage_id, $is_video);
+            $url = 'https://cdn.fifu.app/' . $json->bucket_id . '/' . $post->storage_id;
+            $post->proxy_url = fifu_speedup_get_signed_url($url, 128, 128, $json->bucket_id, $post->storage_id, $is_video);
         }
     }
     return $json;

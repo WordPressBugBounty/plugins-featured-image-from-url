@@ -32,8 +32,8 @@ function fifu_add_js() {
 
     if (fifu_is_on('fifu_photon')) {
         for ($i = 0; $i <= 3; $i++) {
-            echo "<link rel='preconnect' href='https://i{$i}.wp.com/' crossorigin>";
             echo "<link rel='dns-prefetch' href='https://i{$i}.wp.com/'>";
+            echo "<link rel='preconnect' href='https://i{$i}.wp.com/' crossorigin>";
         }
     }
 
@@ -82,7 +82,7 @@ function fifu_add_social_tags() {
             $url = fifu_speedup_get_signed_url($url, 1280, 672, null, null, false);
         elseif (fifu_is_on('fifu_photon')) {
             $url = fifu_cdn_adjust($url);
-            $url = fifu_jetpack_photon_url($url, null);
+            $url = fifu_jetpack_photon_url($url, null, get_post_thumbnail_id($post_id));
         }
         include 'html/og-image.html';
 
@@ -135,7 +135,7 @@ function fifu_wp_get_attachment_image_attributes($attr, $attachment, $size) {
 
     // "all products" page
     if (function_exists('get_current_screen') && isset(get_current_screen()->parent_file) && get_current_screen()->parent_file == 'edit.php?post_type=product') {
-        $attr['src'] = fifu_optimized_column_image($url);
+        $attr['src'] = fifu_optimized_column_image($url, $attachment->ID);
         return $attr;
     }
 
@@ -188,6 +188,7 @@ function fifu_replace($html, $post_id, $post_thumbnail_id, $size, $attr = null) 
         $html = preg_replace('/alt=[\'\"][^[\'\"]*[\'\"]/', $custom_alt, $html);
         $html = fifu_check_alt_attribute($html, $custom_alt);
     } else {
+        $alt = strip_tags($alt);
         if ($url && $alt) {
             $html = preg_replace('/alt=[\'\"][^[\'\"]*[\'\"]/', 'alt=' . $delimiter . $alt . $delimiter . ' title=' . $delimiter . $alt . $delimiter, $html);
         }
@@ -289,6 +290,9 @@ function fifu_optimize_content($content) {
     wp_enqueue_style('fifu-lazyload-style');
     wp_enqueue_script('fifu-lazyload-js', plugins_url('/html/js/lazyload.js', __FILE__), array('jquery'), fifu_version_number_enq());
 
+    global $post;
+    $post_id = $post->ID;
+
     $srcType = "src";
     $imgList = array();
     preg_match_all('/<img[^>]*>/', $content, $imgList);
@@ -306,7 +310,7 @@ function fifu_optimize_content($content) {
         if (!$url || fifu_jetpack_blocked($url) || strpos($url, 'data:image') === 0)
             continue;
 
-        $new_url = fifu_jetpack_photon_url($url, null);
+        $new_url = fifu_jetpack_photon_url($url, null, get_post_thumbnail_id($post_id));
         $newImgItem = str_replace($url, $new_url, html_entity_decode($imgItem));
         $srcset = fifu_jetpack_get_set($new_url, false);
 
@@ -424,7 +428,7 @@ function fifu_add_rss() {
                 $thumbnail = fifu_speedup_get_signed_url($thumbnail, 1280, 853, null, null, false);
             elseif (fifu_is_on('fifu_photon')) {
                 $thumbnail = fifu_cdn_adjust($thumbnail);
-                $thumbnail = fifu_jetpack_photon_url($thumbnail, null);
+                $thumbnail = fifu_jetpack_photon_url($thumbnail, null, get_post_thumbnail_id($post_id));
             }
         } else {
             $thumbnail = wp_get_attachment_url(get_post_thumbnail_id($post->ID)); // internal
