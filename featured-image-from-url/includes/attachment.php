@@ -383,7 +383,7 @@ function fifu_add_url_parameters($url, $att_id, $size) {
     return $url;
 }
 
-function fifu_get_photon_args($h) {
+function fifu_get_photon_args($h, $c) {
     $args = array();
     $args['resize'] = $h . ',' . $h;
     return $args;

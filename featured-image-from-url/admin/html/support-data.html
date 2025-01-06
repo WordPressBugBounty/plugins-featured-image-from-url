@@ -2,11 +2,11 @@
 
     <div class="header-box">
         <h1 style="color:white;padding-left:20px"><span class="dashicons dashicons-info" style="font-size:30px"></span><span style="padding-left:20px"><?php $fifu['word']['status']() ?></span></h1>
-        <button id="fifu-clipboard" style="width:150px;float:right;position:absolute;left:870px;top:40px;"><?php $fifu['button']['clipboard']() ?></button>
+        <button id="fifu-clipboard" style="position:relative;float:right;top:-30px"><?php $fifu['button']['clipboard']() ?></button>
     </div>
 
     <div id="tabs-top" style="float:left">
-<textarea id="bar" style="width:1020px;height:800px;resize:none;background-color:white;" readonly>
+<textarea id="bar" style="width:1220px;height:800px;resize:none;background-color:white;" readonly>
 <?php echo fifu_version() ?>;
 WordPress:<?php bloginfo('version') ?>;
 Site:<?php echo get_home_url() ?>;

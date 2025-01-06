@@ -69,21 +69,6 @@ function fifu_get_strings_settings() {
     };
 
     // words
-    $fifu['word']['cover'] = function () {
-        _e("cover", FIFU_SLUG);
-    };
-    $fifu['word']['contain'] = function () {
-        _e("contain", FIFU_SLUG);
-    };
-    $fifu['word']['fill'] = function () {
-        _e("fill", FIFU_SLUG);
-    };
-    $fifu['word']['width'] = function () {
-        _e("width", FIFU_SLUG);
-    };
-    $fifu['word']['height'] = function () {
-        _e("height", FIFU_SLUG);
-    };
     $fifu['word']['color'] = function () {
         _e("color", FIFU_SLUG);
     };
@@ -717,7 +702,7 @@ function fifu_get_strings_settings() {
         _e("This feature is pre-configured to work only with the post type \"post.\" You can include more post types below (separated by commas).", FIFU_SLUG);
     };
     $fifu['auto']['cpt']['found'] = function () {
-        _e("Post types found on your site: ", FIFU_SLUG);
+        _e("Post types found on your site:", FIFU_SLUG);
     };
     $fifu['auto']['source']['desc'] = function () {
         _e("Limit the search to one or more specific sites.", FIFU_SLUG);
@@ -922,7 +907,7 @@ function fifu_get_strings_settings() {
         _e("Post type filter", FIFU_SLUG);
     };
     $fifu['default']['cpt']['found'] = function () {
-        _e("Post types found on your site: ", FIFU_SLUG);
+        _e("Post types found on your site:", FIFU_SLUG);
     };
     $fifu['default']['cpt']['info'] = function () {
         _e("After adding or removing a post type, you need to restart the feature by disabling and enabling the toggle below.", FIFU_SLUG);
@@ -968,7 +953,7 @@ function fifu_get_strings_settings() {
         _e("Apply the feature to specific post formats:  ", FIFU_SLUG);
     };
     $fifu['hide']['format']['found'] = function () {
-        _e("Post formats found on your site: ", FIFU_SLUG);
+        _e("Post formats found on your site:", FIFU_SLUG);
     };
 
     // configuration
@@ -1068,6 +1053,12 @@ function fifu_get_strings_settings() {
     $fifu['jetpack']['toggle']['otfcdn'] = function () {
         _e("optimize images with FIFU CDN", FIFU_SLUG);
     };
+    $fifu['jetpack']['toggle']['domain'] = function () {
+        _e("use your site's domain", FIFU_SLUG);
+    };
+    $fifu['jetpack']['toggle']['square'] = function () {
+        _e("square all images", FIFU_SLUG);
+    };
     $fifu['jetpack']['otfcdn']['desc'] = function () {
         _e("For a long time, the 'Optimized Images' feature relied solely on a public third-party CDN. While this approach offered cost advantages, it also introduced several challenges. Now, FIFU provides its own CDN, designed to achieve the following goals:", FIFU_SLUG);
     };
@@ -1085,6 +1076,9 @@ function fifu_get_strings_settings() {
     };
     $fifu['jetpack']['otfcdn']['goal']['first'] = function () {
         _e("Provide first-request images (non-cached) in less than 1 second", FIFU_SLUG);
+    };
+    $fifu['jetpack']['otfcdn']['goal']['smart'] = function () {
+        _e("Smart crop images", FIFU_SLUG);
     };
     $fifu['jetpack']['otfcdn']['goal']['process'] = function () {
         _e("Expand image processing capabilities", FIFU_SLUG);
@@ -1111,7 +1105,7 @@ function fifu_get_strings_settings() {
         _e("Due to the costs associated with processing and serving millions of images daily, this feature is not currently available in the free version of FIFU or on staging sites using the PRO version. However, a small fee may soon be introduced to ensure its sustainability. For PRO users, the FIFU CDN will initially work only with the production site, unless the key has expired.", FIFU_SLUG);
     };
     $fifu['jetpack']['otfcdn']['setup'] = function () {
-        _e("To integrate your site with the FIFU CDN, simply create a DNS record for your domain with the following details:", FIFU_SLUG);
+        _e("To serve remote images with your site domain, simply create a DNS record for your domain with the following details:", FIFU_SLUG);
     };
 
     // audio
@@ -1150,10 +1144,10 @@ function fifu_get_strings_settings() {
         _e("product variation", FIFU_SLUG);
     };
     $fifu['api']['tab']['batch-product'] = function () {
-        _e("batch (product)", FIFU_SLUG);
+        _e("batch of products", FIFU_SLUG);
     };
     $fifu['api']['tab']['batch-category'] = function () {
-        _e("batch (category)", FIFU_SLUG);
+        _e("batch of categories", FIFU_SLUG);
     };
     $fifu['api']['tab']['post'] = function () {
         _e("WordPress post", FIFU_SLUG);
@@ -1171,10 +1165,10 @@ function fifu_get_strings_settings() {
         _e("Product variation", FIFU_SLUG);
     };
     $fifu['api']['endpoint']['batch-product'] = function () {
-        _e("Batch (product)", FIFU_SLUG);
+        _e("Batch of products", FIFU_SLUG);
     };
     $fifu['api']['endpoint']['batch-category'] = function () {
-        _e("Batch (category)", FIFU_SLUG);
+        _e("Batch of categories", FIFU_SLUG);
     };
     $fifu['api']['endpoint']['post'] = function () {
         _e("WordPress post", FIFU_SLUG);
@@ -1959,7 +1953,7 @@ function fifu_get_strings_wai() {
         return __("By default, FIFU uses | as the URL delimiter. You can define a different value in the 'List delimiter' field.", FIFU_SLUG);
     };
     $fifu['info']['default'] = function () {
-        return __("Default is |", FIFU_SLUG);
+        return __("Default is '|'", FIFU_SLUG);
     };
     $fifu['info']['finder'] = function () {
         return __("Works with \"Auto set featured media using web page address\"", FIFU_SLUG);

@@ -428,7 +428,7 @@ function fifu_add_rss() {
                 $thumbnail = fifu_speedup_get_signed_url($thumbnail, 1280, 853, null, null, false);
             elseif (fifu_is_on('fifu_photon')) {
                 $thumbnail = fifu_cdn_adjust($thumbnail);
-                $thumbnail = fifu_jetpack_photon_url($thumbnail, null, get_post_thumbnail_id($post_id));
+                $thumbnail = fifu_jetpack_photon_url($thumbnail, null, get_post_thumbnail_id($post->ID));
             }
         } else {
             $thumbnail = wp_get_attachment_url(get_post_thumbnail_id($post->ID)); // internal

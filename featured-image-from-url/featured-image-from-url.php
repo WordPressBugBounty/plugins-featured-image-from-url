@@ -4,11 +4,11 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use an external image/video/audio as featured image of a post or WooCommerce product.
- * Version: 4.9.5
+ * Version: 4.9.6
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0
- * WC tested up to: 9.4.3
+ * WC tested up to: 9.5.1
  * Text Domain: featured-image-from-url
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -43,6 +43,7 @@ require_once (FIFU_ADMIN_DIR . '/category.php');
 require_once (FIFU_ADMIN_DIR . '/column.php');
 require_once (FIFU_ADMIN_DIR . '/cron.php');
 require_once (FIFU_ADMIN_DIR . '/dimensions.php');
+require_once (FIFU_ADMIN_DIR . '/languages.php');
 require_once (FIFU_ADMIN_DIR . '/log.php');
 require_once (FIFU_ADMIN_DIR . '/menu.php');
 require_once (FIFU_ADMIN_DIR . '/meta-box.php');
@@ -167,23 +168,3 @@ add_action('before_woocommerce_init', function () {
         \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
     }
 });
-
-// languages
-
-/*
-
-add_action('plugins_loaded', 'fifu_languages');
-
-function fifu_languages() {
-    load_plugin_textdomain(FIFU_SLUG, false, FIFU_LANGUAGES_DIR);
-}
-
-add_filter('load_textdomain_mofile', 'fifu_override_mo_files', 10, 2 );
-
-function fifu_override_mo_files( $mofile, $domain ) {
-    if (FIFU_SLUG === $domain )
-        $mofile = FIFU_LANGUAGES_DIR . '/' . basename( $mofile );
-    return $mofile;
-}
-
-*/

@@ -1291,3 +1291,19 @@ a.ui-button:active,
 .ui-tabs-vertical .ui-tabs-nav li { clear: left; width: 99%; border-bottom-width: 1px !important;}
 .ui-tabs-vertical .ui-tabs-nav li a { display:block; width: 155px;}
 .ui-tabs-vertical .ui-tabs-panel { float: left; width: 650px;}
+
+/* For menu items, buttons, etc. that jQuery UI might focus */
+.ui-menu .ui-menu-item-wrapper.ui-state-focus,
+.ui-menu .ui-menu-item-wrapper.ui-state-active,
+.ui-button.ui-state-focus,
+.ui-button.ui-state-active,
+a:focus,
+button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.ui-tabs .ui-tabs-nav li a.ui-tabs-anchor {
+    width: 100%;                /* fill the entire LI width if desired */
+}

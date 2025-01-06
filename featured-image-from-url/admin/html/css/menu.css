@@ -1,5 +1,5 @@
 .wrap {
-    max-width: 1020px;
+    max-width: 1220px;
     margin: 0px;
 }
 
@@ -12,7 +12,7 @@
     background-color:#23282d;
     float:left;
     width:100%;
-    max-width: 1020px;
+    max-width: 1220px;
 }
 
 .box {
@@ -111,7 +111,7 @@ tr.color:nth-child(even) {
     position: relative;
     background: #799d60;
     border-radius: 1em;
-    width: 80%;
+    width: 82%;
     line-height: 13px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     opacity: 0.628 !important;

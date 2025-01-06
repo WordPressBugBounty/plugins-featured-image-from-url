@@ -264,7 +264,7 @@ function fifu_optimized_column_image($url, $att_id) {
     }
 
     if (fifu_is_on('fifu_photon'))
-        return fifu_jetpack_photon_url($url, fifu_get_photon_args(150), $att_id);
+        return fifu_jetpack_photon_url($url, fifu_get_photon_args(150, 1), $att_id);
 
     return $url;
 }

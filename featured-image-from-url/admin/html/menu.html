@@ -7,8 +7,8 @@
     <div class="header-box">
         <h1 style="color:white;padding-left:20px;width:98%;font-family:Ubuntu,sans-serif">
             <span class="dashicons dashicons-camera" style="font-size:30px"></span><span style="padding-left:20px">FIFU</span>
-            <a href="https://chrome.google.com/webstore/detail/fifu-scraper/pccimcccbkdeeadhejdmnffmllpicola" target="_blank"><div class="fifu-referral"><i class="fa-brands fa-chrome" style="font-size:24px" title="<?php $fifu['chrome']['link']() ?>"></i></div></a>
-            <!-- <div id="donate-button-container" style="position:relative;top:4px;left:-15px;float:right">
+            <!-- <a href="https://chrome.google.com/webstore/detail/fifu-scraper/pccimcccbkdeeadhejdmnffmllpicola" target="_blank"><div class="fifu-referral"><i class="fa-brands fa-chrome" style="font-size:24px" title="<?php $fifu['chrome']['link']() ?>"></i></div></a> -->
+            <div id="donate-button-container" style="position:relative;top:4px;left:-15px;float:right">
                 <div id="donate-button"></div>
                 <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
                 <script>
@@ -22,11 +22,11 @@
                         }
                     }).render('#donate-button');
                 </script>
-            </div> -->
+            </div>
         </h1>
     </div>
 
-    <div id="tabs-top"  style="float:left; width: 100%; max-width: 1014px !important;">
+    <div id="tabs-top"  style="float:left; width: 100%; max-width: 1214px !important;">
         <ul>
             <li><a href="#tabs-d"><i class="fas fa-circle-question"></i> <?php $fifu['tab']['help']() ?></a></li>
             <li><a href="#tabs-g"><i class="fas fa-image"></i> <?php $fifu['tab']['image']() ?></a></li>
@@ -244,7 +244,7 @@
                             </div>
                             <div id="tabsAutoSet-b">
                                 <table>
-                                    <tr style="text-align:center">
+                                    <tr style="text-align:left">
                                         <th>
                                             <input id="fifu_input_auto_set_width"
                                                    name="fifu_input_auto_set_width"
@@ -256,7 +256,7 @@
                                             <?php $fifu['auto']['filter']['width']() ?>
                                         </th>
                                     </tr>
-                                    <tr style="text-align:center">
+                                    <tr style="text-align:left">
                                         <th>
                                             <input id="fifu_input_auto_set_height"
                                                    name="fifu_input_auto_set_height"
@@ -886,6 +886,11 @@
                                 </tr>
                                 <tr class="color">
                                     <th>
+                                        <?php $fifu['jetpack']['otfcdn']['goal']['smart']() ?>
+                                    </th>
+                                </tr>
+                                <tr class="color">
+                                    <th>
                                         <?php $fifu['jetpack']['otfcdn']['goal']['process']() ?>
                                     </th>
                                 </tr>
@@ -960,7 +965,6 @@
                             <table style="text-align:left">
                                 <tr>
                                     <td>
-                                        <div class="fifu-pro"><a class="fifu-pro-link" href="https://fifu.app/" target="_blank" title="<?php $fifu['unlock']() ?>"><span class="dashicons dashicons-lock fifu-pro-icon"></span></a></div>
                                         <input
                                             type="submit"
                                             class="toggleoff"
@@ -969,6 +973,30 @@
                                     </td>
                                     <td>
                                         <?php $fifu['jetpack']['toggle']['otfcdn']() ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input
+                                            type="submit"
+                                            class="toggleoff"
+                                            value=""
+                                            style="display:block;border:none">
+                                    </td>
+                                    <td>
+                                        <?php $fifu['jetpack']['toggle']['domain']() ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input
+                                            type="submit"
+                                            class="toggleoff"
+                                            value=""
+                                            style="display:block;border:none">
+                                    </td>
+                                    <td>
+                                        <?php $fifu['jetpack']['toggle']['square']() ?>
                                     </td>
                                 </tr>
                             </table>
@@ -1835,7 +1863,7 @@
                             <th>
                                 <?php $fifu['word']['mode']() ?>
                                 <br>
-                                <select id="select_play_type" style="width:85px">
+                                <select id="select_play_type" style="width:100px">
                                     <option value="inline"><?php $fifu['word']['inline']() ?></option>
                                     <option value="lightbox"><?php $fifu['word']['lightbox']() ?></option>
                                 </select>
@@ -2191,7 +2219,7 @@
                     <br>
                     <table style="text-align:left">
                         <tr>
-                            <th>
+                            <th style="width: 150px;">
                                 <input
                                     type="submit"
                                     href="javascript:void(0)"
@@ -2340,7 +2368,7 @@
 
                     <table style="text-align:left">
                         <tr>
-                            <th>
+                            <th style="width: 150px;">
                                 <input id="fifu_input_slider_pause"
                                        name="fifu_input_slider_pause"
                                        step="500"
@@ -2534,7 +2562,7 @@
 
                     <div class="greybox" id="grad2">
                         <div id="tabsApi">
-                            <ul>
+                            <ul style="width: 250px;">
                                 <li><a href="#tabs-1"><?php $fifu['api']['tab']['endpoints']() ?></a></li>
                                 <li><a href="#tabs-2"><?php $fifu['api']['tab']['custom']() ?></a></li>
                                 <li><a href="#tabs-3"><?php $fifu['api']['tab']['product']() ?></a></li>
@@ -2546,7 +2574,7 @@
                                 <li><a href="#tabs-5"><?php $fifu['api']['tab']['post']() ?></a></li>
                                 <li><a href="#tabs-9"><?php $fifu['api']['tab']['documentation']() ?></a></li>
                             </ul>
-                            <div id="tabs-1">
+                            <div id="tabs-1" style="width:780px">
                                 <table style="text-align:left; width:100%">
                                     <tr class="color">
                                         <th>			
@@ -2604,9 +2632,9 @@
                                     <tr class="color">
                                         <th>			
                                         </th>
-                                        <th>								
-                                            <b>GET/PUT/DELETE</b>
-                                        </th>
+                                        <th style="width:73%"></th>								
+                                    <b>GET/PUT/DELETE</b>
+                                    </th>
                                     </tr>
                                     <tr class="color">
                                         <th><?php $fifu['api']['endpoint']['product']() ?></th>
@@ -2641,7 +2669,7 @@
                                 </table>
                             </div>
 
-                            <div id="tabs-2">
+                            <div id="tabs-2" style="width:780px">
                                 <table style="text-align:left; width:100%">
                                     <tr class="color">
                                         <th></th>
@@ -2769,56 +2797,56 @@
                                 </table>
                             </div>
 
-                            <div id="tabs-3">
+                            <div id="tabs-3" style="width:780px">
 
                                 <iframe src="<?php echo plugins_url() ?>/featured-image-from-url/admin/html/txt/product.json"
                                         width="100%" height="275px" ></iframe>
 
                             </div>
 
-                            <div id="tabs-4">
+                            <div id="tabs-4" style="width:780px">
 
                                 <iframe src="<?php echo plugins_url() ?>/featured-image-from-url/admin/html/txt/product-variation.json"
                                         width="100%" height="450px" ></iframe>
 
                             </div>
 
-                            <div id="tabs-5">
+                            <div id="tabs-5" style="width:780px">
 
                                 <iframe src="<?php echo plugins_url() ?>/featured-image-from-url/admin/html/txt/post.json"
                                         width="100%" height="175px" ></iframe>
 
                             </div>
 
-                            <div id="tabs-6">
+                            <div id="tabs-6" style="width:780px">
 
                                 <iframe src="<?php echo plugins_url() ?>/featured-image-from-url/admin/html/txt/product-category.json"
                                         width="100%" height="225px" ></iframe>
 
                             </div>
 
-                            <div id="tabs-7">
+                            <div id="tabs-7" style="width:780px">
 
                                 <iframe src="<?php echo plugins_url() ?>/featured-image-from-url/admin/html/txt/product-variable.json"
                                         width="100%" height="590px" ></iframe>
 
                             </div>
 
-                            <div id="tabs-8">
+                            <div id="tabs-8" style="width:780px">
 
                                 <iframe src="<?php echo plugins_url() ?>/featured-image-from-url/admin/html/txt/batch-product.json"
                                         width="100%" height="535px" ></iframe>
 
                             </div>
 
-                            <div id="tabs-10">
+                            <div id="tabs-10" style="width:780px">
 
                                 <iframe src="<?php echo plugins_url() ?>/featured-image-from-url/admin/html/txt/batch-category.json"
                                         width="100%" height="535px" ></iframe>
 
                             </div>
 
-                            <div id="tabs-9">
+                            <div id="tabs-9" style="width:780px">
 
                                 <table style="text-align:left; width:100%">
                                     <tr class="color">
@@ -3024,7 +3052,7 @@
                                         <th style="width:80px">
                                             <b><?php $fifu['cli']['column']['tab']() ?></b>
                                         </th>
-                                        <th style="width:150px">
+                                        <th style="width:250px">
                                             <b><?php $fifu['cli']['column']['feature']() ?></b>
                                         </th>
                                         <th>
@@ -3660,6 +3688,40 @@
                                         </th>
                                         <th>
                                             wp fifu cdn --fifu &lt;toggle&gt;
+                                        </th>
+                                        <th>
+                                            on, off
+                                        </th>
+                                    </tr>
+                                    <tr class="color">
+                                        <th>
+                                            <?php $fifu['tab']['image']() ?>
+                                        </th>
+                                        <th>
+                                            <?php $fifu['title']['jetpack']() ?>
+                                        </th>
+                                        <th>
+                                            <?php $fifu['jetpack']['toggle']['domain']() ?>
+                                        </th>
+                                        <th>
+                                            wp fifu cdn --domain &lt;toggle&gt;
+                                        </th>
+                                        <th>
+                                            on, off
+                                        </th>
+                                    </tr>
+                                    <tr class="color">
+                                        <th>
+                                            <?php $fifu['tab']['image']() ?>
+                                        </th>
+                                        <th>
+                                            <?php $fifu['title']['jetpack']() ?>
+                                        </th>
+                                        <th>
+                                            <?php $fifu['jetpack']['toggle']['square']() ?>
+                                        </th>
+                                        <th>
+                                            wp fifu cdn --square &lt;toggle&gt;
                                         </th>
                                         <th>
                                             on, off
@@ -5334,7 +5396,7 @@
                     <br>
                     <table style="text-align:left">
                         <tr>
-                            <th>
+                            <th style="width: 200px;">
                                 <input
                                     type="submit"
                                     href="javascript:void(0)"
@@ -5349,14 +5411,14 @@
                     </table>
                     <table style="text-align:left">
                         <tr>
-                            <th>
+                            <th style="width: 200px;">
                                 <?php $fifu['buy']['text']['text']() ?>
                             </th>
                             <th>
                                 <input id="fifu_input_buy_text"
                                        type="text"
                                        name="fifu_input_buy_text"
-                                       style="width:250px"
+                                       style="width:350px"
                                        placeholder="<?php $fifu['buy']['text']['placeholder']() ?>"
                                        value="">
                             </th>
@@ -5369,7 +5431,7 @@
                                 <input id="fifu_input_buy_disclaimer"
                                        type="text"
                                        name="fifu_input_buy_disclaimer"
-                                       style="width:250px"
+                                       style="width:350px"
                                        placeholder="<?php $fifu['buy']['disclaimer']['placeholder']() ?>"
                                        value="">
                             </th>
@@ -5382,7 +5444,7 @@
                                 <input id="fifu_input_buy_cf"
                                        type="text"
                                        name="fifu_input_buy_cf"
-                                       style="width:250px"
+                                       style="width:350px"
                                        placeholder="<?php $fifu['buy']['cf']['placeholder']() ?>"
                                        value="">
                             </th>
@@ -5553,7 +5615,7 @@
                                 <div style="font-style:italic;font-size:13px;color:white;padding-left:40px"><?php $fifu['start']['url']['paste']() ?><input type="text" style="width:80%;background-color:#f3f3f3;font-style:italic;" placeholder="<?php $fifu['start']['url']['drag']() ?>"></div>
                                 <br>
                             </hgroup>
-                            <img style="float:right;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);width:17%;position:relative;top:19px;filter:grayscale(25%);" src="https://ps.w.org/featured-image-from-url/assets/icon-256x256.png?rev=2776609" title="<?php $fifu['start']['url']['click']() ?>">
+                            <img style="float:right;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);width:16%;position:relative;filter:grayscale(25%);border-radius:5px;" src="https://ps.w.org/featured-image-from-url/assets/icon-256x256.png?rev=2776609" title="<?php $fifu['start']['url']['click']() ?>">
                         </div>
                         <hgroup style="float:right;opacity:0.75" class="speech-bubble2">
                             <div style="font-style:italic;font-size:13px;color:white;padding-left:25px;padding-top:10px;"><?php $fifu['start']['post']['famous']() ?></div>
