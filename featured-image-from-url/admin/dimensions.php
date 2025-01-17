@@ -28,40 +28,6 @@ define('PROXY3_URLS', [
     "https://img.youtube.com",
 ]);
 
-function fifu_sizes_cron_task($original_image_url, $att_id) {
-    // Validate inputs
-    if (empty($original_image_url) || !is_numeric($att_id)) {
-        return;
-    }
-
-    // Get image dimensions
-    $image_data = @file_get_contents($original_image_url);
-    if (!$image_data) {
-        return;
-    }
-
-    $size = @getimagesizefromstring($image_data);
-    if (!$size) {
-        return;
-    }
-    list($width, $height) = $size;
-
-    // Update attachment metadata
-    $metadata = wp_get_attachment_metadata($att_id);
-    if (!is_array($metadata)) {
-        $metadata = [];
-    }
-    $metadata['width'] = $width;
-    $metadata['height'] = $height;
-    wp_update_attachment_metadata($att_id, $metadata);
-}
-
-function fifu_sizes_schedule_task($original_image_url, $att_id) {
-    wp_schedule_single_event(time(), 'fifu_sizes_cron_action', array($original_image_url, $att_id));
-}
-
-add_action('fifu_sizes_cron_action', 'fifu_sizes_cron_task', 10, 2);
-
 function fifu_image_downsize($out, $att_id, $size) {
     global $FIFU_SESSION;
 
@@ -120,9 +86,7 @@ function fifu_image_downsize($out, $att_id, $size) {
                     return $out;
             }
 
-            // Save dimensions
-            fifu_sizes_schedule_task($image_url, $att_id);
-
+            // Save dimensions (thread removed)
             // Use a small width to quickly get the height
             $small_width = 100;
 

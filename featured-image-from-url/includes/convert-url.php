@@ -20,7 +20,7 @@ function fifu_from_google_drive($url) {
 }
 
 function fifu_google_drive_id($url) {
-    preg_match("/[-\w]{25,}.*/", $url, $matches);
+    preg_match("/[-\w]{25,}/", $url, $matches);
     return isset($matches[0]) ? $matches[0] : null;
 }
 

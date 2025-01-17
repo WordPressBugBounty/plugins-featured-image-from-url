@@ -4,11 +4,11 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use an external image/video/audio as featured image of a post or WooCommerce product.
- * Version: 4.9.6
+ * Version: 4.9.7
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0
- * WC tested up to: 9.5.1
+ * WC tested up to: 9.5.2
  * Text Domain: featured-image-from-url
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -25,7 +25,6 @@ define('FIFU_CLOUD_DEBUG', false);
 
 $FIFU_SESSION = array();
 
-require_once (FIFU_INCLUDES_DIR . '/ajax.php');
 require_once (FIFU_INCLUDES_DIR . '/attachment.php');
 require_once (FIFU_INCLUDES_DIR . '/convert-url.php');
 require_once (FIFU_INCLUDES_DIR . '/external-post.php');
