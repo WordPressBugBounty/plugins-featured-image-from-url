@@ -8,9 +8,9 @@ function fifu_resize_jetpack_image_size($size, $url) {
     if (strpos($url, 'resize=')) {
         $aux = explode('resize=', $url)[1];
         $aux = explode(',', $aux);
-        $w = (int) $aux[0];
-        $h = (int) $aux[1];
-        $new_h = intval($size * $h / $w);
+        $w = isset($aux[0]) ? (int) $aux[0] : 0;
+        $h = isset($aux[1]) ? (int) $aux[1] : 0;
+        $new_h = $w ? intval($size * $h / $w) : 0;
         $clean_url = explode('?', $url)[0];
         if ($new_h == 0)
             return "{$clean_url}?w={$size}&ssl=1";

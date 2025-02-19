@@ -21,7 +21,8 @@ define('PROXY2_URLS', [
     "https://media.gettyimages.com",
     "https://cdn.diariodeavisos.com",
     "https://forum.rolug.ro",
-    "https://assets.ellosgroup.com"
+    "https://assets.ellosgroup.com",
+    "https://www.nzherald.co.nz",
 ]);
 
 define('PROXY3_URLS', [

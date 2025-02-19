@@ -4,11 +4,11 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use an external image/video/audio as featured image of a post or WooCommerce product.
- * Version: 4.9.7
+ * Version: 4.9.8
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0
- * WC tested up to: 9.5.2
+ * WC tested up to: 9.6.2
  * Text Domain: featured-image-from-url
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -48,6 +48,7 @@ require_once (FIFU_ADMIN_DIR . '/menu.php');
 require_once (FIFU_ADMIN_DIR . '/meta-box.php');
 require_once (FIFU_ADMIN_DIR . '/rsa.php');
 require_once (FIFU_ADMIN_DIR . '/strings.php');
+require_once (FIFU_ADMIN_DIR . '/sheet-editor.php');
 require_once (FIFU_ADMIN_DIR . '/transient.php');
 require_once (FIFU_ADMIN_DIR . '/widgets.php');
 

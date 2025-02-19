@@ -3,8 +3,8 @@ Contributors: marceljm
 Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
-Tested up to: 6.7.1
-Stable tag: 4.9.7
+Tested up to: 6.7.2
+Stable tag: 4.9.8
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -245,14 +245,14 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 4.9.8 =
+* New option: Auto set screenshot as featured image → Size; Enhancement: integration with WP Sheet Editor plugin; Fix: PHP Warning; Deprecated: Featured Video → Play Button → Draw (use FIFU CDN instead).
+
 = 4.9.7 =
 * Fix: Database performance issues related to retrieving data during AJAX calls and saving image dimensions during page load.
 
 = 4.9.6 =
 * New: fully translated into 100 languages now; New option: FIFU CDN → use your own domain; New option: FIFU CDN → square all images; Enhancement: menu settings layout adjusted to accommodate longer strings; Fix: PHP Warning (Undefined variable).
-
-= 4.9.5 =
-* New: FIFU CDN; Deprecated: Cloak Links; Deprecated: Same Height; Fix: FIFU Cloud (automatic deletion was failing on sites with too many images, division by zero fatal error); Fix: removing query parameters from Google Drive URLs; Fix: Alternative text (previously breaking the page when it contained HTML).
 
 = others =
 * [more](https://fifu.app/changelog)
@@ -260,5 +260,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 4.9.7 =
-* Fix: Database performance issues related to retrieving data during AJAX calls and saving image dimensions during page load.
+= 4.9.8 =
+* New option: Auto set screenshot as featured image → Size; Enhancement: integration with WP Sheet Editor plugin; Fix: PHP Warning; Deprecated: Featured Video → Play Button → Draw (use FIFU CDN instead).

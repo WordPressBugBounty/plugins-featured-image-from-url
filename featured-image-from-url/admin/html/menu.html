@@ -664,6 +664,7 @@
                     <div id="tabsScreenshot">
                         <ul>
                             <li><a href="#tabsScreenshot-a"><?php $fifu['screenshot']['tab']['auto']() ?></a></li>
+                            <li><a href="#tabsScreenshot-c"><?php $fifu['screenshot']['tab']['size']() ?></a></li>
                             <li><a href="#tabsScreenshot-b"><?php $fifu['screenshot']['tab']['custom']() ?></a></li>
                             <br>
                             <br>
@@ -680,6 +681,19 @@
                                         </th>
                                         <td>
                                         </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id="tabsScreenshot-c">
+                                <table style="text-align:left">
+                                    <tr>
+                                        <th>
+                                            <input 
+                                                type="text"
+                                                style="width:85px"
+                                                placeholder="1280x960"
+                                                value="">
+                                        </th>
                                     </tr>
                                 </table>
                             </div>
@@ -1820,10 +1834,9 @@
 
                 <div class="box">
                     <div class="fifu-pro"><a class="fifu-pro-link" href="https://fifu.app/" target="_blank" title="<?php $fifu['unlock']() ?>"><span class="dashicons dashicons-lock fifu-pro-icon"></span></a></div>
-                    <div class="fifu-cloud-details"><span class="dashicons dashicons-cloud fifu-cloud-details-icon" title="<?php $fifu['cloud']['details']['play']() ?>"></span></div>
                     <h2><i class="fa-solid fa-circle-play"></i> <?php $fifu['title']['play']() ?></h2>
                     <div class="greybox" id="grad2">
-                        <?php $fifu['play']['desc']() ?> <?php $fifu['play']['desc2']() ?>
+                        <?php $fifu['play']['desc']() ?>
                     </div>
                     <br>
                     <table style="text-align:left">
@@ -1883,23 +1896,7 @@
                                 <br>
                                 <div style="height:20px"></div>
                             </th>
-                            <th style="position:relative;left:-8px;">
-                                <div style="position:relative;left:10px;"><?php $fifu['play']['draw']() ?></div>
-                                <table>
-                                    <tr>
-                                        <th>
-                                            <input
-                                                type="submit"
-                                                href="javascript:void(0)"
-                                                class="toggleoff"
-                                                value=""
-                                                style="display:block;border:none">
-                                        </th>
-                                    </tr>
-                                </table>
-                                <br>
-                            </th>
-                            <th style="position:relative;left:-8px;">
+                            <th style="position:relative;left:-10px;top:6px">
                                 <div style="position:relative;left:10px;"><?php $fifu['play']['hide']() ?></div>
                                 <table>
                                     <tr>
@@ -3540,6 +3537,23 @@
                                             <?php $fifu['title']['screenshot']() ?>
                                         </th>
                                         <th>
+                                            <?php $fifu['screenshot']['tab']['size']() ?>
+                                        </th>
+                                        <th>
+                                            wp fifu screenshot --size &lt;string&gt;
+                                        </th>
+                                        <th>
+                                            1280x960
+                                        </th>
+                                    </tr>
+                                    <tr class="color">
+                                        <th>
+                                            <?php $fifu['tab']['auto']() ?>
+                                        </th>
+                                        <th>
+                                            <?php $fifu['title']['screenshot']() ?>
+                                        </th>
+                                        <th>
                                             <?php $fifu['screenshot']['tab']['custom']() ?>
                                         </th>
                                         <th>
@@ -4438,23 +4452,6 @@
                                         </th>
                                         <th>
                                             500, 1000, 1500...
-                                        </th>
-                                    </tr>
-                                    <tr class="color">
-                                        <th>
-                                            <?php $fifu['tab']['video']() ?>
-                                        </th>
-                                        <th>
-                                            <?php $fifu['title']['play']() ?>
-                                        </th>
-                                        <th>
-                                            <?php $fifu['play']['draw']() ?>
-                                        </th>
-                                        <th>
-                                            wp fifu video --play-draw &lt;toggle&gt;
-                                        </th>
-                                        <th>
-                                            on, off
                                         </th>
                                     </tr>
                                     <tr class="color">

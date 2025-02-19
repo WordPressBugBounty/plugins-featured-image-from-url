@@ -832,6 +832,9 @@ function fifu_get_strings_settings() {
     $fifu['screenshot']['tab']['custom'] = function () {
         _e("Custom field", FIFU_SLUG);
     };
+    $fifu['screenshot']['tab']['size'] = function () {
+        _e("Size", FIFU_SLUG);
+    };
 
     // find
     $fifu['finder']['desc'] = function () {
@@ -1039,7 +1042,7 @@ function fifu_get_strings_settings() {
         _e("Optimize", FIFU_SLUG);
     };
     $fifu['jetpack']['tab']['fifu'] = function () {
-        _e("FIFU CDN (beta)", FIFU_SLUG);
+        _e("FIFU CDN", FIFU_SLUG);
     };
     $fifu['jetpack']['desc'] = function () {
         _e("Your external images will be automatically optimized and served from a public CDN. In addition, the plugin will load the thumbnails in the exact size your site requires, further enhancing performance.", FIFU_SLUG);
@@ -1378,14 +1381,8 @@ function fifu_get_strings_settings() {
     $fifu['play']['desc'] = function () {
         _e("Add a play button to the video thumbnail. When clicking on the button, the video will start (in inline or lightbox mode).", FIFU_SLUG);
     };
-    $fifu['play']['desc2'] = function () {
-        _e("If there are style issues with the play button, enable the 'draw' option for better compatibility, though it allows less customization.", FIFU_SLUG);
-    };
     $fifu['play']['hide'] = function () {
         _e("Hide from grid", FIFU_SLUG);
-    };
-    $fifu['play']['draw'] = function () {
-        _e("Draw", FIFU_SLUG);
     };
 
     // width
@@ -1656,9 +1653,6 @@ function fifu_get_strings_settings() {
     };
     $fifu['cloud']['details']['replace'] = function () {
         _e("FIFU Cloud prevents image loss by saving your local or external images in the cloud.", FIFU_SLUG);
-    };
-    $fifu['cloud']['details']['play'] = function () {
-        _e("FIFU Cloud overcomes this feature by drawing a play icon on the video image thumbnails. With this, the plugin doesn't need to add any additional HTML or CSS, which might conflict with the theme.", FIFU_SLUG);
     };
 
     // pro

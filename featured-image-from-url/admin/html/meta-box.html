@@ -10,7 +10,7 @@
                        name="fifu_input_alt" 
                        placeholder="<?php $fifu['common']['alt']() ?>"
                        value="<?php echo $alt; ?>" 
-                       style="<?php echo $width ?>;font-size:13px;" />
+                       style="<?php echo $width ?>;font-size:13px;margin:0px 0px 0px 2px" />
             </td>
             <td style="padding:unset !important;">
                 <span id="fifu_help_alt" 
@@ -26,7 +26,9 @@
          style="<?php echo $height, $show_image ?>
          background:url('<?php echo $adjustedUrl; ?>') no-repeat center center;
          background-size:cover;
-         cursor:zoom-in" >
+         cursor:zoom-in;
+         border-radius:3px;
+         margin:0px 6px -1px 4px;" >
     </div>
 
     <table id="fifu_table_url" style="width:100%;position:relative">
