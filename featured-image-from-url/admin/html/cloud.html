@@ -15,9 +15,9 @@
         <ul>
             <li><a href="#tabs-a"><i class="fas fa-info-circle"></i> <?php $fifucloud['tabs']['welcome']() ?></a></li>
             <li><a href="#tabs-f" onclick="listDailyCount()"><i class="fas fa-user-gear"></i> <?php $fifucloud['tabs']['account']() ?></a></li>
-            <li><a href="#tabs-c" onclick="listAllFifu(0)"><i class="fas fa-folder-plus"></i> <?php $fifucloud['tabs']['send']() ?></a></li>
-            <li><a href="#tabs-d" onclick="listAllSu(0)"><i class="fas fa-folder-minus"></i> <?php $fifucloud['tabs']['delete']() ?></a></li>
-            <li><a href="#tabs-e" onclick="listAllMediaLibrary(0)"><i class="fab fa-wordpress"></i> <?php $fifucloud['tabs']['media']() ?></a></li>
+            <li><a href="#tabs-c" onclick="listAllFifu(0, null, null)"><i class="fas fa-folder-plus"></i> <?php $fifucloud['tabs']['send']() ?></a></li>
+            <li><a href="#tabs-d" onclick="listAllSu(0, null, null)"><i class="fas fa-folder-minus"></i> <?php $fifucloud['tabs']['delete']() ?></a></li>
+            <li><a href="#tabs-e" onclick="listAllMediaLibrary(0, null, null)"><i class="fab fa-wordpress"></i> <?php $fifucloud['tabs']['media']() ?></a></li>
         </ul>
         <div id="tabs-a" class="cloud-tab">
             <div class="first-cloud-box">
@@ -233,7 +233,15 @@
                 <div class="greybox">
                     <?php $fifucloud['upload']['desc']() ?>
                     <br>
-                    <br>                    
+                    <br>
+                    <select id="su-select-search" style="width: 18%;">
+                        <option value="title"><?php $fifucloud['column']['title']() ?></option>
+                        <option value="url"><?php $fifucloud['search']['url']() ?></option>
+                    </select>
+                    <input type="text" id="su-input-search" value="" style="width: 62%;">
+                    <button id="su-button-search" onclick="search('upload')" style="width:18%; height:28px;"><i class="fa-solid fa-magnifying-glass"></i> <?php $fifucloud['search']['search']() ?></button>
+                    <br>
+                    <br>
                     <div style="background: white; padding: 10px; border-radius: 1em;">
                         <table id="addTable" class="display cell-border">
                             <thead>
@@ -327,6 +335,14 @@
                     <?php $fifucloud['delete']['desc']() ?>
                     <br>
                     <br>
+                    <select id="su-delete-select-search" style="width: 18%;">
+                        <option value="url"><?php $fifucloud['search']['url']() ?></option>
+                        <option value="postid"><?php $fifucloud['column']['id']() ?></option>
+                    </select>
+                    <input type="text" id="su-delete-input-search" value="" style="width: 62%;">
+                    <button id="su-delete-button-search" onclick="search('delete')" style="width:18%; height:28px;"><i class="fa-solid fa-magnifying-glass"></i> <?php $fifucloud['search']['search']() ?></button>
+                    <br>
+                    <br>
                     <div style="background: white; padding: 10px; border-radius: 1em;">
                         <table id="removeTable" class="display cell-border">
                             <thead>
@@ -394,6 +410,14 @@
                 </h2>
                 <div class="greybox">
                     <?php $fifucloud['media']['desc']() ?>
+                    <br>
+                    <br>
+                    <select id="su-media-select-search" style="width: 18%;">
+                        <option value="title"><?php $fifucloud['column']['title']() ?></option>
+                        <option value="postid"><?php $fifucloud['column']['id']() ?></option>
+                    </select>
+                    <input type="text" id="su-media-input-search" value="" style="width: 62%;">
+                    <button id="su-media-button-search" onclick="search('media')" style="width:18%; height:28px;"><i class="fa-solid fa-magnifying-glass"></i> <?php $fifucloud['search']['search']() ?></button>
                     <br>
                     <br>
 

@@ -597,10 +597,12 @@ function fifu_api_list_all_su(WP_REST_Request $request) {
     $time = time();
     $site = fifu_get_home_url();
     $page = (int) $request['page'];
+    $type = $request['type'];
+    $keyword = $request['keyword'];
     $ip = fifu_get_ip();
     $signature = fifu_create_signature($site . $time . $ip);
 
-    fifu_cloud_log(['list_all_su' => ['site' => $site, 'page' => $page]]);
+    fifu_cloud_log(['list_all_su' => ['site' => $site, 'page' => $page, 'type' => $type, 'keyword' => $keyword]]);
 
     $array = array(
         'headers' => array('Content-Type' => 'application/json; charset=utf-8'),
@@ -612,7 +614,9 @@ function fifu_api_list_all_su(WP_REST_Request $request) {
                     'ip' => $ip,
                     'page' => $page,
                     'slug' => FIFU_CLIENT,
-                    'version' => fifu_version_number()
+                    'version' => fifu_version_number(),
+                    'type' => $type,
+                    'keyword' => $keyword
                 )
         ),
         'method' => 'POST',
@@ -839,7 +843,9 @@ function fifu_get_storage_id($hex_id, $width, $height) {
 
 function fifu_api_list_all_fifu(WP_REST_Request $request) {
     $page = (int) $request['page'];
-    $urls = fifu_db_get_all_urls($page);
+    $type = $request['type'];
+    $keyword = $request['keyword'];
+    $urls = fifu_db_get_all_urls($page, $type, $keyword);
     return $urls;
 }
 
@@ -848,7 +854,9 @@ function fifu_api_list_all_media_library(WP_REST_Request $request) {
         return null;
 
     $page = (int) $request['page'];
-    return fifu_db_get_posts_with_internal_featured_image($page);
+    $type = $request['type'];
+    $keyword = $request['keyword'];
+    return fifu_db_get_posts_with_internal_featured_image($page, $type, $keyword);
 }
 
 function fifu_metadata_counter_api(WP_REST_Request $request) {

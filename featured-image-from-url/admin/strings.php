@@ -2247,6 +2247,9 @@ function fifu_get_strings_cloud() {
     $fifu['table']['featured'] = function () {
         return __("featured media", FIFU_SLUG);
     };
+    $fifu['table']['filter'] = function () {
+        return __("Filter results", FIFU_SLUG);
+    };
 
     // support
     $fifu['support']['whats'] = function () {
@@ -2323,7 +2326,7 @@ function fifu_get_strings_cloud() {
 
     // upload
     $fifu['upload']['desc'] = function () {
-        _e("Image costs start from the upload date.", FIFU_SLUG);
+        _e("Costs start from the upload date.", FIFU_SLUG);
     };
     $fifu['upload']['automatic']['title'] = function () {
         _e("Automatic upload", FIFU_SLUG);
@@ -2444,6 +2447,15 @@ function fifu_get_strings_cloud() {
     };
     $fifu['column']['number'] = function () {
         _e("Number of images", FIFU_SLUG);
+    };
+
+
+    // search
+    $fifu['search']['url'] = function () {
+        _e("Image URL", FIFU_SLUG);
+    };
+    $fifu['search']['search'] = function () {
+        _e("Search", FIFU_SLUG);
     };
 
     // update

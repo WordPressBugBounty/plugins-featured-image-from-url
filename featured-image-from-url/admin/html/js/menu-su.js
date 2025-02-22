@@ -47,6 +47,28 @@ function signUp() {
     return code;
 }
 
+function search(action) {
+    if (action == 'upload') {
+        selectSearch = jQuery('#su-select-search').val();
+        inputSearch = jQuery('#su-input-search').val();
+        if (!selectSearch || !inputSearch)
+            return;
+        listAllFifu(0, selectSearch, inputSearch);
+    } else if (action == 'delete') {
+        selectSearch = jQuery('#su-delete-select-search').val();
+        inputSearch = jQuery('#su-delete-input-search').val();
+        if (!selectSearch || !inputSearch)
+            return;
+        listAllSu(0, selectSearch, inputSearch);
+    } else if (action == 'media') {
+        selectSearch = jQuery('#su-media-select-search').val();
+        inputSearch = jQuery('#su-media-input-search').val();
+        if (!selectSearch || !inputSearch)
+            return;
+        listAllMediaLibrary(0, selectSearch, inputSearch);
+    }
+}
+
 function cancel() {
     jQuery("#su-dialog-cancel").dialog("open");
 }
@@ -167,7 +189,7 @@ function resetCredentials() {
     return code;
 }
 
-function listAllSu(page) {
+function listAllSu(page, type, keyword) {
     if (!fifuScriptCloudVars.signUpComplete)
         fifu_disable_edition_buttons();
     else
@@ -182,6 +204,9 @@ function listAllSu(page) {
         "autoWidth": false,
         "order": [[3, 'desc']],
         dom: 'lfrtBip',
+        language: {
+            search: fifuScriptCloudVars.filterResults + ': ' // Replace "Search:" with custom text
+        },
         select: true,
         buttons: [
             {
@@ -215,7 +240,7 @@ function listAllSu(page) {
                 text: fifuScriptCloudVars.load,
                 action: function () {
                     if (table.rows().count() == MAX_ROWS || update)
-                        listAllSu(page + 1);
+                        listAllSu(page + 1, null, null);
                 }
             },
         ]
@@ -230,6 +255,8 @@ function listAllSu(page) {
         url: restUrl + 'featured-image-from-url/v2/list_all_su/',
         data: {
             "page": page,
+            "type": type,
+            "keyword": keyword
         },
         async: true,
         beforeSend: function (xhr) {
@@ -332,7 +359,7 @@ function listAllSu(page) {
                         selected.remove().draw(false);
 
                         if (table.rows().count() == 0)
-                            listAllSu(0);
+                            listAllSu(0, null, null);
 
                         fifu_unblock();
                     }
@@ -361,7 +388,7 @@ jQuery(document).ready(function ($) {
 const MAX_ROWS = 1000;
 const MAX_ROWS_BY_REQUEST = MAX_ROWS / 10;
 
-function listAllFifu(page) {
+function listAllFifu(page, type, keyword) {
     if (!fifuScriptCloudVars.signUpComplete)
         fifu_disable_edition_buttons();
     else
@@ -376,6 +403,9 @@ function listAllFifu(page) {
         "autoWidth": false,
         "order": [[3, 'desc']],
         dom: 'lfrtBip',
+        language: {
+            search: fifuScriptCloudVars.filterResults + ': ' // Replace "Search:" with custom text
+        },
         select: true,
         buttons: [
             {
@@ -409,7 +439,7 @@ function listAllFifu(page) {
                 text: fifuScriptCloudVars.load,
                 action: function () {
                     if (table.rows().count() == MAX_ROWS || update)
-                        listAllFifu(page + 1);
+                        listAllFifu(page + 1, null, null);
                 }
             },
         ]
@@ -422,6 +452,8 @@ function listAllFifu(page) {
         url: restUrl + 'featured-image-from-url/v2/list_all_fifu/',
         data: {
             "page": page,
+            "type": type,
+            "keyword": keyword,
         },
         async: true,
         beforeSend: function (xhr) {
@@ -530,7 +562,7 @@ async function addSu(table) {
                             selected.remove().draw(false);
 
                             if (table.rows().count() == 0)
-                                listAllFifu(0);
+                                listAllFifu(0, null, null);
                         }
                         fifu_unblock();
                     }
@@ -628,7 +660,7 @@ function fifu_enable_edition_buttons() {
     jQuery("button#cloud-del").attr('disabled');
 }
 
-function listAllMediaLibrary(page) {
+function listAllMediaLibrary(page, type, keyword) {
     console.log(page);
     update = false;
 
@@ -639,6 +671,9 @@ function listAllMediaLibrary(page) {
         "autoWidth": false,
         "order": [[3, 'desc']],
         dom: 'lfrtBip',
+        language: {
+            search: fifuScriptCloudVars.filterResults + ': ' // Replace "Search:" with custom text
+        },
         select: true,
         buttons: [
             {
@@ -671,7 +706,7 @@ function listAllMediaLibrary(page) {
                 text: fifuScriptCloudVars.load,
                 action: function () {
                     if (table.rows().count() == MAX_ROWS || update)
-                        listAllMediaLibrary(page + 1);
+                        listAllMediaLibrary(page + 1, null, null);
                 }
             },
         ]
@@ -685,6 +720,8 @@ function listAllMediaLibrary(page) {
         url: restUrl + 'featured-image-from-url/v2/list_all_media_library/',
         data: {
             "page": page,
+            "type": type,
+            "keyword": keyword,
         },
         async: true,
         beforeSend: function (xhr) {

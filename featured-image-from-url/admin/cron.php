@@ -22,7 +22,7 @@ function fifu_create_cloud_upload_auto_hook() {
     if (fifu_active_job('fifu_cloud_upload_auto_semaphore', 5))
         return;
 
-    $urls = fifu_db_get_all_urls(0);
+    $urls = fifu_db_get_all_urls(0, null, null);
 
     // Limit the number of URLs to 100
     $urls = array_slice($urls, 0, 100);

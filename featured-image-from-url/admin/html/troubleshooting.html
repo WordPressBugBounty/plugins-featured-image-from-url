@@ -12,6 +12,32 @@
                 <div class="box">
                     <table>
                         <tr>
+                            <td style="border-bottom:none">2025-02-19</td>
+                            <td style="border-bottom:none"><h3> Make</h3></td>
+                            <td style="border-bottom:none">service</td>
+                        </tr>
+                    </table>
+                    <div class="greybox" style="position: relative; top: -10px;">
+                        Setting featured image automatically:<br>
+                        1) Create a WordPress module in your Make scenario;<br>
+                        2) Enable "Show advanced settings";<br>
+                        3) Click on "Add item";<br>
+                        4) Set "fifu_image_url" as "Name";<br>
+                        5) Set the "Value" with the image URL;<br>
+                        6) Run.<br>
+                    </div>
+                    <div class="greybox" style="position: relative; top: -10px;">
+                        Setting product images automatically:<br>
+                        1) Create a WooCommerce module in your Make scenario;<br>
+                        2) Go to "Meta Data";<br>
+                        3) Set "fifu_list_url" as "Name";<br>
+                        4) Set the "Value" with a list of URLs delimited by "|";<br>
+                        5) Run.<br>
+                    </div>
+                </div>
+                <div class="box">
+                    <table>
+                        <tr>
                             <td style="border-bottom:none">2025-01-22</td>
                             <td style="border-bottom:none"><h3> Loco Translate</h3></td>
                             <td style="border-bottom:none">plugin</td>
@@ -22,25 +48,6 @@
                         1) Set '200K' or a higher value in 'Loco Translate > Settings > Site options > Extracting strings > Skip PHP files larger than'.<br>
                         2) Set '*' in 'Loco Translate > Plugins > Featured Image from URL (FIFU) > Advanced > Text domain'.<br>
                         3) Go to 'Loco Translate > Plugins > Featured Image from URL (FIFU) > Overview > New language > Skip template', and all the FIFU strings should be listed.<br>
-                    </div>                    
-                </div>
-                <div class="box">
-                    <table>
-                        <tr>
-                            <td style="border-bottom:none">2024-11-18</td>
-                            <td style="border-bottom:none"><h3> Make</h3></td>
-                            <td style="border-bottom:none">service</td>
-                        </tr>
-                    </table>
-                    <div class="greybox" style="position: relative; top: -10px;">
-                        Setting product images automatically:<br>
-                        1) Enable "FIFU Settings → Metadata → Schedule Metadata Generation";<br>
-                        2) Create a WordPress module in your Make scenario;<br>
-                        3) Enable "Show advanced settings";<br>
-                        4) Click on "Add item";<br>
-                        5) Set "fifu_list_url" as "Name";<br>
-                        6) Set the "Value" with a list of URLs delimited by "|";<br>
-                        7) Run.<br>
                     </div>                    
                 </div>
                 <div class="box">
@@ -1223,21 +1230,6 @@
                         8) set "fifu_image_url" for "Slug";<br>
                         9) update.<br>
                         * for a "featured video" field, use the same steps above, but replacing "image" by "video".
-                    </div>
-                </div>
-                <div class="box">
-                    <table>
-                        <tr>
-                            <td style="border-bottom:none">2020-05-10</td>
-                            <td style="border-bottom:none"><h3> Avada</h3></td>
-                            <td style="border-bottom:none">theme</td>
-                        </tr>
-                    </table>
-                    <div class="greybox" style="position: relative; top: -10px">
-                        The video controls don't work on WooCommerce product gallery:<br>
-                        1) access "Appearance → Avada → Customize → Additional CSS";<br>
-                        2) add ".avada-product-gallery .avada-product-gallery-lightbox-trigger {position:unset;}";<br>
-                        3) publish.<br>
                     </div>
                 </div>
                 <div class="box">

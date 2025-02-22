@@ -397,14 +397,22 @@ class FifuDb {
 
     /* speed up */
 
-    function get_all_urls($page) {
+    function get_all_urls($page, $type, $keyword) {
         $start = $page * 1000;
+
+        $filter = "";
+        if ($keyword) {
+            if ($type == 'title')
+                $filter = "AND p.post_title LIKE '%{$keyword}%'";
+            elseif ($type == 'url')
+                $filter = "AND pm.meta_value LIKE '%{$keyword}%'";
+        }
 
         $sql = "
             (
                 SELECT pm.meta_id, pm.post_id, pm.meta_value AS url, pm.meta_key, p.post_name, p.post_title, p.post_date, false AS category, null AS video_url
                 FROM {$this->postmeta} pm
-                INNER JOIN {$this->posts} p ON pm.post_id = p.id
+                INNER JOIN {$this->posts} p ON pm.post_id = p.id {$filter}
                 WHERE pm.meta_key = 'fifu_image_url'
                 AND pm.meta_value NOT LIKE '%https://cdn.fifu.app/%'
                 AND pm.meta_value NOT LIKE 'http://localhost/%'
@@ -412,12 +420,19 @@ class FifuDb {
             )
         ";
         if (class_exists('WooCommerce')) {
+            $filter = "";
+            if ($keyword) {
+                if ($type == 'title')
+                    $filter = "AND t.name LIKE '%{$keyword}%'";
+                elseif ($type == 'url')
+                    $filter = "AND tm.meta_value LIKE '%{$keyword}%'";
+            }
             $sql .= " 
                 UNION
                 (
                     SELECT tm.meta_id, tm.term_id AS post_id, tm.meta_value AS url, tm.meta_key, null AS post_name, t.name AS post_title, null AS post_date, true AS category, null AS video_url
                     FROM {$this->termmeta} tm
-                    INNER JOIN {$this->terms} t ON tm.term_id = t.term_id
+                    INNER JOIN {$this->terms} t ON tm.term_id = t.term_id {$filter}
                     WHERE tm.meta_key IN ('fifu_image_url')
                     AND tm.meta_value NOT LIKE '%https://cdn.fifu.app/%'
                     AND tm.meta_value NOT LIKE 'http://localhost/%'
@@ -459,8 +474,16 @@ class FifuDb {
         return $this->wpdb->get_col($sql);
     }
 
-    function get_posts_with_internal_featured_image($page) {
+    function get_posts_with_internal_featured_image($page, $type, $keyword) {
         $start = $page * 1000;
+
+        $filter = "";
+        if ($keyword) {
+            if ($type == 'title')
+                $filter = "AND p.post_title LIKE '%{$keyword}%'";
+            elseif ($type == 'postid')
+                $filter = "AND pm.post_id = {$keyword}";
+        }
 
         $sql = "
             (
@@ -474,7 +497,7 @@ class FifuDb {
                     (SELECT meta_value FROM {$this->postmeta} pm2 WHERE pm2.post_id = pm.post_id AND pm2.meta_key = '_product_image_gallery') AS gallery_ids,
                     false AS category
                 FROM {$this->postmeta} pm
-                INNER JOIN {$this->posts} p ON pm.post_id = p.id
+                INNER JOIN {$this->posts} p ON pm.post_id = p.id {$filter}
                 INNER JOIN {$this->posts} att ON (
                     pm.meta_key = '_thumbnail_id'
                     AND pm.meta_value = att.id
@@ -496,6 +519,13 @@ class FifuDb {
             )
         ";
         if (class_exists('WooCommerce')) {
+            $filter = "";
+            if ($keyword) {
+                if ($type == 'title')
+                    $filter = "AND t.name LIKE '%{$keyword}%'";
+                elseif ($type == 'postid')
+                    $filter = "AND tm.term_id = {$keyword}";
+            }
             $sql .= " 
                 UNION 
                 (
@@ -509,7 +539,7 @@ class FifuDb {
                         null AS gallery_ids,
                         true AS category
                     FROM {$this->termmeta} tm
-                    INNER JOIN {$this->terms} t ON tm.term_id = t.term_id
+                    INNER JOIN {$this->terms} t ON tm.term_id = t.term_id {$filter}
                     INNER JOIN {$this->posts} att ON (
                         tm.meta_key = 'thumbnail_id'
                         AND tm.meta_value = att.id
@@ -2036,9 +2066,9 @@ function fifu_db_number_of_posts() {
 
 /* speed up */
 
-function fifu_db_get_all_urls($page) {
+function fifu_db_get_all_urls($page, $type, $keyword) {
     $db = new FifuDb();
-    return $db->get_all_urls($page);
+    return $db->get_all_urls($page, $type, $keyword);
 }
 
 function fifu_db_get_all_hex_ids() {
@@ -2046,9 +2076,9 @@ function fifu_db_get_all_hex_ids() {
     return $db->get_all_hex_ids();
 }
 
-function fifu_db_get_posts_with_internal_featured_image($page) {
+function fifu_db_get_posts_with_internal_featured_image($page, $type, $keyword) {
     $db = new FifuDb();
-    return $db->get_posts_with_internal_featured_image($page);
+    return $db->get_posts_with_internal_featured_image($page, $type, $keyword);
 }
 
 function fifu_get_posts_su($storage_ids) {
