@@ -336,10 +336,9 @@ function fifu_update_cdn_stats() {
             $cdn_count = get_transient('fifu_stats_cdn_count') ?? 0;
             set_transient('fifu_stats_cdn_count', $cdn_count + 1, 0);
         } else {
-            $url_count = fifu_db_count_urls();
+            fifu_send_cdn_stats();
             delete_option('fifu_stats_date');
             delete_transient('fifu_stats_cdn_count');
-            fifu_send_cdn_stats();
         }
     }
 }

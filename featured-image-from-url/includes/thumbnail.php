@@ -320,6 +320,8 @@ function fifu_optimize_content($content) {
         $newImgItem = str_replace('<img ', '<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" ', $newImgItem);
 
         $content = str_replace($imgItem, $newImgItem, $content);
+
+        fifu_update_cdn_stats();
     }
 
     $content = fifu_remove_source_tags($content);
