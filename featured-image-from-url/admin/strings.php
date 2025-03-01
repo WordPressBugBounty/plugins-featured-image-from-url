@@ -129,6 +129,18 @@ function fifu_get_strings_settings() {
     $fifu['word']['data'] = function () {
         _e("Data", FIFU_SLUG);
     };
+    $fifu['word']['width'] = function () {
+        _e("Width", FIFU_SLUG);
+    };
+    $fifu['word']['height'] = function () {
+        _e("Height", FIFU_SLUG);
+    };
+    $fifu['word']['crop'] = function () {
+        _e("Crop", FIFU_SLUG);
+    };
+    $fifu['word']['pages'] = function () {
+        _e("Pages", FIFU_SLUG);
+    };
     $fifu['word']['saving'] = function () {
         return __("Saving", FIFU_SLUG);
     };
@@ -137,6 +149,12 @@ function fifu_get_strings_settings() {
     };
     $fifu['word']['error'] = function () {
         return __("Error", FIFU_SLUG);
+    };
+    $fifu['word']['reset'] = function () {
+        return __("Reset", FIFU_SLUG);
+    };
+    $fifu['word']['save'] = function () {
+        return __("Save", FIFU_SLUG);
     };
 
     // where
@@ -462,7 +480,7 @@ function fifu_get_strings_settings() {
         _e("Possibilities: a) CDN can't serve it; b) image deleted by owner; c) hotlink protection; d) incorrect URL. For (a), disable 'Image → Optimized images' temporarily and contact us. For (b) or (c), try FIFU Cloud.", FIFU_SLUG);
     };
     $fifu['support']['resolution-desc'] = function () {
-        _e("Caused by the theme having incorrect image sizes registered and the use of 'Optimized images'. To adjust the sizes and determine if an image should be cropped, you can use the 'Simple Image Sizes' plugin.", FIFU_SLUG);
+        _e("By default, the CDN loads images in the sizes registered by the theme or other plugins. You can adjust them at 'Image > Optimized images > Registered sizes'.", FIFU_SLUG);
     };
     $fifu['support']['cdn-desc'] = function () {
         _e("Some themes or plugins may not work with remote images when the sizes are not saved in the database. Solve this by enabling 'Image → Optimized images'.", FIFU_SLUG);
@@ -1041,6 +1059,9 @@ function fifu_get_strings_settings() {
     $fifu['jetpack']['tab']['optimize'] = function () {
         _e("Optimize", FIFU_SLUG);
     };
+    $fifu['jetpack']['tab']['sizes'] = function () {
+        _e("Registered sizes", FIFU_SLUG);
+    };
     $fifu['jetpack']['tab']['fifu'] = function () {
         _e("FIFU CDN", FIFU_SLUG);
     };
@@ -1061,6 +1082,12 @@ function fifu_get_strings_settings() {
     };
     $fifu['jetpack']['toggle']['square'] = function () {
         _e("square all images", FIFU_SLUG);
+    };
+    $fifu['jetpack']['sizes']['desc'] = function () {
+        _e("Registered sizes are predefined dimensions that themes and plugins create to display images, and the FIFU CDN reads these values to deliver remote images in the exact requested size.", FIFU_SLUG);
+    };
+    $fifu['jetpack']['sizes']['reset'] = function () {
+        _e("The sizes listed here are automatically detected by FIFU during page load. So, if you need to reset the size values for any reason, simply navigate through your pages again or wait for your visitors to do so, and FIFU will detect and list them here once more.", FIFU_SLUG);
     };
     $fifu['jetpack']['otfcdn']['desc'] = function () {
         _e("For a long time, the 'Optimized Images' feature relied solely on a public third-party CDN. While this approach offered cost advantages, it also introduced several challenges. Now, FIFU provides its own CDN, designed to achieve the following goals:", FIFU_SLUG);
@@ -2448,7 +2475,6 @@ function fifu_get_strings_cloud() {
     $fifu['column']['number'] = function () {
         _e("Number of images", FIFU_SLUG);
     };
-
 
     // search
     $fifu['search']['url'] = function () {

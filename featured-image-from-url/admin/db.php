@@ -395,6 +395,25 @@ class FifuDb {
         ");
     }
 
+    /* wp_options */
+
+    function select_option_prefix($prefix) {
+        return $this->wpdb->get_results("
+            SELECT option_name, option_value
+            FROM {$this->options}
+            WHERE option_name LIKE '{$prefix}%'
+            ORDER BY option_name
+        ");
+    }
+
+    function delete_option_prefix($prefix) {
+        $this->wpdb->query("
+            DELETE
+            FROM {$this->options}
+            WHERE option_name LIKE '{$prefix}%'
+        ");
+    }
+
     /* speed up */
 
     function get_all_urls($page, $type, $keyword) {
@@ -2197,6 +2216,18 @@ function fifu_db_get_meta_in_first() {
 function fifu_db_get_meta_out_first() {
     $db = new FifuDb();
     return $db->get_meta_out_first();
+}
+
+/* wp_options */
+
+function fifu_db_select_option_prefix($prefix) {
+    $db = new FifuDb();
+    return $db->select_option_prefix($prefix);
+}
+
+function fifu_db_delete_option_prefix($prefix) {
+    $db = new FifuDb();
+    return $db->delete_option_prefix($prefix);
 }
 
 /* debug */

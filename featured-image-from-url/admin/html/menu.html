@@ -806,6 +806,7 @@
                         <ul>
                             <li><a href="#tabs-1"><?php $fifu['jetpack']['tab']['optimize']() ?></a></li>
                             <li><a href="#tabs-2"><?php $fifu['jetpack']['tab']['fifu']() ?></a></li>
+                            <li onclick="fifu_sizes_js()"><a href="#tabs-3"><?php $fifu['jetpack']['tab']['sizes']() ?></a></li>
                         </ul>
                         <div id="tabs-1">
                             <table style="text-align:left">
@@ -864,6 +865,34 @@
                                     <td>
                                         <?php $fifu['jetpack']['toggle']['content']() ?>
                                     </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div id="tabs-3">
+                            <?php $fifu['jetpack']['sizes']['desc']() ?>                            
+                            <br>
+                            <br>
+                            <?php $fifu['jetpack']['sizes']['reset']() ?>
+                            <br>
+                            <br>
+                            <table id="fifu-sizes-table" style="text-align: left; width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #888; border-radius: 5px; overflow: hidden;">
+                                <tr class="color">
+                                    <th>
+                                        <b><?php $fifu['word']['name']() ?></b>
+                                    </th>
+                                    <th style="width:100px">
+                                        <b><?php $fifu['word']['width']() ?></b>
+                                    </th>
+                                    <th style="width:100px">
+                                        <b><?php $fifu['word']['height']() ?></b>
+                                    </th>
+                                    <th>
+                                        <b><?php $fifu['word']['crop']() ?></b>
+                                    </th>
+                                    <th>
+                                        <b><?php $fifu['word']['pages']() ?></b>
+                                    </th>
                                 </tr>
                             </table>
                         </div>
@@ -3739,6 +3768,23 @@
                                         </th>
                                         <th>
                                             on, off
+                                        </th>
+                                    </tr>
+                                    <tr class="color">
+                                        <th>
+                                            <?php $fifu['tab']['image']() ?>
+                                        </th>
+                                        <th>
+                                            <?php $fifu['title']['jetpack']() ?>
+                                        </th>
+                                        <th>
+                                            <?php $fifu['jetpack']['tab']['sizes']() ?>
+                                        </th>
+                                        <th>
+                                            wp fifu sizes --save &lt;string&gt;
+                                        </th>
+                                        <th>
+                                            name=400x300x1
                                         </th>
                                     </tr>
                                     <tr class="color">

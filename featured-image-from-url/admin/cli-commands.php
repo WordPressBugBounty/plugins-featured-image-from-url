@@ -158,10 +158,6 @@ class fifu_cli extends WP_CLI_Command {
         update_option('fifu_data_clean', 'toggleoff', 'no');
     }
 
-    function sizes() {
-        
-    }
-
     // performance
 
     function cdn($args, $assoc_args) {
@@ -183,6 +179,26 @@ class fifu_cli extends WP_CLI_Command {
             case 'off':
                 update_option('fifu_photon', 'toggleoff', 'no'); // toggle
                 break;
+        }
+    }
+
+    // sizes
+
+    function sizes($args, $assoc_args) {
+        if (!empty($assoc_args['save'])) {
+            $size = explode('=', $args[0]);
+            $name = $size[0];
+            $size = explode('x', $size[1]);
+            $w = (int) $size[0];
+            $h = (int) $size[1];
+            $c = $size[2] === '1'; // Convert to boolean
+            $value = [
+                'w' => $w,
+                'h' => $h,
+                'c' => $c
+            ];
+            update_option('fifu_defined_size_' . $name, $value, 'no');
+            return;
         }
     }
 
@@ -212,7 +228,6 @@ class fifu_cli extends WP_CLI_Command {
             return;
         }
     }
-
 }
 
 WP_CLI::add_command('fifu', 'fifu_cli');

@@ -201,6 +201,8 @@ function fifu_get_menu_html() {
         'saving' => $fifu['word']['saving'](),
         'saved' => $fifu['word']['saved'](),
         'error' => $fifu['word']['error'](),
+        'reset' => $fifu['word']['reset'](),
+        'save' => $fifu['word']['save'](),
     ]);
 
     $skip = esc_attr(get_option('fifu_skip'));
@@ -532,6 +534,28 @@ function fifu_get_active_plugins_list() {
         $list .= '&#10; - ' . $name;
     }
     return $list;
+}
+
+function fifu_get_registered_sizes() {
+    $raw_sizes = fifu_db_select_option_prefix('fifu_detected_size_');
+    $formatted_list = '';
+
+    if ($raw_sizes && is_array($raw_sizes)) {
+        foreach ($raw_sizes as $size) {
+            // Extract the name by removing the prefix
+            $name = str_replace('fifu_detected_size_', '', $size->option_name);
+
+            // Unserialize the value to get width, height and crop
+            $data = maybe_unserialize($size->option_value);
+
+            if (is_array($data) && isset($data['w']) && isset($data['h']) && isset($data['c'])) {
+                $crop_value = $data['c'] ? '1' : '0';
+                $formatted_list .= '&#10; - ' . $name . ': ' . $data['w'] . 'x' . $data['h'] . 'x' . $crop_value;
+            }
+        }
+    }
+
+    return $formatted_list ?: '&#10; - No registered sizes found';
 }
 
 function fifu_is_valid_nonce($nonce, $action = FIFU_ACTION_SETTINGS) {

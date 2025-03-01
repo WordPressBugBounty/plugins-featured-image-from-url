@@ -902,6 +902,44 @@ function fifu_none_default_api(WP_REST_Request $request) {
     return json_encode(array());
 }
 
+function fifu_load_sizes_api(WP_REST_Request $request) {
+    $result = [];
+    $detected_sizes = fifu_db_select_option_prefix('fifu_detected_size_');
+    foreach ($detected_sizes as $option) {
+        $size_name = str_replace('fifu_detected_size_', '', $option->option_name);
+        $unserialized_value = maybe_unserialize($option->option_value);
+        $defined = get_option("fifu_defined_size_{$size_name}");
+        if ($defined) {
+            $unserialized_value['w'] = $defined['w'];
+            $unserialized_value['h'] = $defined['h'];
+            $unserialized_value['c'] = $defined['c'];
+        }
+        $result[$size_name] = $unserialized_value;
+    }
+    return $result;
+}
+
+function fifu_reset_sizes_api(WP_REST_Request $request) {
+    fifu_db_delete_option_prefix('fifu_detected_size_');
+    fifu_db_delete_option_prefix('fifu_defined_size_');
+    return json_encode(array());
+}
+
+function fifu_save_sizes_api(WP_REST_Request $request) {
+    $sizes = json_decode($request->get_body(), true);
+    foreach ($sizes as $key => $value) {
+        if ($value) {
+            $transformed = array(
+                'w' => $value['width'],
+                'h' => $value['height'],
+                'c' => $value['crop']
+            );
+            update_option("fifu_defined_size_{$key}", $transformed);
+        }
+    }
+    return json_encode(array());
+}
+
 function fifu_rest_url(WP_REST_Request $request) {
     return get_rest_url();
 }
@@ -1078,6 +1116,21 @@ add_action('rest_api_init', function () {
         'callback' => 'fifu_none_default_api',
         'permission_callback' => 'fifu_get_private_data_permissions_check',
     ));
+    register_rest_route('featured-image-from-url/v2', '/load-sizes-api/', array(
+        'methods' => 'POST',
+        'callback' => 'fifu_load_sizes_api',
+        'permission_callback' => 'fifu_get_private_data_permissions_check',
+    ));
+    register_rest_route('featured-image-from-url/v2', '/reset-sizes-api/', array(
+        'methods' => 'POST',
+        'callback' => 'fifu_reset_sizes_api',
+        'permission_callback' => 'fifu_get_private_data_permissions_check',
+    ));
+    register_rest_route('featured-image-from-url/v2', '/save-sizes-api/', array(
+        'methods' => 'POST',
+        'callback' => 'fifu_save_sizes_api',
+        'permission_callback' => 'fifu_get_private_data_permissions_check',
+    ));
     register_rest_route('featured-image-from-url/v2', '/pre_deactivate/', array(
         'methods' => 'POST',
         'callback' => 'fifu_api_pre_deactivate',
@@ -1223,4 +1276,3 @@ function fifu_get_private_data_permissions_check() {
 function fifu_public_permission() {
     return true;
 }
-

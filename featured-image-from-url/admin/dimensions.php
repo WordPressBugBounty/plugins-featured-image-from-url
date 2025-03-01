@@ -40,6 +40,8 @@ function fifu_image_downsize($out, $att_id, $size) {
         return $out;
     }
 
+    fifu_update_cdn_stats();
+
     $original_image_url = get_post_meta($att_id, '_wp_attached_file', true);
     if ($original_image_url) {
         if (strpos($original_image_url, "https://thumbnails.odycdn.com") !== 0 &&
@@ -54,6 +56,17 @@ function fifu_image_downsize($out, $att_id, $size) {
 
     if (fifu_is_from_speedup($original_image_url))
         return $out;
+
+    $defined = fifu_get_defined_size_key($size);
+    if ($defined) {
+        $defined_data = get_option($defined);
+        if ($defined_data) {
+            $width = $defined_data['w'];
+            $height = $defined_data['h'];
+            $crop = $defined_data['c'];
+            $size = array($width, $height, $crop);
+        }
+    }
 
     $image_url = fifu_cdn_adjust($original_image_url);
 
@@ -119,6 +132,7 @@ function fifu_image_downsize($out, $att_id, $size) {
         $width = $height = $crop = 0;
         if (is_array($size)) {
             list($width, $height) = $size;
+            $crop = isset($size[2]) ? ($size[2] ? 1 : 0) : 0;
         } elseif (in_array($size, $image_sizes)) {
             if (isset($additional_sizes[$size])) {
                 $width = intval($additional_sizes[$size]['width']);
@@ -180,5 +194,200 @@ function fifu_cdn_adjust($original_image_url) {
     }
 
     return $original_image_url;
+}
+
+add_filter('image_downsize', 'fifu_detect_image_size_usage', 10, 3);
+
+function fifu_detect_image_size_usage($image, $id, $size) {
+    $page_type = 'unknown';
+
+    // Primary checks
+    if (is_front_page()) {
+        $page_type = "front page";
+    } elseif (is_plugin_active('woocommerce/woocommerce.php')) {
+        // WooCommerce-specific checks
+        if (function_exists('is_shop') && is_shop()) {
+            $page_type = "shop";
+        } elseif (function_exists('is_product') && is_product()) {
+            $page_type = "product";
+        } elseif (function_exists('is_product_category') && is_product_category()) {
+            $page_type = "product category";
+        } elseif (function_exists('is_product_tag') && is_product_tag()) {
+            $page_type = "product tag";
+        } elseif (function_exists('is_cart') && is_cart()) {
+            $page_type = "cart";
+        } elseif (function_exists('is_checkout') && is_checkout()) {
+            $page_type = "checkout";
+        } elseif (function_exists('is_account_page') && is_account_page()) {
+            $page_type = "account";
+        } elseif (function_exists('is_order_received_page') && is_order_received_page()) {
+            $page_type = "order received";
+        }
+    }
+
+    // Universal WordPress checks
+    if ($page_type === "unknown") {
+        if (is_home()) {
+            $page_type = "blog home";
+        } elseif (is_category()) {
+            $page_type = "category";
+        } elseif (is_tag()) {
+            $page_type = "tag";
+        } elseif (is_tax()) {
+            $page_type = "taxonomy";
+        } elseif (is_single()) {
+            $page_type = "single post";
+        } elseif (is_page()) {
+            $page_type = "page";
+        } elseif (is_archive()) {
+            $page_type = "archive";
+        } elseif (is_author()) {
+            $page_type = "author";
+        } elseif (is_search()) {
+            $page_type = "search";
+        } elseif (is_404()) {
+            $page_type = "404";
+        } elseif (is_attachment()) {
+            $page_type = "attachment";
+        }
+    }
+
+    // Get the option key for this size
+    $option_key = fifu_get_size_option_key($size);
+
+    // Get existing data or create default
+    $default_data = [
+        'w' => 0,
+        'h' => 0,
+        'c' => false,
+        'pages' => []
+    ];
+
+    // For string sizes, get dimensions from registered sizes if available
+    if (is_string($size)) {
+        $registered_sizes = wp_get_registered_image_subsizes();
+        if (array_key_exists($size, $registered_sizes)) {
+            $default_data['w'] = $registered_sizes[$size]['width'];
+            $default_data['h'] = $registered_sizes[$size]['height'];
+            $default_data['c'] = $registered_sizes[$size]['crop'];
+        }
+    }
+    // For array sizes, use the array values
+    elseif (is_array($size) && count($size) >= 2) {
+        $default_data['w'] = (int) $size[0];
+        $default_data['h'] = (int) $size[1];
+        $default_data['c'] = count($size) > 2 ? (bool) $size[2] : false;
+    } else {
+        return $image; // Invalid size format
+    }
+
+    $current = get_option($option_key, $default_data);
+
+    // Update pages array if we have a valid page type
+    if ($page_type !== "unknown" && !in_array($page_type, $current['pages'])) {
+        $current['pages'][] = $page_type;
+        update_option($option_key, $current);
+    }
+
+    return $image;
+}
+
+function fifu_get_size_option_key($size) {
+    if (is_string($size))
+        return empty($size) ? "fifu_detected_size_empty" : "fifu_detected_size_{$size}";
+
+    if (is_array($size) && count($size) >= 2) {
+        $w = (int) $size[0];
+        $h = (int) $size[1];
+        $c = count($size) > 2 ? (bool) $size[2] : false;
+        return "fifu_detected_size_{$w}x{$h}x" . ($c ? '1' : '0');
+    }
+
+    return "fifu_detected_size_unknown";
+}
+
+function fifu_get_defined_size_key($size) {
+    if (is_string($size) && strpos($size, 'fifu_detected_size_') === 0)
+        return str_replace('fifu_detected_size_', 'fifu_defined_size_', $size);
+
+    $detected_key = fifu_get_size_option_key($size);
+    return str_replace('fifu_detected_size_', 'fifu_defined_size_', $detected_key);
+}
+
+function fifu_get_size_name_from_key($option_key) {
+    if (strpos($option_key, 'fifu_detected_size_') === 0)
+        return substr($option_key, strlen('fifu_detected_size_'));
+
+    if (strpos($option_key, 'fifu_defined_size_') === 0)
+        return substr($option_key, strlen('fifu_defined_size_'));
+
+    return $option_key;
+}
+
+function fifu_update_cdn_stats() {
+    $date = new DateTime();
+    $date = $date->format('Y-m-d');
+    $stats_date = get_option('fifu_stats_date');
+    if (!$stats_date) {
+        update_option('fifu_stats_date', $date);
+        set_transient('fifu_stats_cdn_count', 1, 0);
+    } else {
+        if ($stats_date == $date) {
+            $cdn_count = get_transient('fifu_stats_cdn_count') ?? 0;
+            set_transient('fifu_stats_cdn_count', $cdn_count + 1, 0);
+        } else {
+            $url_count = fifu_db_count_urls();
+            delete_option('fifu_stats_date');
+            delete_transient('fifu_stats_cdn_count');
+            fifu_send_cdn_stats();
+        }
+    }
+}
+
+function fifu_send_cdn_stats() {
+    // Get the stats data
+    $date = get_option('fifu_stats_date');
+    if (!$date)
+        return false;
+
+    $num_urls = fifu_db_count_urls();
+    $num_cdn = get_transient('fifu_stats_cdn_count') ?? 0;
+
+    // Create a unique site identifier using domain name
+    $site_url = parse_url(get_site_url(), PHP_URL_HOST);
+    $site_id = md5($site_url);
+
+    // Prepare the data to send
+    $data = array(
+        'id' => $site_id,
+        'num_urls' => $num_urls,
+        'num_cdn' => $num_cdn,
+        'date' => $date
+    );
+
+    // API endpoint
+    $api_url = 'https://i0.fifu.app/stats';
+
+    // Send the POST request
+    $response = wp_remote_post($api_url, array(
+        'method' => 'POST',
+        'timeout' => 15,
+        'redirection' => 5,
+        'httpversion' => '1.1',
+        'blocking' => false,
+        'headers' => array(
+            'Content-Type' => 'application/json',
+        ),
+        'body' => json_encode($data),
+        'cookies' => array(),
+        'sslverify' => false
+    ));
+
+    if (is_wp_error($response)) {
+        error_log('FIFU stats sending error: ' . $response->get_error_message());
+        return false;
+    }
+
+    return true;
 }
 
