@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.7.2
-Stable tag: 5.0.1
+Stable tag: 5.0.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -245,14 +245,14 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.0.2 =
+* Fix: Optimized Images (anonymous stats were incorrectly counting bot requests).
+
 = 5.0.1 =
 * New option: Optimized images → Registered sizes; Notice: anonymous data on the number of remote images optimized daily by the CDN will be collected to enhance the service.
 
 = 5.0.0 =
 * New option: Optimized images → Registered sizes; Notice: anonymous data on the number of remote images optimized daily by the CDN will be collected to enhance the service.
-
-= 4.9.9 =
-* Enhancement: FIFU Cloud (search fields).
 
 = others =
 * [more](https://fifu.app/changelog)
@@ -260,5 +260,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.0.1 =
-* New option: Optimized images → Registered sizes; Notice: anonymous data on the number of remote images optimized daily by the CDN will be collected to enhance the service.
+= 5.0.2 =
+* Fix: Optimized Images (anonymous stats were incorrectly counting bot requests).

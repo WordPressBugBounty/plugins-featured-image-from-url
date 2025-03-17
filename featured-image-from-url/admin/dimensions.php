@@ -325,6 +325,9 @@ function fifu_get_size_name_from_key($option_key) {
 }
 
 function fifu_update_cdn_stats() {
+    if (fifu_is_bot_request())
+        return;
+
     $date = new DateTime();
     $date = $date->format('Y-m-d');
     $stats_date = get_option('fifu_stats_date');
@@ -388,5 +391,55 @@ function fifu_send_cdn_stats() {
     }
 
     return true;
+}
+
+function fifu_is_bot_request() {
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    if (empty($user_agent)) {
+        return true;
+    }
+
+    $bot_keywords = array(
+        'bot', 'crawl', 'spider', 'slurp', 'search', 'archive', 'scrap',
+        'lighthouse', 'pingdom', 'pagespeed', 'monitor', 'whatsapp', 'facebook',
+        'snippet', 'headless', 'python', 'perl', 'urllib', 'curl', 'wget',
+        'semrush', 'ahrefs', 'screaming', 'phantom', 'zgrab', 'siteaudit', 'time.news'
+    );
+
+    foreach ($bot_keywords as $keyword) {
+        if (stripos($user_agent, $keyword) !== false) {
+            return true;
+        }
+    }
+
+    $browser_keywords = array('chrome', 'firefox', 'safari', 'opera', 'edge', 'msie', 'trident');
+    $has_browser_keyword = false;
+
+    foreach ($browser_keywords as $keyword) {
+        if (stripos($user_agent, $keyword) !== false) {
+            $has_browser_keyword = true;
+            break;
+        }
+    }
+
+    if (!$has_browser_keyword) {
+        return true;
+    }
+
+    if (!isset($_SERVER['HTTP_ACCEPT']) || empty($_SERVER['HTTP_ACCEPT'])) {
+        return true;
+    }
+
+    if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) || empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+        return true;
+    }
+
+    if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'GET') {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return true;
+        }
+    }
+
+    return false;
 }
 
