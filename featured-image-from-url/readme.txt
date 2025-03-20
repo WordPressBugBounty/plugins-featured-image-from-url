@@ -4,24 +4,24 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.7.2
-Stable tag: 5.0.2
+Stable tag: 5.0.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Use an external image/video/audio as featured image of a post or WooCommerce product.
+Use a remote image/video/audio as featured image of a post or WooCommerce product.
 
 == Description ==
 
-### WordPress plugin for external featured images, videos, audios and more
+### WordPress plugin for remote featured images, videos, audios and more
 
 FIFU plugin has helped thousands of websites worldwide save money on storage, processing, and copyright since 2015.
 
 If you are tired of wasting time and resources with thumbnail regeneration, image optimization, and never-ending imports, this plugin is for you.
 
 #### Featured image
-Use an external image as featured image of your post, page or custom post type.
+Use a remote image as featured image of your post, page or custom post type.
 
-* External featured image
+* Remote featured image
 * Optimized images
 * Image search (Unsplash)
 * Default featured image
@@ -59,10 +59,10 @@ Use an external image as featured image of your post, page or custom post type.
 
 #### WooCommerce
 
-* External product image
+* Remote product image
 * Lightbox and zoom
-* **[PRO]** Gallery for external images
-* **[PRO]** Gallery for external videos
+* **[PRO]** Gallery for remote images
+* **[PRO]** Gallery for remote videos
 * **[PRO]** Category images auto set
 * **[PRO]** Variable product
 * **[PRO]** Variation image
@@ -187,13 +187,13 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 = What's the metadata created by FIFU?
 
-* Database registers that help WordPress components to work with external images. This plugin can generate the metadata of ~50,000 image URLs per minute.
+* Database registers that help WordPress components to work with remote images. This plugin can generate the metadata of ~50,000 image URLs per minute.
 
-= What are the disadvantages of external images?
+= What are the disadvantages of remote images?
 
 * No image optimization or thumbnails by default. You can fix that with 'Optimized Images' feature.
 
-= What are the advantages of external images?
+= What are the advantages of remote images?
 
 * You save money on storage, processing and copyright. And you can have extremely fast import processes.
 
@@ -201,9 +201,9 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 * Yes, it is. Click [here](https://www.globalbankingandfinance.com/embedding-images-the-legal-way-to-steal/) to know more.
 
-= Do external images affect SEO?
+= Do remote images affect SEO?
 
-* No, external images don't affect SEO. Click [here](https://www.searchenginejournal.com/does-using-a-cdn-improve-ranking/) to know more.
+* No, remote images don't affect SEO. Click [here](https://www.searchenginejournal.com/does-using-a-cdn-improve-ranking/) to know more.
 
 
 == Screenshots ==
@@ -245,13 +245,13 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.0.3 =
+* Enhancement: Featured Video (supports m3u8 now); Fix: Image Metadata and Clear Metadata (not working depending on database configuration).
+
 = 5.0.2 =
 * Fix: Optimized Images (anonymous stats were incorrectly counting bot requests).
 
 = 5.0.1 =
-* New option: Optimized images → Registered sizes; Notice: anonymous data on the number of remote images optimized daily by the CDN will be collected to enhance the service.
-
-= 5.0.0 =
 * New option: Optimized images → Registered sizes; Notice: anonymous data on the number of remote images optimized daily by the CDN will be collected to enhance the service.
 
 = others =
@@ -260,5 +260,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.0.2 =
-* Fix: Optimized Images (anonymous stats were incorrectly counting bot requests).
+= 5.0.3 =
+* Enhancement: Featured Video (supports m3u8 now); Fix: Image Metadata and Clear Metadata (not working depending on database configuration).

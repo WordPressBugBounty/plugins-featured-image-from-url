@@ -364,7 +364,9 @@ function fifu_send_cdn_stats() {
         'id' => $site_id,
         'num_urls' => $num_urls,
         'num_cdn' => $num_cdn,
-        'date' => $date
+        'date' => $date,
+        'slug' => FIFU_SLUG,
+        'version' => (int) str_replace('.', '', fifu_version_number())
     );
 
     // API endpoint

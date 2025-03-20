@@ -112,7 +112,7 @@ function fifu_get_strings_settings() {
         _e("Local", FIFU_SLUG);
     };
     $fifu['word']['external'] = function () {
-        _e("External", FIFU_SLUG);
+        _e("Remote", FIFU_SLUG);
     };
     $fifu['word']['status'] = function () {
         _e("Status", FIFU_SLUG);
@@ -506,7 +506,7 @@ function fifu_get_strings_settings() {
 
     // start
     $fifu['start']['url']['external'] = function () {
-        _e("Hi, I'm an EXTERNAL image!", FIFU_SLUG);
+        _e("Hi, I'm a REMOTE image!", FIFU_SLUG);
     };
     $fifu['start']['url']['not'] = function () {
         _e("It means I'm NOT in your media library.", FIFU_SLUG);
@@ -548,7 +548,7 @@ function fifu_get_strings_settings() {
         _e("3. Paste my address into \"Image URL\" field.", FIFU_SLUG);
     };
     $fifu['start']['post']['storage'] = function () {
-        _e("And don't worry about storage. I will remain EXTERNAL. I will NOT be uploaded to your media library.", FIFU_SLUG);
+        _e("And don't worry about storage. I will remain REMOTE. I will NOT be uploaded to your media library.", FIFU_SLUG);
     };
 
     // dev
@@ -640,13 +640,13 @@ function fifu_get_strings_settings() {
 
     // media library
     $fifu['media']['desc'] = function () {
-        _e("It's possible to save external images in the media library and automatically set them as standard WordPress/WooCommerce featured images or gallery images. Make a backup before running the scheduled event, as making an image local cannot be reverted.", FIFU_SLUG);
+        _e("It's possible to save remote images in the media library and automatically set them as standard WordPress/WooCommerce featured images or gallery images. Make a backup before running the scheduled event, as making an image local cannot be reverted.", FIFU_SLUG);
     };
     $fifu['media']['upload'] = function () {
         _e("show upload button on post editor", FIFU_SLUG);
     };
     $fifu['media']['job'] = function () {
-        _e("run a function that periodically searches for external images and saves them in the media library.", FIFU_SLUG);
+        _e("run a function that periodically searches for remote images and saves them in the media library.", FIFU_SLUG);
     };
     $fifu['media']['tab']['main'] = function () {
         _e("Main", FIFU_SLUG);
@@ -856,7 +856,7 @@ function fifu_get_strings_settings() {
 
     // find
     $fifu['finder']['desc'] = function () {
-        _e("Automatically defines featured media using images found on external web pages. The plugin checks every minute for post types without featured media and accesses the provided web page URLs to retrieve the main image. FIFU looks for the Open Graph tag image (used for sharing on social media). If og:image is not found, it retrieves the largest image available. It can also search for embedded videos and set the first one found as the featured video. Videos take priority over images.", FIFU_SLUG);
+        _e("Automatically defines featured media using images found on remote web pages. The plugin checks every minute for post types without featured media and accesses the provided web page URLs to retrieve the main image. FIFU looks for the Open Graph tag image (used for sharing on social media). If og:image is not found, it retrieves the largest image available. It can also search for embedded videos and set the first one found as the featured video. Videos take priority over images.", FIFU_SLUG);
     };
     $fifu['finder']['auto'] = function () {
         _e("auto set featured media using web page address", FIFU_SLUG);
@@ -874,7 +874,7 @@ function fifu_get_strings_settings() {
         _e("set gallery images and videos", FIFU_SLUG);
     };
     $fifu['finder']['custom']['desc'] = function () {
-        _e("If you already have the web page address saved in your database, specify its custom field name here. The plugin will access that and import the value. For example, if the web page URL is saved in the Product URL field, you can add \"_product_url,\" which is the field where the external URL to the product is stored. For posts created by \"WordPress Automatic Plugin\", add \"original_link\".", FIFU_SLUG);
+        _e("If you already have the web page address saved in your database, specify its custom field name here. The plugin will access that and import the value. For example, if the web page URL is saved in the Product URL field, you can add \"_product_url,\" which is the field where the remote URL to the product is stored. For posts created by \"WordPress Automatic Plugin\", add \"original_link\".", FIFU_SLUG);
     };
 
     // tags
@@ -1025,7 +1025,7 @@ function fifu_get_strings_settings() {
 
     // metadata
     $fifu['metadata']['desc'] = function () {
-        _e("Generate the necessary database records for WordPress components to work with external images.", FIFU_SLUG);
+        _e("Generate the necessary database records for WordPress components to work with remote images.", FIFU_SLUG);
     };
     $fifu['metadata']['generate'] = function () {
         _e("generate the missing metadata now", FIFU_SLUG);
@@ -1046,7 +1046,7 @@ function fifu_get_strings_settings() {
 
     // delete
     $fifu['delete']['important'] = function () {
-        _e("this plugin doesn't save images in the media library. Enabling this toggle will remove all featured images from post types that have external featured images, and this action cannot be undone. This also applies to FIFU galleries, videos, audios, and sliders.", FIFU_SLUG);
+        _e("this plugin doesn't save images in the media library. Enabling this toggle will remove all featured images from post types that have remote featured images, and this action cannot be undone. This also applies to FIFU galleries, videos, audios, and sliders.", FIFU_SLUG);
     };
     $fifu['delete']['now'] = function () {
         _e("delete all your URLs now", FIFU_SLUG);
@@ -1066,7 +1066,7 @@ function fifu_get_strings_settings() {
         _e("FIFU CDN", FIFU_SLUG);
     };
     $fifu['jetpack']['desc'] = function () {
-        _e("Your external images will be automatically optimized and served from a public CDN. In addition, the plugin will load the thumbnails in the exact size your site requires, further enhancing performance.", FIFU_SLUG);
+        _e("Your remote images will be automatically optimized and served from a public CDN. In addition, the plugin will load the thumbnails in the exact size your site requires, further enhancing performance.", FIFU_SLUG);
     };
     $fifu['jetpack']['toggle']['cdn'] = function () {
         _e("optimize featured images", FIFU_SLUG);
@@ -1140,10 +1140,10 @@ function fifu_get_strings_settings() {
 
     // audio
     $fifu['audio']['desc'] = function () {
-        _e("This feature enables the featured audio field, where you can set the URL of an audio file, such as MP3 or OGG. Player controls will then be added to the external featured image, allowing visitors to play the audio. You can configure the behavior of the audio using the settings available in the 'Featured Video' tab.", FIFU_SLUG);
+        _e("This feature enables the featured audio field, where you can set the URL of an audio file, such as MP3 or OGG. Player controls will then be added to the remote featured image, allowing visitors to play the audio. You can configure the behavior of the audio using the settings available in the 'Featured Video' tab.", FIFU_SLUG);
     };
     $fifu['audio']['requirement'] = function () {
-        _e("you must set an external featured image as well.", FIFU_SLUG);
+        _e("you must set a remote featured image as well.", FIFU_SLUG);
     };
 
     // debug
@@ -1375,7 +1375,7 @@ function fifu_get_strings_settings() {
 
     // video
     $fifu['video']['desc'] = function () {
-        _e("FIFU supports videos and audios from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, JW Player, VideoPress, Sprout, Odysee, Rumble, Dailymotion, Cloudflare Stream, Bunny Stream, Amazon, BitChute, Brighteon, Google Drive, Spotify and SoundCloud. It also supports external and local video files.", FIFU_SLUG);
+        _e("FIFU supports videos and audios from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, JW Player, VideoPress, Sprout, Odysee, Rumble, Dailymotion, Cloudflare Stream, Bunny Stream, Amazon, BitChute, Brighteon, Google Drive, Spotify and SoundCloud. It also supports remote and local video files.", FIFU_SLUG);
     };
     $fifu['video']['tab']['video'] = function () {
         _e("Featured video", FIFU_SLUG);
@@ -1384,10 +1384,10 @@ function fifu_get_strings_settings() {
         _e("Video files", FIFU_SLUG);
     };
     $fifu['video']['local']['desc'] = function () {
-        _e("It's possible to use mp4/mov/webm videos from your media library as featured videos. However it's required to create a video thumbnail, that will be stored in your media library. For that, in the Feature video box, forward the video to a frame you like and click on \"set this frame as thumbnail\" button. Save the post and that's it.", FIFU_SLUG);
+        _e("It's possible to use videos from your media library as featured videos. However it's required to create a video thumbnail, that will be stored in your media library. For that, in the Feature video box, forward the video to a frame you like and click on \"set this frame as thumbnail\" button. Save the post and that's it.", FIFU_SLUG);
     };
     $fifu['video']['external']['desc'] = function () {
-        _e("External mp4/mov/webm/ogg videos are also supported, but an external featured image (video thumbnail) must be set as well.", FIFU_SLUG);
+        _e("Remote videos are also supported, but a remote featured image (video thumbnail) must be set as well.", FIFU_SLUG);
     };
     $fifu['video']['external']['import'] = function () {
         _e("When using import plugins, add the URL of the thumbnail after the video URL, separated by a backslash. For example: 'video_url\image_url'.", FIFU_SLUG);
@@ -1395,8 +1395,11 @@ function fifu_get_strings_settings() {
     $fifu['video']['tip']['frame'] = function () {
         _e("Start at", FIFU_SLUG);
     };
+    $fifu['video']['tip']['type'] = function () {
+        _e("Supported types", FIFU_SLUG);
+    };
     $fifu['video']['tip']['time'] = function () {
-        _e("You can add #t=N to the end of the local or external video URL, where N represents the number of seconds at which the video should start. The format #t=N,M is used to specify a frame where the video should stop as well.", FIFU_SLUG);
+        _e("You can add #t=N to the end of the local or remote video URL, where N represents the number of seconds at which the video should start. The format #t=N,M is used to specify a frame where the video should stop as well.", FIFU_SLUG);
     };
 
     // thumbnail
@@ -1480,7 +1483,7 @@ function fifu_get_strings_settings() {
 
     // gallery
     $fifu['gallery']['desc'] = function () {
-        _e("To work correctly, some galleries provided by some themes require that the dimensions of the images are saved in the database, which can be impractical due to the slowness of this process. So the plugin offers its own product gallery that does not depend on the dimensions of external images to function properly. You can configure the behavior of this gallery in the \"Featured slider\" tab.", FIFU_SLUG);
+        _e("To work correctly, some galleries provided by some themes require that the dimensions of the images are saved in the database, which can be impractical due to the slowness of this process. So the plugin offers its own product gallery that does not depend on the dimensions of remote images to function properly. You can configure the behavior of this gallery in the \"Featured slider\" tab.", FIFU_SLUG);
     };
     $fifu['gallery']['toggle'] = function () {
         _e("FIFU product gallery", FIFU_SLUG);
@@ -1679,7 +1682,7 @@ function fifu_get_strings_settings() {
         _e("FIFU Cloud can work as an alternative to the WordPress media library. Both store images, but FIFU Cloud processes them in the cloud, while the WordPress core consumes a lot of your website's resources. Additionally, FIFU Cloud is able to process and store thousands of images simultaneously in a few seconds, while the media library works with one image at a time.", FIFU_SLUG);
     };
     $fifu['cloud']['details']['replace'] = function () {
-        _e("FIFU Cloud prevents image loss by saving your local or external images in the cloud.", FIFU_SLUG);
+        _e("FIFU Cloud prevents image loss by saving your local or remote images in the cloud.", FIFU_SLUG);
     };
 
     // pro
@@ -1736,7 +1739,7 @@ function fifu_get_strings_meta_box() {
 
     // video
     $fifu['video']['remove'] = function () {
-        _e("Remove external video", FIFU_SLUG);
+        _e("Remove remote video", FIFU_SLUG);
     };
     $fifu['video']['url'] = function () {
         return __("Video URL", FIFU_SLUG);
@@ -1753,7 +1756,7 @@ function fifu_get_strings_meta_box() {
         _e("Image URL or Keywords", FIFU_SLUG);
     };
     $fifu['image']['remove'] = function () {
-        _e("Remove external image", FIFU_SLUG);
+        _e("Remove remote image", FIFU_SLUG);
     };
     $fifu['image']['sirv']['add'] = function () {
         _e("Add image from Sirv", FIFU_SLUG);
@@ -1809,7 +1812,7 @@ function fifu_get_strings_meta_box() {
         _e("Subscribe now", FIFU_SLUG);
     };
     $fifu['ads']['storage'] = function () {
-        _e("Never lose an image! FIFU Cloud securely stores local or external images in Google Cloud Storage.", FIFU_SLUG);
+        _e("Never lose an image! FIFU Cloud securely stores local or remote images in Google Cloud Storage.", FIFU_SLUG);
     };
     $fifu['ads']['wait'] = function () {
         _e("No more waiting! FIFU Cloud speeds up image loading. With optimized WebP thumbnails served by Google Cloud CDN, your website's SEO score will soar.", FIFU_SLUG);
@@ -2141,7 +2144,7 @@ function fifu_get_strings_help() {
         return __("Loads a list of images from a search engine based on the post's title. Choose the most suitable image. The filters configured in 'FIFU Settings → Automatic → Auto set featured image using post title and search engine' works here.", FIFU_SLUG);
     };
     $fifu['desc']['more'] = function () {
-        return __("FIFU can auto set images based on post title, tags, external web page address, and more. Check FIFU Settings → Automatic.", FIFU_SLUG);
+        return __("FIFU can auto set images based on post title, tags, remote web page address, and more. Check FIFU Settings → Automatic.", FIFU_SLUG);
     };
     $fifu['unsplash']['unlock'] = function () {
         return __("Unlock all PRO features for €29.90", FIFU_SLUG);
@@ -2304,7 +2307,7 @@ function fifu_get_strings_cloud() {
         _e("Image sources sometimes remove or change the URLs of their images, either due to internal restructuring or to prevent their embedding on other websites. This can cause significant problems for websites that had previously embedded these images, as they become lost and cannot be retrieved. However, FIFU Cloud offers a solution to this issue. It saves your embedded images in the cloud and provides stable URLs to access them. By replacing the existing URLs with FIFU Cloud URLs, you eliminate the problem. Additionally, if needed, you have the option to revert back to the original URLs.", FIFU_SLUG);
     };
     $fifu['support']['fast-desc'] = function () {
-        _e("One major drawback of embedding external images on your website is the lack of thumbnails. Without thumbnails, your website loads the same large image file regardless of whether it's viewed on desktop or mobile phone, on a post or homepage. Additionally, there are instances where the image may not be optimized or hosted on a slow server. FIFU Cloud addresses all these concerns by storing and serving optimized thumbnails through a fast content delivery network (CDN). This means that when visitors access your pages, they receive only the smallest image files required to display the images without any loss in quality. The smaller the file size, the faster the images are rendered, resulting in improved loading times for your website.", FIFU_SLUG);
+        _e("One major drawback of embedding remote images on your website is the lack of thumbnails. Without thumbnails, your website loads the same large image file regardless of whether it's viewed on desktop or mobile phone, on a post or homepage. Additionally, there are instances where the image may not be optimized or hosted on a slow server. FIFU Cloud addresses all these concerns by storing and serving optimized thumbnails through a fast content delivery network (CDN). This means that when visitors access your pages, they receive only the smallest image files required to display the images without any loss in quality. The smaller the file size, the faster the images are rendered, resulting in improved loading times for your website.", FIFU_SLUG);
     };
     $fifu['support']['process-desc'] = function () {
         _e("Your website was not designed for image processing. However, when you save an image in the media library, the WordPress core, along with your theme and plugins, initiate multiple tasks to process the image locally. These tasks include conversions, duplications, rotations, resizing, cropping, compression, and more. Depending on the number of images, this process can take weeks, and eventually, the website needs to repeat the entire process again. This consumes significant storage, memory, and processing power, which can result in slow website performance for users. In contrast, FIFU Cloud eliminates the need to use your own computing resources. We process your images entirely on Google Cloud servers. By leveraging the power of the cloud, we can efficiently process and store thousands of images simultaneously within seconds.", FIFU_SLUG);
@@ -2359,7 +2362,7 @@ function fifu_get_strings_cloud() {
         _e("Automatic upload", FIFU_SLUG);
     };
     $fifu['upload']['automatic']['desc'] = function () {
-        _e("Automatically uploads external images to the cloud.", FIFU_SLUG);
+        _e("Automatically uploads remote images to the cloud.", FIFU_SLUG);
     };
 
     // delete

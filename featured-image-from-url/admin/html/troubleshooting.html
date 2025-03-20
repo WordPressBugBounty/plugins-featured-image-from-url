@@ -190,7 +190,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Copying the external featured image to the translation:<br>
+                        Copying the remote featured image to the translation:<br>
                         1) access "WPML → Settings → Custom Fields Translation";<br>
                         2) search for "fifu_image_url", choose "Copy" and save;<br>
                         3) if you use FIFU premium, enable "Metadata → Schedule Metadata Generation". That's all;<br>
@@ -404,7 +404,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Ajax search doesn't display external featured images:<br>
+                        Ajax search doesn't display remote featured images:<br>
                         1) Edit 'super-speedy-search/includes/sss-ajax-results.php', and replace<br>
                         <textarea style="width:100%;height:45px;overflow:hidden" disabled>
                             $external_image = get_post_meta($post->ID, '_external_image_url', true);
@@ -448,7 +448,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Gray image displayed instead of the external featured media:<br>
+                        Gray image displayed instead of the remote featured media:<br>
                         1) Edit 'erlinews/functions.php' and add<br>
                         <textarea style="width:100%;height:25px;overflow:hidden" disabled>
                             if (class_exists('FifuDb')) $first_img = get_the_post_thumbnail_url($post->id);
@@ -715,7 +715,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        External images not displayed:<br>
+                        Remote images not displayed:<br>
                         1) open "bacola-core/inc/aq_resizer.php"<br>
                         2) add "return $url;" immediately before the line "Check if $img_url is local"<br>
                     </div>
@@ -793,7 +793,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Using external featured images:<br>
+                        Using remote featured images:<br>
                         1) access CyberSEO settings and check "Use FIFU"<br>
                     </div>
                 </div>
@@ -806,7 +806,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Using external images in the product gallery:<br>
+                        Using remote images in the product gallery:<br>
                         1) access the campaign and uncheck all options in "Images" box<br>
                         2) go to "Post Type, format & status" box and check "Add custom fields/Taxonomies to the posts"<br>
                         3) use "fifu_list_url" as "Field Name" and "[product_imgs]" as "value"<br>
@@ -830,7 +830,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        External images not displayed:<br>
+                        Remote images not displayed:<br>
                         1) open stm_vehicles_listing/includes/vehicle_functions.php<br>
                         2) remove the line "add_filter('wp_get_attachment_image_src', 'stm_get_thumbnail_filter', 100, 4);"<br>
                     </div>
@@ -844,7 +844,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        External images not displayed:<br>
+                        Remote images not displayed:<br>
                         1) open stm-motors-equipment/inc/helpers.php<br>
                         2) remove the line "add_filter('wp_get_attachment_image_src', 'stm_equip_get_thumbnail_filter', 100, 4)"<br>
                     </div>
@@ -858,7 +858,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        External images not displayed:<br>
+                        Remote images not displayed:<br>
                         1) open imagely/inc/third/image-resizer.php<br>
                         2) replace "throw new Reactr_Extras_Exception('Image must be local: ' . $url);" by "return $url;"<br>
                     </div>
@@ -914,7 +914,7 @@
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
                         Facebook doesn't share an LOCAL featured image and the Sharing Debugger informs: "Provided og:image URL, ... could not be processed as an image because it has an invalid content type". <br>
-                        1) make sure the image can be embedded externally. Because if your site tries to protect the image, for instance redirecting to another address, the image may not be accessed by the social media.<br>
+                        1) make sure the image can be embedded remotely. Because if your site tries to protect the image, for instance redirecting to another address, the image may not be accessed by the social media.<br>
                     </div>
                 </div>
                 <div class="box">
@@ -926,7 +926,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Using external featured images. <br>
+                        Using remote featured images. <br>
                         1) access "Scrapes → All Scrapes → Actions → Edit → POST → CUSTOM FIELDS";<br>
                         2) set "fifu_image_url" for "Name";<br>
                         3) for "Value", click on the icon and select the featured image;<br>
@@ -1060,7 +1060,7 @@
                         Warning on frontend after activating FIFU. Two possible solutions:<br>
                         a) open wp-config.php and before "Happy publishing" line add:<br>
                         define('WP_DEBUG_DISPLAY', false);<br>
-                        b) look for ".../themes/[slug]/..." or ".../plugins/[slug]/..." in the message. The slug refers to the component responsible for the warning. Then please contact its developer informing the message and also that you are using FIFU, a plugin for external featured images. Warnings are usually easy to solve and happen because the component wasn't expecting for an external featured image.<br>
+                        b) look for ".../themes/[slug]/..." or ".../plugins/[slug]/..." in the message. The slug refers to the component responsible for the warning. Then please contact its developer informing the message and also that you are using FIFU, a plugin for remote featured images. Warnings are usually easy to solve and happen because the component wasn't expecting for a remote featured image.<br>
                     </div>
                 </div>
                 <div class="box">
@@ -1072,7 +1072,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        External featured images are not being shown:<br>
+                        Remote featured images are not being shown:<br>
                         1) deactivate "Divi → Theme Options → General → Enable Responsive Images".<br>
                     </div>
                 </div>
@@ -1193,7 +1193,7 @@
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
                         The theme lightbox doesn't work:<br>
-                        x) there is no solution for now. It seems the lightbox only works with image addresses (internal or external) that contains "/wp-content/uploads/". You may contact the theme developer and ask him to remove the restriction.<br>
+                        x) there is no solution for now. It seems the lightbox only works with image addresses (local or remote) that contains "/wp-content/uploads/". You may contact the theme developer and ask him to remove the restriction.<br>
                     </div>
                 </div>
                 <div class="box">
@@ -1227,7 +1227,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        The post grid doesn't show external featured images:<br>
+                        The post grid doesn't show remote featured images:<br>
                         x) there is no solution for now. "Post Sliders & Post Grids" only shows a featured image if that is stored in the media library. You may contact the author or install an alternative plugin, like <a href="https://wordpress.org/plugins/content-views-query-and-display-post-page/">this</a>.<br>
                     </div>
                 </div>
@@ -1254,7 +1254,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Removing the references to the local featured images for all posts that have an external featured image as well:<br>
+                        Removing the references to the local featured images for all posts that have a remote featured image as well:<br>
                         1) run this SQL command: DELETE FROM wp_postmeta WHERE meta_key = '_thumbnail_id' AND post_id IN (SELECT post_id FROM (SELECT post_id FROM wp_postmeta WHERE meta_key = 'fifu_image_url') AS x);<br>
                         2) enable "FIFU settings → Metadata → Clear Metadata";<br>
                         3) enable "Image Metadata".<br>
@@ -1296,7 +1296,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Showing external videos:<br>
+                        Showing remote videos:<br>
                         1) access "Ess. Grid → Editor / Preview";<br>
                         2) for each video access "Edit Post Meta → Choose Specific Skin", select "YoutubeStream" or "VimeoStream" and click on "Save Post Meta".<br>
                     </div>
@@ -1310,7 +1310,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Adding external "Product Image" and "Product Gallery" via SQL:<br>
+                        Adding remote "Product Image" and "Product Gallery" via SQL:<br>
                         1) enable "FIFU Settings → Metadata → Schedule Metadata Generation";<br>
                         2) run the SQL. Example: "insert into wp_postmeta (post_id, meta_key, meta_value) values (12345, 'fifu_list_url', 'URL1|URL2|URL3|URL4')"<br>
                         * the first URL is for the featured image and the others for the gallery<br>
@@ -1348,7 +1348,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Duplicating post and external featured image:<br>
+                        Duplicating post and remote featured image:<br>
                         1) enable "FIFU Settings → Metadata → Schedule Metadata Generation";<br>
                         2) access "Multisite Post Duplicator Settings";<br>
                         3) disable "Copy featured image when duplicating";<br>
@@ -1365,7 +1365,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Showing external images on "Related Posts":<br>
+                        Showing remote images on "Related Posts":<br>
                         x) there is no local solution. Jetpack Related Posts documentation informs: "we do all the analysis, processing, and serving from our cloud". It means Jetpack would need to adapt its web service to work with the images provided by FIFU. So you may contact Jetpack support, install an alternative plugin for Related Posts, like <a href="https://wordpress.org/plugins/related-posts-thumbnails/">this</a>, or try this <a href="https://wordpress.org/support/topic/featured-image-from-url-with-jetpack-related-posts/">snippet</a> (untested).<br>
                     </div>
                 </div>
@@ -1394,7 +1394,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Showing the external featured images:<br>
+                        Showing remote featured images:<br>
                         1) open "ecome/framework/framework.php";<br>
                         2) search for and remove "&& file_exists( $actual_file_path )".<br>
                     </div>
@@ -1425,7 +1425,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Sharing external featured images on Telegram:<br>
+                        Sharing remote featured images on Telegram:<br>
                         1) just enable "Featured Image" toggle on  WP Telegram.<br>
                     </div>
                 </div>

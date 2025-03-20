@@ -1292,7 +1292,7 @@ class FifuDb {
             CREATE TEMPORARY TABLE temp_post_in (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 post_id INT
-            ) ENGINE=MEMORY;
+            );
         ");
 
         // Insert distinct post_ids into the temporary table, applying the necessary conditions
@@ -1338,7 +1338,7 @@ class FifuDb {
             CREATE TEMPORARY TABLE temp_term_in (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 term_id INT
-            ) ENGINE=MEMORY;
+            );
         ");
 
         // Insert distinct term_ids into the temporary table, applying the necessary conditions
@@ -1403,7 +1403,7 @@ class FifuDb {
             CREATE TEMPORARY TABLE temp_term_out (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 term_id INT
-            ) ENGINE=MEMORY;
+            );
         ");
 
         // Insert distinct term_ids into the temporary table, applying the necessary conditions
