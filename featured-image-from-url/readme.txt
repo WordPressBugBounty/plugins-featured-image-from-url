@@ -3,8 +3,8 @@ Contributors: marceljm
 Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
-Tested up to: 6.7.2
-Stable tag: 5.0.6
+Tested up to: 6.8
+Stable tag: 5.0.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -245,14 +245,14 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.0.7 =
+* Fix: PHP Warnings.
+
 = 5.0.6 =
 * Fix: Settings page (not opening JSON files).
 
 = 5.0.5 =
 * Fix: CSS conflict with Convesio Caching plugin.
-
-= 5.0.3 =
-* Enhancement: Featured Video (supports m3u8 now); Fix: Image Metadata and Clear Metadata (not working depending on database configuration).
 
 = others =
 * [more](https://fifu.app/changelog)
@@ -260,5 +260,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.0.6 =
-* Fix: Settings page (not opening JSON files).
+= 5.0.7 =
+* Fix: PHP Warnings.

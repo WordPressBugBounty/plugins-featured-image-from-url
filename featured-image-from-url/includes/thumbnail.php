@@ -291,6 +291,11 @@ function fifu_optimize_content($content) {
     wp_enqueue_script('fifu-lazyload-js', plugins_url('/html/js/lazyload.js', __FILE__), array('jquery'), fifu_version_number_enq());
 
     global $post;
+
+    // Return if post object doesn't exist or has no ID
+    if (!isset($post) || !isset($post->ID))
+        return $content;
+
     $post_id = $post->ID;
 
     $srcType = "src";

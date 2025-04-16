@@ -18,8 +18,7 @@ define('PROXY2_URLS', [
     "https://a1.espncdn.com",
     "https://books.google.com",
     "https://embed-cdn.gettyimages.com",
-    "https://media.gettyimages.com",
-    "https://cdn.diariodeavisos.com",
+    "https://media.gettyimages.com",    
     "https://forum.rolug.ro",
     "https://assets.ellosgroup.com",
     "https://www.nzherald.co.nz",
@@ -27,6 +26,7 @@ define('PROXY2_URLS', [
 
 define('PROXY3_URLS', [
     "https://img.youtube.com",
+    "https://cdn.diariodeavisos.com",
 ]);
 
 function fifu_image_downsize($out, $att_id, $size) {
@@ -299,7 +299,7 @@ function fifu_get_size_option_key($size) {
     if (is_array($size) && count($size) >= 2) {
         $w = (int) $size[0];
         $h = (int) $size[1];
-        $c = count($size) > 2 ? (bool) $size[2] : false;
+        $c = isset($size[2]) ? (bool) $size[2] : false;
         return "fifu_detected_size_{$w}x{$h}x" . ($c ? '1' : '0');
     }
 
