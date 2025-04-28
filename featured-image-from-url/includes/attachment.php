@@ -323,7 +323,8 @@ function fifu_add_url_parameters($url, $att_id, $size) {
     if (isset($FIFU_SESSION[$url]))
         return $url;
 
-    $post_id = get_post($att_id)->post_parent;
+    $post = get_post($att_id);
+    $post_id = $post ? $post->post_parent : null;
 
     if (!$post_id)
         return $url;

@@ -276,7 +276,7 @@ function fifu_detect_image_size_usage($image, $id, $size) {
     elseif (is_array($size) && count($size) >= 2) {
         $default_data['w'] = (int) $size[0];
         $default_data['h'] = (int) $size[1];
-        $default_data['c'] = count($size) > 2 ? (bool) $size[2] : false;
+        $default_data['c'] = isset($size[2]) ? (bool) $size[2] : false;
     } else {
         return $image; // Invalid size format
     }
