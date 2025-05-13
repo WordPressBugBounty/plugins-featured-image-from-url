@@ -675,19 +675,19 @@ function fifu_get_strings_settings() {
 
     // auto set
     $fifu['auto']['desc'] = function () {
-        _e("Set featured images automatically. The plugin checks every minute for post types without featured images and performs web searches based on post titles to retrieve the image URLs (~10/min).", FIFU_SLUG);
-    };
-    $fifu['auto']['important'] = function () {
-        _e("Additionally, using the 'Source filter' by adding sites where you know there are free images typically works better than the 'License filter', as most public images are not categorized by license.", FIFU_SLUG);
+        _e("Set featured images automatically. The plugin checks every minute for post types without featured images and performs web searches based on post titles to retrieve the image URLs (1 per minute).", FIFU_SLUG);
     };
     $fifu['auto']['important2'] = function () {
         _e("Don't restrict the search too much. Because depending on the post title and the filters applied, the search engine might return an image that's not very relevant, or even no image at all. A quick and easy way to test if the search engine has relevant images for the applied filters is by accessing the post editor or FIFU quick editor and performing a search with the 'Keywords' field empty. A list of the top images based on the post's title will be displayed.", FIFU_SLUG);
     };
-    $fifu['auto']['important3'] = function () {
-        _e("To obtain the most relevant images, we recommend always using 'All licenses' and, if the image owner complains, you can simply add the image domain to the 'Blocklist' and remove the image. A new image will be automatically loaded.", FIFU_SLUG);
-    };
     $fifu['auto']['tab']['auto'] = function () {
         _e("Auto set", FIFU_SLUG);
+    };
+    $fifu['auto']['tab']['search'] = function () {
+        _e("Search filters", FIFU_SLUG);
+    };
+    $fifu['auto']['tab']['credits'] = function () {
+        _e("Credits", FIFU_SLUG);
     };
     $fifu['auto']['tab']['filters'] = function () {
         _e("Size filter", FIFU_SLUG);
@@ -700,9 +700,6 @@ function fifu_get_strings_settings() {
     };
     $fifu['auto']['tab']['source'] = function () {
         _e("Source filter", FIFU_SLUG);
-    };
-    $fifu['auto']['tab']['license'] = function () {
-        _e("License filter", FIFU_SLUG);
     };
     $fifu['auto']['tab']['layout'] = function () {
         _e("Layout filter", FIFU_SLUG);
@@ -725,45 +722,6 @@ function fifu_get_strings_settings() {
     $fifu['auto']['source']['desc'] = function () {
         _e("Limit the search to one or more specific sites.", FIFU_SLUG);
     };
-    $fifu['auto']['license']['desc'] = function () {
-        _e("If you are concerned about copyright, you can filter images based on their licenses. Please note that certain licenses require giving credit to the original author. The way this plugin provides credit is by enabling 'Settings → Image → Page Redirection'. When this feature is enabled, if a visitor clicks on the featured image while viewing a single post, the original source site will open in a new tab.", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['column']['filter'] = function () {
-        _e("Filter", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['column']['personal'] = function () {
-        _e("Personal usage", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['column']['commercial'] = function () {
-        _e("Commercial usage", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['column']['credit'] = function () {
-        _e("Credit needed", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['column']['results'] = function () {
-        _e("Images found", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['table']['varies'] = function () {
-        _e("Varies", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['table']['yes'] = function () {
-        _e("Yes", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['table']['no'] = function () {
-        _e("No", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['all'] = function () {
-        _e("All licenses", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['public'] = function () {
-        _e("Public domain", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['personal'] = function () {
-        _e("Free to share and use", FIFU_SLUG);
-    };
-    $fifu['auto']['license']['commercial'] = function () {
-        _e("Free to share and use commercially", FIFU_SLUG);
-    };
     $fifu['auto']['layout']['all'] = function () {
         _e("All", FIFU_SLUG);
     };
@@ -775,6 +733,10 @@ function fifu_get_strings_settings() {
     };
     $fifu['auto']['layout']['wide'] = function () {
         _e("Wide", FIFU_SLUG);
+    };
+    $fifu['auto']['credits']['desc'] = function () {
+        _e("When FIFU imports an image URL from the search engine, it also retrieves the address of the remote post that owns the image. By enabling 'Settings → Image → Page Redirection', FIFU adds a link to the image when it’s displayed on singular posts of your site. Then, by clicking on the image, the visitor is redirected to the remote post. This is FIFU’s way of giving credit to the author, since the search engine may include copyrighted images in the results.
+", FIFU_SLUG);
     };
 
     // isbn

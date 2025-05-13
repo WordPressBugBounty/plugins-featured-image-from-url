@@ -212,20 +212,14 @@
                     <h2><i class="fa-solid fa-magnifying-glass"></i> <?php $fifu['title']['auto']() ?> </h2>
                     <div class="greybox" id="grad2">
                         <?php $fifu['auto']['desc']() ?>
-                        <br>
-                        <br>
-                        <b><?php $fifu['detail']['tip']() ?></b>: <?php $fifu['auto']['important2']() ?>
                     </div>
                     <br>
                     <div id="tabsAutoSet">
                         <ul>
                             <li><a href="#tabsAutoSet-a"><?php $fifu['auto']['tab']['auto']() ?></a></li>
-                            <li><a href="#tabsAutoSet-b"><?php $fifu['auto']['tab']['filters']() ?></a></li>
-                            <li><a href="#tabsAutoSet-g"><?php $fifu['auto']['tab']['layout']() ?></a></li>
-                            <li><a href="#tabsAutoSet-c"><?php $fifu['auto']['tab']['blocklist']() ?></a></li>
-                            <li><a href="#tabsAutoSet-e"><?php $fifu['auto']['tab']['source']() ?></a></li>
-                            <li><a href="#tabsAutoSet-f"><?php $fifu['auto']['tab']['license']() ?></a></li>
+                            <li><a href="#tabsAutoSet-f"><?php $fifu['auto']['tab']['search']() ?></a></li>
                             <li><a href="#tabsAutoSet-d"><?php $fifu['auto']['tab']['cpt']() ?></a></li>
+                            <li><a href="#tabsAutoSet-h"><?php $fifu['auto']['tab']['credits']() ?></a></li>
                             <br>
                             <br>
                             <div id="tabsAutoSet-a">
@@ -242,37 +236,78 @@
                                     </tr>
                                 </table>
                             </div>
-                            <div id="tabsAutoSet-b">
-                                <table>
-                                    <tr style="text-align:left">
-                                        <th>
-                                            <input id="fifu_input_auto_set_width"
-                                                   name="fifu_input_auto_set_width"
-                                                   step="10"
-                                                   max="10000"
-                                                   size="5">
-                                        </th>
-                                        <th>
-                                            <?php $fifu['auto']['filter']['width']() ?>
-                                        </th>
-                                    </tr>
-                                    <tr style="text-align:left">
-                                        <th>
-                                            <input id="fifu_input_auto_set_height"
-                                                   name="fifu_input_auto_set_height"
-                                                   step="10"
-                                                   max="10000"
-                                                   size="5">
-                                        </th>
-                                        <th>
-                                            <?php $fifu['auto']['filter']['height']() ?>
-                                        </th>
-                                    </tr>
-                                </table>
-                            </div>
-                            <div id="tabsAutoSet-c">
-                                <?php $fifu['auto']['filter']['blocklist']() ?>
-                                <textarea id="fifu_input_auto_set_blocklist" name="fifu_input_auto_set_blocklist" style="width:100%;height:400px;resize:none;background-color:white;" placeholder="www.horribleimages.com&#10;inappropriateimages.com&#10;nakedpeopleimages.com&#10;manyadvertisements.com&#10;anysiteyoureallyhate.com"></textarea>
+                            <div id="tabsAutoSet-f">
+                                <b><?php $fifu['detail']['tip']() ?></b>: <?php $fifu['auto']['important2']() ?>
+
+                                <br>
+                                <br>
+
+                                <div id="tabsAutoSetSub">
+                                    <ul>
+                                        <li><a href="#tabsAutoSetSub-b"><?php $fifu['auto']['tab']['filters']() ?></a></li>
+                                        <li><a href="#tabsAutoSetSub-g"><?php $fifu['auto']['tab']['layout']() ?></a></li>
+                                        <li><a href="#tabsAutoSetSub-c"><?php $fifu['auto']['tab']['blocklist']() ?></a></li>
+                                        <li><a href="#tabsAutoSetSub-e"><?php $fifu['auto']['tab']['source']() ?></a></li>
+                                        <br>
+                                        <br>
+                                        <div id="tabsAutoSetSub-b">
+                                            <table>
+                                                <tr style="text-align:left">
+                                                    <th>
+                                                        <input 
+                                                            step="10"
+                                                            max="10000"
+                                                            size="5"
+                                                            type="number">
+                                                    </th>
+                                                    <th>
+                                                        <?php $fifu['auto']['filter']['width']() ?>
+                                                    </th>
+                                                </tr>
+                                                <tr style="text-align:left">
+                                                    <th>
+                                                        <input
+                                                            step="10"
+                                                            max="10000"
+                                                            size="5"
+                                                            type="number">
+                                                    </th>
+                                                    <th>
+                                                        <?php $fifu['auto']['filter']['height']() ?>
+                                                    </th>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div id="tabsAutoSetSub-c">
+                                            <?php $fifu['auto']['filter']['blocklist']() ?>
+                                            <textarea style="width:100%;height:400px;resize:none;background-color:white;" placeholder="www.horribleimages.com&#10;inappropriateimages.com&#10;nakedpeopleimages.com&#10;manyadvertisements.com&#10;anysiteyoureallyhate.com"></textarea>
+                                        </div>
+                                        <div id="tabsAutoSetSub-e">
+                                            <?php $fifu['auto']['source']['desc']() ?>
+                                            <br>
+                                            <br>
+                                            <table style="text-align:left">
+                                                <tr>
+                                                    <th>
+                                                        <input
+                                                            type="text"
+                                                            style="width:865px"
+                                                            value=""
+                                                            placeholder="unsplash.com,pexels.com,500px.com">
+                                                    </th>
+                                                </tr>
+                                            </table>                                
+                                        </div>
+                                        <div id="tabsAutoSetSub-g">
+                                            <select>
+                                                <option value="all"><?php $fifu['auto']['layout']['all']() ?></option>
+                                                <option value="square"><?php $fifu['auto']['layout']['square']() ?></option>
+                                                <option value="tall"><?php $fifu['auto']['layout']['tall']() ?></option>
+                                                <option value="wide"><?php $fifu['auto']['layout']['wide']() ?></option>
+                                            </select>                           
+                                        </div>
+                                    </ul>
+                                </div>
                             </div>
                             <div id="tabsAutoSet-d">
                                 <?php $fifu['auto']['cpt']['desc']() ?>
@@ -291,80 +326,8 @@
                                     </tr>
                                 </table>      
                             </div>
-                            <div id="tabsAutoSet-e">
-                                <?php $fifu['auto']['source']['desc']() ?>
-                                <br>
-                                <br>
-                                <table style="text-align:left">
-                                    <tr>
-                                        <th>
-                                            <input type="text"
-                                                   style="width:865px"
-                                                   value=""
-                                                   placeholder="unsplash.com,pexels.com,500px.com">
-                                        </th>
-                                    </tr>
-                                </table>      
-                            </div>
-                            <div id="tabsAutoSet-f">
-                                <?php $fifu['auto']['license']['desc']() ?>
-                                <br>
-                                <br>
-                                <b><?php $fifu['detail']['tip']() ?></b>: <?php $fifu['auto']['important3']() ?> <?php $fifu['auto']['important']() ?>
-                                <br>
-                                <br>
-                                <table style="width:100%;text-align:left">
-                                    <tr class="color">
-                                        <th><b><?php $fifu['auto']['license']['column']['filter']() ?></b></th>
-                                        <th><b><?php $fifu['auto']['license']['column']['personal']() ?></b></th>
-                                        <th><b><?php $fifu['auto']['license']['column']['commercial']() ?></b></th>
-                                        <th><b><?php $fifu['auto']['license']['column']['credit']() ?></b></th>
-                                        <th><b><?php $fifu['auto']['license']['column']['results']() ?></b></th>
-                                    </tr>
-                                    <tr class="color">
-                                        <td><?php $fifu['auto']['license']['all']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['varies']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['varies']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['varies']() ?></td>
-                                        <td><i style="height: 25px; background-color: #72e172; border-radius: 50px;" class="fa-regular fa-face-laugh"></i></td>
-                                    </tr>
-                                    <tr class="color">
-                                        <td><?php $fifu['auto']['license']['public']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['yes']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['yes']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['no']() ?></td>
-                                        <td><i style="height: 25px; background-color: #ff2b2b; border-radius: 50px;" class="fa-regular fa-face-angry"></i></td>
-                                    </tr>
-                                    <tr class="color">
-                                        <td><?php $fifu['auto']['license']['personal']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['yes']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['no']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['yes']() ?></td>
-                                        <td><i style="height: 25px; background-color: orange; border-radius: 50px;" class="fa-regular fa-face-meh"></i></td>
-                                    </tr>
-                                    <tr class="color">
-                                        <td><?php $fifu['auto']['license']['commercial']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['yes']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['yes']() ?></td>
-                                        <td><?php $fifu['auto']['license']['table']['yes']() ?></td>
-                                        <td><i style="height: 25px; background-color: #ff6b3e; border-radius: 50px;" class="fa-regular fa-face-frown-open"></i></td>
-                                    </tr>
-                                </table>
-                                <br>
-                                <select id="select_auto_set_license">
-                                    <option value="all"><?php $fifu['auto']['license']['all']() ?></option>
-                                    <option value="public"><?php $fifu['auto']['license']['public']() ?></option>
-                                    <option value="personal"><?php $fifu['auto']['license']['personal']() ?></option>
-                                    <option value="commercial"><?php $fifu['auto']['license']['commercial']() ?></option>
-                                </select>
-                            </div>
-                            <div id="tabsAutoSet-g">
-                                <select id="select_auto_set_layout">
-                                    <option value="all"><?php $fifu['auto']['layout']['all']() ?></option>
-                                    <option value="square"><?php $fifu['auto']['layout']['square']() ?></option>
-                                    <option value="tall"><?php $fifu['auto']['layout']['tall']() ?></option>
-                                    <option value="wide"><?php $fifu['auto']['layout']['wide']() ?></option>
-                                </select>
+                            <div id="tabsAutoSet-h">
+                                <?php $fifu['auto']['credits']['desc']() ?>
                             </div>
                         </ul>
                     </div>
@@ -3304,21 +3267,6 @@
                                             wp fifu search --source &lt;string&gt;
                                         </th>
                                         <th>site.com</th>
-                                    </tr>
-                                    <tr class="color">
-                                        <th>
-                                            <?php $fifu['tab']['auto']() ?>
-                                        </th>
-                                        <th>
-                                            <?php $fifu['title']['auto']() ?>
-                                        </th>
-                                        <th>
-                                            <?php $fifu['auto']['tab']['license']() ?>
-                                        </th>
-                                        <th>
-                                            wp fifu search --license &lt;string&gt;
-                                        </th>
-                                        <th>all, public, personal, commercial</th>
                                     </tr>
                                     <tr class="color">
                                         <th>

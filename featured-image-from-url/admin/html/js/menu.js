@@ -41,6 +41,7 @@ jQuery(function () {
     jQuery("#tabsShortcode").tabs();
     jQuery("#tabsFifuShortcode").tabs();
     jQuery("#tabsAutoSet").tabs();
+    jQuery("#tabsAutoSetSub").tabs();
     jQuery("#tabsTags").tabs();
     jQuery("#tabsScreenshot").tabs();
     jQuery("#tabsIsbn").tabs();

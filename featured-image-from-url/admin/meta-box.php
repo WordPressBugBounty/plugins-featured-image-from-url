@@ -147,6 +147,10 @@ function fifu_save_properties($post_id) {
     if (!fifu_has_properties())
         return;
 
+    /* plugin: yoast duplicate post */
+    if (isset($_POST['post_status']) && $_POST['post_status'] == 'dp-rewrite-republish')
+        fifu_dev_set_image($post_id, null);
+
     if (fifu_has_local_featured_image($post_id)) {
         $auto_set = false;
     } else {
