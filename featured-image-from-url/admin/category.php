@@ -32,7 +32,6 @@ function fifu_ctgr_edit_box($term) {
     }
 
     $fifu = fifu_get_strings_meta_box();
-    $adjustedUrl = fifu_cdn_adjust($url);
     include 'html/category.html';
 }
 
@@ -48,7 +47,6 @@ function fifu_ctgr_add_box() {
     $show_alt = $show_image = $show_link = 'display:none;';
 
     $fifu = fifu_get_strings_meta_box();
-    $adjustedUrl = fifu_cdn_adjust($url);
     include 'html/category.html';
 }
 

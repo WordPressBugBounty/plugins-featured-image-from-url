@@ -23,7 +23,7 @@ function fifu_admin_add_css_js() {
         return;
 
     global $pagenow;
-    if (!is_admin() || ('edit.php' != $pagenow && 'post.php' != $pagenow && 'term.php' != $pagenow && 'post-new.php' != $pagenow && 'edit-tags.php' != $pagenow ))
+    if (!is_admin() || ('edit.php' != $pagenow && 'post.php' != $pagenow && 'term.php' != $pagenow && 'post-new.php' != $pagenow && 'edit-tags.php' != $pagenow))
         return;
 
     // buddyboss app
@@ -125,7 +125,6 @@ function fifu_ctgr_column_content($internal_image, $column, $term_id) {
 
     list($border, $height, $width, $video_url, $video_src, $is_ctgr, $is_variable, $image_url, $url, $vars) = fifu_ctgr_column_featured($term_id);
     $post_id = $term_id;
-    $url = fifu_cdn_adjust($url);
     include 'html/column.html';
 
     $term_ids = [$term_id];
@@ -178,7 +177,6 @@ function fifu_column_content($column, $post_id) {
     $fifu = fifu_get_strings_meta_box();
 
     list($border, $height, $width, $video_url, $video_src, $is_ctgr, $is_variable, $image_url, $url, $vars) = fifu_column_featured($post_id, fifu_is_variable_product($post_id));
-    $url = fifu_cdn_adjust($url);
     include 'html/column.html';
 
     $post_ids = [$post_id];
@@ -256,15 +254,17 @@ function fifu_column_custom_post_type() {
 }
 
 function fifu_optimized_column_image($url, $att_id) {
-    $url = fifu_cdn_adjust($url);
-
     if (fifu_is_from_speedup($url)) {
         $url = explode('?', $url)[0];
         return fifu_speedup_get_signed_url($url, 128, 128, null, null, false);
     }
 
-    if (fifu_is_on('fifu_photon'))
-        return fifu_jetpack_photon_url($url, fifu_get_photon_args(150, 1), $att_id);
+    if (fifu_is_on('fifu_photon')) {
+        if (fifu_is_from_proxy_urls($url))
+            return fifu_jetpack_photon_url($url, "?w=150&h=150&c=1", $att_id);
+        else
+            return fifu_jetpack_photon_url($url, fifu_get_photon_args(150, 1), $att_id);
+    }
 
     return $url;
 }

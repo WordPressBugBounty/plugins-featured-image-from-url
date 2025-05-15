@@ -11,6 +11,7 @@ function fifu_replace_attached_file($att_url, $att_id) {
 function fifu_process_url($att_url, $att_id) {
     if (strpos($att_url, "https://thumbnails.odycdn.com") === 0 ||
             strpos($att_url, "https://res.cloudinary.com") === 0 ||
+            strpos($att_url, "//wp.fifu.app") === 0 ||
             strpos($att_url, "https://i0.wp.com") === 0 ||
             strpos($att_url, "https://i1.wp.com") === 0 ||
             strpos($att_url, "https://i2.wp.com") === 0 ||
@@ -149,12 +150,13 @@ function fifu_add_size($image, $size) {
                 return $image;
 
             $image[1] = $width;
-            $image[2] = $height == 9999 ? null : $height;
+            $image[2] = $height == 9999 ? 0 : $height;
             $image[3] = $crop;
         }
     } else {
         $image[1] = $size[0];
         $image[2] = $size[1];
+        $image[3] = false;
     }
     return $image;
 }
@@ -163,22 +165,28 @@ function fifu_get_photon_url($image, $size, $att_id) {
     $image = fifu_add_size($image, $size);
     $w = $image[1];
     $h = $image[2];
+    $c = $image[3] ? 1 : 0;
 
-    $args = array();
-
-    if ($w > 0 && $h > 0) {
-        $args['resize'] = $w . ',' . $h;
-    } elseif ($w > 0) {
-        $args['resize'] = $w;
-        $args['w'] = $w;
-    } elseif ($h > 0) {
-        $args['resize'] = $h;
-        $args['h'] = $h;
+    if (fifu_is_from_proxy_urls($image[0])) {
+        $image[0] = fifu_jetpack_photon_url($image[0], "?w={$w}&h={$h}&c={$c}", $att_id);
     } else {
-        
+        $args = array();
+
+        if ($w > 0 && $h > 0) {
+            $args['resize'] = $w . ',' . $h;
+        } elseif ($w > 0) {
+            $args['resize'] = $w;
+            $args['w'] = $w;
+        } elseif ($h > 0) {
+            $args['resize'] = $h;
+            $args['h'] = $h;
+        } else {
+            
+        }
+
+        $image[0] = fifu_jetpack_photon_url($image[0], $args, $att_id);
     }
 
-    $image[0] = fifu_jetpack_photon_url($image[0], $args, $att_id);
     $image[0] = fifu_process_external_url($image[0], $att_id, $size);
 
     return $image;

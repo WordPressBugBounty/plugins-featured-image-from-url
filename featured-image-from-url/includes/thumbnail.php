@@ -34,6 +34,8 @@ function fifu_add_js() {
         for ($i = 0; $i <= 3; $i++) {
             echo "<link rel='dns-prefetch' href='https://i{$i}.wp.com/'>";
             echo "<link rel='preconnect' href='https://i{$i}.wp.com/' crossorigin>";
+            echo "<link rel='dns-prefetch' href='https://wp.fifu.app/'>";
+            echo "<link rel='preconnect' href='https://wp.fifu.app/' crossorigin>";
         }
     }
 
@@ -81,7 +83,6 @@ function fifu_add_social_tags() {
         if (fifu_is_from_speedup($url))
             $url = fifu_speedup_get_signed_url($url, 1280, 672, null, null, false);
         elseif (fifu_is_on('fifu_photon')) {
-            $url = fifu_cdn_adjust($url);
             $url = fifu_jetpack_photon_url($url, null, get_post_thumbnail_id($post_id));
         }
         include 'html/og-image.html';
@@ -310,8 +311,6 @@ function fifu_optimize_content($content) {
         $del = substr($src[0], - 1);
         $url = fifu_normalize(explode($del, $src[0])[1]);
 
-        $url = fifu_cdn_adjust($url);
-
         if (!$url || fifu_jetpack_blocked($url) || strpos($url, 'data:image') === 0)
             continue;
 
@@ -434,7 +433,6 @@ function fifu_add_rss() {
             if (fifu_is_from_speedup($thumbnail))
                 $thumbnail = fifu_speedup_get_signed_url($thumbnail, 1280, 853, null, null, false);
             elseif (fifu_is_on('fifu_photon')) {
-                $thumbnail = fifu_cdn_adjust($thumbnail);
                 $thumbnail = fifu_jetpack_photon_url($thumbnail, null, get_post_thumbnail_id($post->ID));
             }
         } else {

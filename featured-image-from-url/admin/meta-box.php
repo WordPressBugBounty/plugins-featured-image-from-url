@@ -107,7 +107,6 @@ function fifu_show_elements($post) {
     }
 
     $fifu = fifu_get_strings_meta_box();
-    $adjustedUrl = fifu_cdn_adjust($url);
     include 'html/meta-box.html';
 }
 

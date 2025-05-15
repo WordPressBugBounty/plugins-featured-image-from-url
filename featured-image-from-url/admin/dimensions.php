@@ -1,6 +1,6 @@
 <?php
 
-define('PROXY2_URLS', [
+define('PROXY_URLS', [
     "https://drive.google.com",
     "https://drive.usercontent.google.com",
     "https://lh3.googleusercontent.com",
@@ -18,13 +18,10 @@ define('PROXY2_URLS', [
     "https://a1.espncdn.com",
     "https://books.google.com",
     "https://embed-cdn.gettyimages.com",
-    "https://media.gettyimages.com",    
+    "https://media.gettyimages.com",
     "https://forum.rolug.ro",
     "https://assets.ellosgroup.com",
     "https://www.nzherald.co.nz",
-]);
-
-define('PROXY3_URLS', [
     "https://img.youtube.com",
     "https://cdn.diariodeavisos.com",
 ]);
@@ -68,7 +65,7 @@ function fifu_image_downsize($out, $att_id, $size) {
         }
     }
 
-    $image_url = fifu_cdn_adjust($original_image_url);
+    $image_url = $original_image_url;
 
     // Check if the requested size is "full"
     if ($size === 'full') {
@@ -157,43 +154,50 @@ function fifu_image_downsize($out, $att_id, $size) {
 add_filter('image_downsize', 'fifu_image_downsize', 10, 3);
 
 function fifu_resize_with_photon($url, $width, $height, $crop, $att_id, $size) {
-    $photon_base_url = "https://i" . (hexdec(substr(md5($url), 0, 1)) % 4) . ".wp.com/";
+    if (fifu_is_from_proxy_urls($url)) {
+        if (!$width && !$height) {
+            $url = fifu_pubcdn_get_image_url($att_id, $url, null);
+            return $url;
+        }
 
-    $delimiter = strpos($url, "?") !== false ? '&' : '?';
+        $w = $width >= 9999 ? 0 : $width;
+        $h = $height >= 9999 ? 0 : $height;
 
-    if (strpos($url, "wp.com/mshots") !== false || strpos($url, "screenshot.fifu.app") !== false) {
-        $crop = "&crop=0px,0px,{$width}px,{$height}px";
+        // force a square on WooCommerce when either width or height is undefined.
+        if (is_string($size) && strpos($size, 'woocommerce') !== false) {
+            $h = $h == 0 ? $w : $h;
+            $w = $w == 0 ? $h : $w;
+        }
+
+        $c = is_null($crop) ? 0 : $crop;
+
+        $url = fifu_pubcdn_get_image_url($att_id, $url, "?w={$w}&h={$h}&c={$c}");
+        return $url;
     } else {
-        $resize_param = $height == 9999 ? "{$width}" : "{$width},{$height}";
-        $crop = "&resize={$resize_param}";
+        $photon_base_url = "https://i" . (hexdec(substr(md5($url), 0, 1)) % 4) . ".wp.com/";
+
+        $delimiter = strpos($url, "?") !== false ? '&' : '?';
+
+        if (strpos($url, "wp.com/mshots") !== false || strpos($url, "screenshot.fifu.app") !== false) {
+            $crop = "&crop=0px,0px,{$width}px,{$height}px";
+        } else {
+            $resize_param = $height == 9999 ? "{$width}" : "{$width},{$height}";
+            $crop = "&resize={$resize_param}";
+        }
+
+        $ssl_param = '&ssl=1';
+
+        return $photon_base_url . preg_replace('#^https?://#', '', $url) . "{$delimiter}w={$width}{$crop}{$ssl_param}";
     }
-
-    $ssl_param = '&ssl=1';
-
-    return $photon_base_url . preg_replace('#^https?://#', '', $url) . "{$delimiter}w={$width}{$crop}{$ssl_param}";
 }
 
-function fifu_resize_with_odycdn($url, $width, $height) {
-    return "https://thumbnails.odycdn.com/optimize/s:{$width}:{$height}/quality:85/plain/{$url}";
-}
-
-function fifu_cdn_adjust($original_image_url) {
-    if (!$original_image_url)
-        return $original_image_url;
-
-    foreach (PROXY2_URLS as $url) {
+function fifu_is_from_proxy_urls($original_image_url) {
+    foreach (PROXY_URLS as $url) {
         if (strpos($original_image_url, $url) === 0) {
-            return 'https://res.cloudinary.com/glide/image/fetch/' . urlencode($original_image_url);
+            return true;
         }
     }
-
-    foreach (PROXY3_URLS as $url) {
-        if (strpos($original_image_url, $url) === 0) {
-            return fifu_resize_with_odycdn($original_image_url, 1920, 0);
-        }
-    }
-
-    return $original_image_url;
+    return false;
 }
 
 add_filter('image_downsize', 'fifu_detect_image_size_usage', 10, 3);

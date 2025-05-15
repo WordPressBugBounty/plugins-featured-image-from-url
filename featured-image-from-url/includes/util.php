@@ -231,6 +231,17 @@ function fifu_check_screen_base() {
         return false;
 }
 
+function fifu_get_parent_slug($att_id) {
+    $att = get_post($att_id);
+    if ($att && $att->post_parent) {
+        $parent_post = get_post($att->post_parent);
+        if ($parent_post) {
+            return $parent_post->post_name;
+        }
+    }
+    return '';
+}
+
 function fifu_is_gutenberg_screen() {
     $current_screen = get_current_screen();
     if (method_exists($current_screen, 'is_block_editor') && $current_screen->is_block_editor())
