@@ -224,6 +224,7 @@ function fifu_callback($buffer) {
 
         // get parameters
         $data = null;
+        $prev_url = null;
 
         if (isset($FIFU_SESSION[$url])) {
             $data = $FIFU_SESSION[$url];
@@ -248,6 +249,12 @@ function fifu_callback($buffer) {
         $is_category = $data['category'];
         $theme_width = isset($data['theme-width']) ? $data['theme-width'] : null;
         $theme_height = isset($data['theme-height']) ? $data['theme-height'] : null;
+
+        if ($featured) {
+            $buffer = str_replace('</head>', '<link rel="preload" as="image" href="' . esc_url($url) . '">' . "</head>\n", $buffer);
+            if ($prev_url)
+                $buffer = str_replace('</head>', '<link rel="preload" as="image" href="' . esc_url($prev_url) . '">' . "</head>\n", $buffer);
+        }
 
         if ($featured) {
             // add featured

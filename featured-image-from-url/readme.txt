@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.8.1
-Stable tag: 5.1.0
+Stable tag: 5.1.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -43,7 +43,7 @@ Use a remote image as featured image of your post, page or custom post type.
 * **[PRO]** Auto set featured image using post title and a search engine
 * **[PRO]** Auto set featured media using web page address
 * **[PRO]** Auto set product images from ASIN
-* **[PRO]** Auto set featured image from custom field
+* **[PRO]** Auto set featured media from custom field
 * **[PRO]** Auto set featured image using ISBN
 * **[PRO]** Auto set screenshot as featured image
 * **[PRO]** Auto set featured image from Unsplash using tags
@@ -245,14 +245,14 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.1.1 =
+* Enhancement: preloads the featured image on single post types now (improves the SEO score); Enhancement: Auto set featured media from custom field (supports video URLs now).
+
 = 5.1.0 =
 * Enhancement: Optimized Images (some image URLs are now built on the server side with the goal of identifying sources with restrictions and redirecting to a different CDN).
 
 = 5.0.9 =
 * Fix: Conflict with Yoast Duplicate Post → Rewrite & Republish; Deprecated: Auto set featured image using post title and search engine → License filter.
-
-= 5.0.8 =
-* Fix: PHP Warnings.
 
 = others =
 * [more](https://fifu.app/changelog)
@@ -260,5 +260,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.1.0 =
-* Enhancement: Optimized Images (some image URLs are now built on the server side with the goal of identifying sources with restrictions and redirecting to a different CDN).
+= 5.1.1 =
+* Enhancement: preloads the featured image on single post types now (improves the SEO score); Enhancement: Auto set featured media from custom field (supports video URLs now).

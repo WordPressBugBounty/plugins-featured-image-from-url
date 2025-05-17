@@ -192,6 +192,13 @@ function fifu_resize_with_photon($url, $width, $height, $crop, $att_id, $size) {
 }
 
 function fifu_is_from_proxy_urls($original_image_url) {
+    $url_parts = explode('/', $original_image_url);
+    if (count($url_parts) > 2) {
+        $domain = $url_parts[2];
+        if (preg_match('/^[abc]/', $domain))
+            return true;
+    }
+
     foreach (PROXY_URLS as $url) {
         if (strpos($original_image_url, $url) === 0) {
             return true;

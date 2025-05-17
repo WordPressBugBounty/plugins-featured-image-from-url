@@ -181,17 +181,21 @@ function fifu_replace($html, $post_id, $post_thumbnail_id, $size, $attr = null) 
 
     $url = get_post_meta($post_id, 'fifu_image_url', true);
 
+    $title = null;
+
     $delimiter = fifu_get_delimiter('src', $html);
     $alt = get_post_meta($post_id, 'fifu_image_alt', true);
     if (!$alt) {
         $alt = strip_tags(get_the_title($post_id));
-        $custom_alt = 'alt=' . $delimiter . $alt . $delimiter . ' title=' . $delimiter . $alt . $delimiter;
+        $title = $title ? $title : $alt;
+        $custom_alt = 'alt=' . $delimiter . $alt . $delimiter . ' title=' . $delimiter . $title . $delimiter;
         $html = preg_replace('/alt=[\'\"][^[\'\"]*[\'\"]/', $custom_alt, $html);
         $html = fifu_check_alt_attribute($html, $custom_alt);
     } else {
         $alt = strip_tags($alt);
+        $title = $title ? $title : $alt;
         if ($url && $alt) {
-            $html = preg_replace('/alt=[\'\"][^[\'\"]*[\'\"]/', 'alt=' . $delimiter . $alt . $delimiter . ' title=' . $delimiter . $alt . $delimiter, $html);
+            $html = preg_replace('/alt=[\'\"][^[\'\"]*[\'\"]/', 'alt=' . $delimiter . $alt . $delimiter . ' title=' . $delimiter . $title . $delimiter, $html);
         }
     }
 
