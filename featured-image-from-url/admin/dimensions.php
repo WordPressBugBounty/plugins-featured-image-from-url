@@ -194,7 +194,7 @@ function fifu_resize_with_photon($url, $width, $height, $crop, $att_id, $size) {
 function fifu_is_from_proxy_urls($original_image_url) {
     $cdn_count = get_transient('fifu_stats_cdn_count') ?? 0;
     $cdn_count = intval($cdn_count);
-    if ($cdn_count > 0 && $cdn_count <= 10) {
+    if ($cdn_count > 0 && $cdn_count <= 50) {
         return true;
     }
 

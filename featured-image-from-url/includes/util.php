@@ -249,6 +249,10 @@ function fifu_is_gutenberg_screen() {
     return false;
 }
 
+function fifu_base64($url) {
+    return rtrim(strtr(base64_encode($url), '+/', '-_'), '=');
+}
+
 // developers
 
 function fifu_dev_set_image($post_id, $image_url) {

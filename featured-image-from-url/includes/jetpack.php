@@ -88,7 +88,7 @@ function fifu_jetpack_blocked($url) {
     if (substr($url, -5) === '.avif')
         return true;
 
-    $blocklist = array('localhost', 'plus.unsplash.com', 'amazon-adsystem.com', 'sapo.io', 'i.guim.co.uk', 'image.influenster.com', 'api.screenshotmachine.com', 'img.brownsfashion.com', 'fbcdn.net', 'nitrocdn.com', 'brightspotcdn.com', 'realtysouth.com', 'tiktokcdn.com', 'fdcdn.akamaized.net', 'blockchainstock.azureedge.net', 'aa.com.tr', 'cdn.discordapp.com', 'download.schneider-electric.com', 'images.twojjs.com', 'preview.redd.it', 'external-preview.redd.it', 'i.redd.it', 'cdn.fbsbx.com', 'canva.com', 'cdn.fifu.app', 'cloud.fifu.app', 'images.placeholders.dev');
+    $blocklist = array('localhost', 'amazon-adsystem.com', 'sapo.io', 'i.guim.co.uk', 'image.influenster.com', 'api.screenshotmachine.com', 'img.brownsfashion.com', 'fbcdn.net', 'nitrocdn.com', 'brightspotcdn.com', 'realtysouth.com', 'tiktokcdn.com', 'fdcdn.akamaized.net', 'blockchainstock.azureedge.net', 'aa.com.tr', 'cdn.discordapp.com', 'download.schneider-electric.com', 'images.twojjs.com', 'preview.redd.it', 'external-preview.redd.it', 'i.redd.it', 'cdn.fbsbx.com', 'canva.com', 'cdn.fifu.app', 'cloud.fifu.app', 'images.placeholders.dev');
     foreach ($blocklist as $domain) {
         if (strpos($url, $domain) !== false)
             return true;
@@ -158,7 +158,7 @@ function fifu_pubcdn_get_image_url($att_id, $image_url, $qp) {
 
     $main_domain = explode('/', get_home_url())[2];
 
-    $encoded_url = rtrim(strtr(base64_encode($image_url), '+/', '-_'), '=');
+    $encoded_url = fifu_base64($image_url);
     $new_url = "//wp.fifu.app/" . $main_domain . "/" . $encoded_url . "/" . $post_slug . ".webp" . $qp;
     $signature = fifu_get_signature($new_url, 'fifu');
     return 'https:' . str_replace($encoded_url, $encoded_url . '/' . $signature, $new_url);
