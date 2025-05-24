@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.8.1
-Stable tag: 5.1.3
+Stable tag: 5.1.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -245,14 +245,14 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.1.4 =
+* Fix: Images not displaying in the product gallery lightbox; Fix: Optimized Images → Registered sizes (Height value was not being applied); Fix: Image meta tags being incorrectly added to posts with local images; Fix: PHP warnings.
+
 = 5.1.3 =
 * Fix: Preload of images (incorrectly executed on non-single pages and incorrectly loading the original image when Optimized Images is enabled).
 
 = 5.1.2 =
 * Fix: Optimized Images → optimize secondary images (images not being displayed).
-
-= 5.1.1 =
-* Enhancement: preloads the featured image on single post types now (improves the SEO score); Enhancement: Auto set featured media from custom field (supports video URLs now).
 
 = others =
 * [more](https://fifu.app/changelog)
@@ -260,5 +260,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.1.3 =
-* Fix: Preload of images (incorrectly executed on non-single pages and incorrectly loading the original image when Optimized Images is enabled).
+= 5.1.4 =
+* Fix: Images not displaying in the product gallery lightbox; Fix: Optimized Images → Registered sizes (Height value was not being applied); Fix: Image meta tags being incorrectly added to posts with local images; Fix: PHP warnings.

@@ -250,6 +250,8 @@ function fifu_is_gutenberg_screen() {
 }
 
 function fifu_base64($url) {
+    if ($url === null)
+        return '';
     return rtrim(strtr(base64_encode($url), '+/', '-_'), '=');
 }
 

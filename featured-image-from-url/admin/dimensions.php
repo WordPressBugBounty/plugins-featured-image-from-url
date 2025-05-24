@@ -120,28 +120,14 @@ function fifu_image_downsize($out, $att_id, $size) {
             return array($resized_url, $large_width, $large_height, false);
         }
     } else {
-        // Logic for other sizes
-        // Get all registered image sizes
-        $image_sizes = get_intermediate_image_sizes();
-        $additional_sizes = wp_get_registered_image_subsizes();
+        // Use the helper function to get size details
+        $size_details = fifu_get_image_size_details($size);
+        $width = $size_details['width'];
+        $height = $size_details['height'];
+        $crop = $size_details['crop'];
 
-        // Determine the size dimensions
-        $width = $height = $crop = 0;
-        if (is_array($size)) {
-            list($width, $height) = $size;
-            $crop = isset($size[2]) ? ($size[2] ? 1 : 0) : 0;
-        } elseif (in_array($size, $image_sizes)) {
-            if (isset($additional_sizes[$size])) {
-                $width = intval($additional_sizes[$size]['width']);
-                $height = intval($additional_sizes[$size]['height']);
-                $crop = intval($additional_sizes[$size]['crop']);
-            } else {
-                $width = get_option("{$size}_size_w");
-                $height = get_option("{$size}_size_h");
-            }
-        } else {
-            $width = 1200; // fallback
-            fifu_plugin_log(['fifu-dimensions' => ['WARNING' => "Invalid size: $size"]]);
+        if (!$width && !$height) {
+            return $out;
         }
 
         $new_url = fifu_resize_with_photon($image_url, $width, $height, $crop, $att_id, $size);
@@ -194,7 +180,7 @@ function fifu_resize_with_photon($url, $width, $height, $crop, $att_id, $size) {
 function fifu_is_from_proxy_urls($original_image_url) {
     $cdn_count = get_transient('fifu_stats_cdn_count') ?? 0;
     $cdn_count = intval($cdn_count);
-    if ($cdn_count > 0 && $cdn_count <= 50) {
+    if ($cdn_count > 0 && $cdn_count <= 100) {
         return true;
     }
 
@@ -453,5 +439,40 @@ function fifu_is_bot_request() {
     }
 
     return false;
+}
+
+function fifu_get_image_size_details($size) {
+    $default_width = 0;
+    $default_height = 0;
+    $default_crop = 0;
+
+    $image_sizes = get_intermediate_image_sizes();
+    $registered_sizes = wp_get_registered_image_subsizes();
+
+    $width = $default_width;
+    $height = $default_height;
+    $crop = $default_crop;
+
+    if (is_array($size)) {
+        $width = isset($size[0]) && is_numeric($size[0]) ? intval($size[0]) : $default_width;
+        $height = isset($size[1]) && is_numeric($size[1]) ? intval($size[1]) : $default_height;
+        $crop = isset($size[2]) ? (boolval($size[2]) ? 1 : 0) : $default_crop;
+    } elseif (is_string($size) && in_array($size, $image_sizes, true)) {
+        if (isset($registered_sizes[$size])) {
+            $width = intval($registered_sizes[$size]['width']);
+            $height = intval($registered_sizes[$size]['height']);
+            $crop = intval(boolval($registered_sizes[$size]['crop']));
+        } else {
+            $width = intval(get_option("{$size}_size_w", $default_width));
+            $height = intval(get_option("{$size}_size_h", $default_height));
+            $crop = intval(get_option("{$size}_size_crop", $default_crop));
+        }
+    }
+
+    return [
+        'width' => $width,
+        'height' => $height,
+        'crop' => $crop,
+    ];
 }
 

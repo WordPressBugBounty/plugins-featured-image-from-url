@@ -117,55 +117,42 @@ function fifu_replace_attachment_image_src($image, $att_id, $size) {
     if (fifu_is_on('fifu_photon') && !fifu_jetpack_blocked($image[0]))
         $image = fifu_get_photon_url($image, $size, $att_id);
 
-    // fallback
-    if ($image[1] == 1 && $image[2] == 1) {
-        $image[1] = null;
-        $image[2] = null;
-    }
-
     return $image;
 }
 
 function fifu_add_size($image, $size) {
-    // fix lightbox
-    if ($size == 'woocommerce_single')
+    // Fix lightbox
+    if ($size == 'woocommerce_single') {
         return $image;
-
-    if (!is_array($size)) {
-        if (function_exists('wp_get_registered_image_subsizes')) {
-            $width = null;
-            $height = null;
-            $crop = null;
-
-            if (isset(wp_get_registered_image_subsizes()[$size]['width']))
-                $width = wp_get_registered_image_subsizes()[$size]['width'];
-
-            if (isset(wp_get_registered_image_subsizes()[$size]['height']))
-                $height = wp_get_registered_image_subsizes()[$size]['height'];
-
-            if (isset(wp_get_registered_image_subsizes()[$size]['crop']))
-                $crop = wp_get_registered_image_subsizes()[$size]['crop'];
-
-            if (!$width && !$height)
-                return $image;
-
-            $image[1] = $width;
-            $image[2] = $height == 9999 ? 0 : $height;
-            $image[3] = $crop;
-        }
-    } else {
-        $image[1] = $size[0];
-        $image[2] = $size[1];
-        $image[3] = false;
     }
+
+    // Get size details using fifu_get_image_size_details
+    $size_details = fifu_get_image_size_details($size);
+
+    // If no valid size details are found, return the original image
+    if (!$size_details['width'] && !$size_details['height']) {
+        return $image;
+    }
+
+    // Assign the size details to the image array
+    $image[1] = $size_details['width'];
+    $image[2] = $size_details['height'] == 9999 ? 0 : $size_details['height'];
+    $image[3] = $size_details['crop'];
+
     return $image;
 }
 
 function fifu_get_photon_url($image, $size, $att_id) {
-    $image = fifu_add_size($image, $size);
     $w = $image[1];
     $h = $image[2];
     $c = $image[3] ? 1 : 0;
+
+    if (!$w && !$h) {
+        $image = fifu_add_size($image, $size);
+        $w = $image[1];
+        $h = $image[2];
+        $c = $image[3] ? 1 : 0;
+    }
 
     if (fifu_is_from_proxy_urls($image[0])) {
         $image[0] = fifu_jetpack_photon_url($image[0], "?w={$w}&h={$h}&c={$c}", $att_id);
@@ -371,16 +358,12 @@ function fifu_add_url_parameters($url, $att_id, $size) {
     $parameters['category'] = $is_category;
 
     // theme size
-    if ($size && !is_array($size) && function_exists('wp_get_registered_image_subsizes')) {
-        $width = null;
-        $height = null;
-        if (isset(wp_get_registered_image_subsizes()[$size]['width']))
-            $width = wp_get_registered_image_subsizes()[$size]['width'];
-        if (isset(wp_get_registered_image_subsizes()[$size]['height']))
-            $height = wp_get_registered_image_subsizes()[$size]['height'];
-        if ($width && $height) {
-            $parameters['theme-width'] = $width;
-            $parameters['theme-height'] = $height;
+    if ($size) {
+        $size_details = fifu_get_image_size_details($size);
+        if ($size_details['width'] && $size_details['height']) {
+            $parameters['theme-width'] = $size_details['width'];
+            $parameters['theme-height'] = $size_details['height'];
+            $parameters['theme-crop'] = $size_details['crop'];
         }
     }
 
