@@ -12,6 +12,56 @@
                 <div class="fifubox">
                     <table>
                         <tr>
+                            <td style="border-bottom:none">2025-06-03</td>
+                            <td style="border-bottom:none"><h3> Wpresidence -Theme Core Functionality
+                            </h3></td>
+                            <td style="border-bottom:none">plugin</td>
+                        </tr>
+                    </table>
+                    <div class="greybox" style="position: relative; top: -10px">
+                        Featured image not displayed:<br>
+                        1) Edit 'wpresidence-core/api/cache/cache_actions.php', and add<br>
+                        <textarea style="width:100%;height:150px;overflow:hidden" disabled>
+                        if (class_exists('FifuDb') && (!isset($first_featured[$data]) || !$first_featured[$data])) {
+                            $full_image_url = isset($first_featured['full']) ? $first_featured['full'] : '';
+                            if ($full_image_url) {
+                                $new_url = fifu_resize_with_photon($full_image_url, null, null, null, $propID, $data);
+                                return $new_url ?: $full_image_url;
+                            }
+                        }
+                        </textarea>
+                        immediately before<br>
+                        <textarea style="width:100%;height:25px;overflow:hidden" disabled>
+                            return $first_featured[$data] ?? '';
+                        </textarea><br>
+                        within the function 'wpestate_return_data_from_cache_if_exists';
+                    </div>
+                </div>  
+                <div class="fifubox">
+                    <table>
+                        <tr>
+                            <td style="border-bottom:none">2025-05-25</td>
+                            <td style="border-bottom:none"><h3> Medizin
+                            </h3></td>
+                            <td style="border-bottom:none">theme</td>
+                        </tr>
+                    </table>
+                    <div class="greybox" style="position: relative; top: -10px">
+                        Optimized Images feature doesn't work:<br>
+                        1) Edit 'medizin/framework/class-image.php', and add<br>
+                        <textarea style="width:100%;height:25px;overflow:hidden" disabled>
+                            if (class_exists('FifuDb')) return [wp_get_attachment_image_url($args['id'], $size)];
+                        </textarea>
+                        immediately before<br>
+                        <textarea style="width:100%;height:25px;overflow:hidden" disabled>
+                            if ( $size !== 'custom' ) {
+                        </textarea><br>
+                        within the function 'get_image_cropped_url';
+                    </div>
+                </div>  
+                <div class="fifubox">
+                    <table>
+                        <tr>
                             <td style="border-bottom:none">2025-04-06</td>
                             <td style="border-bottom:none"><h3> WP RSS Aggregator</h3></td>
                             <td style="border-bottom:none">plugin</td>

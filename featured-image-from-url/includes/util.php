@@ -76,6 +76,25 @@ function fifu_is_remote_image($att_id) {
     return $att_post->post_author == FIFU_AUTHOR;
 }
 
+function fifu_is_remote_image_url($url) {
+    if (empty($url))
+        return false;
+
+    // Check if URL contains 'fifu' identifier
+    if (strpos($url, 'fifu') !== false)
+        return true;
+
+    // Compare URL host with site host
+    $site_host = parse_url(get_site_url(), PHP_URL_HOST);
+    $image_host = parse_url($url, PHP_URL_HOST);
+
+    // If hosts exist and don't match, it's a remote image
+    if ($image_host && $site_host && $image_host !== $site_host)
+        return true;
+
+    return false;
+}
+
 function fifu_get_delimiter($property, $html) {
     $delimiter = explode($property . '=', $html);
     return $delimiter ? substr($delimiter[1], 0, 1) : null;

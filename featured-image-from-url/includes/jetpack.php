@@ -2,6 +2,10 @@
 
 define('FIFU_JETPACK_SIZES', serialize(array(75, 100, 150, 240, 320, 500, 640, 800, 1024, 1280, 1600)));
 
+function is_from_jetpack($url) {
+    return $url && strpos($url, "wp.fifu.app") !== false;
+}
+
 function fifu_resize_jetpack_image_size($size, $url) {
     if (strpos($url, 'wp.fifu.app/') !== false) {
         // Parse the URL to extract its components
@@ -132,11 +136,23 @@ function fifu_jetpack_photon_url($url, $args, $att_id) {
     }
 }
 
+function fifu_original_image_url($url) {
+    if (!is_from_jetpack($url))
+        return $url;
+    return fifu_decode_pubcdn_url($url);
+}
+
 function fifu_pubcdn_get_image_url($att_id, $image_url, $qp) {
+    if (fifu_is_cdn_url($image_url))
+        return $image_url;
+
+    $image_url = fifu_original_image_url($image_url);
+
     if ($att_id) {
         $alt = get_post_meta($att_id, '_wp_attachment_image_alt', true);
         $slug = $alt ? $alt : fifu_get_parent_slug($att_id);
-        $post_id = get_post($att_id)->post_parent;
+        $post = get_post($att_id);
+        $post_id = $post && isset($post->post_parent) ? $post->post_parent : null;
     } else {
         $slug = 'not-found';
         $post_id = null;
@@ -158,6 +174,8 @@ function fifu_pubcdn_get_image_url($att_id, $image_url, $qp) {
 
     $main_domain = explode('/', get_home_url())[2];
 
+    $post_slug = $post_slug ? $post_slug : 'image';
+
     $encoded_url = fifu_base64($image_url);
     $new_url = "//wp.fifu.app/" . $main_domain . "/" . $encoded_url . "/" . $post_slug . ".webp" . $qp;
     $signature = fifu_get_signature($new_url, 'fifu');
@@ -172,5 +190,25 @@ function fifu_get_signature($url, $token) {
     $signature = substr(bin2hex($hash), 0, 12);
 
     return $signature;
+}
+
+function fifu_decode_pubcdn_url($url) {
+    $parts = explode('/', $url);
+    if (isset($parts[4])) {
+        $base64 = $parts[4];
+        $base64 .= str_repeat('=', (4 - strlen($base64) % 4) % 4); // pad if needed
+        $decoded = base64_decode(strtr($base64, '-_', '+/'));
+        return $decoded ? $decoded : $url;
+    }
+    return $url;
+}
+
+add_filter('jetpack_photon_skip_image', 'fifu_jetpack_photon_skip_image', 10, 3);
+
+function fifu_jetpack_photon_skip_image($skip, $image_url, $args) {
+    if (fifu_is_remote_image_url($image_url))
+        return true;
+
+    return $skip;
 }
 

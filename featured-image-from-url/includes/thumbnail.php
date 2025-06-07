@@ -77,7 +77,7 @@ function fifu_add_social_tag_yoast_list($object) {
 }
 
 function fifu_add_social_tags() {
-    if (is_front_page() || is_home())
+    if (is_front_page() || is_home() || is_tax())
         return;
 
     $post_id = get_the_ID();
@@ -454,9 +454,10 @@ function fifu_add_rss() {
             $thumbnail = wp_get_attachment_url(get_post_thumbnail_id($post->ID)); // internal
         }
         if ($thumbnail) {
-            // query strings should be removed for Google Publisher Center
-            echo '<media:content url="' . explode('?', $thumbnail)[0] . '" medium="image"></media:content>
-			';
+            // Make sure ampersands are properly escaped for XML
+            $clean_url = esc_url($thumbnail);
+            echo '<media:content url="' . $clean_url . '" medium="image"></media:content>
+            ';
         }
     }
 }
