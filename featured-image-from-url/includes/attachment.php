@@ -117,42 +117,51 @@ function fifu_replace_attachment_image_src($image, $att_id, $size) {
     if (fifu_is_on('fifu_photon') && !fifu_jetpack_blocked($image[0]))
         $image = fifu_get_photon_url($image, $size, $att_id);
 
+    if ($image[1] <= 1 && $image[2] <= 1) {
+        $result = fifu_add_size($image, $size);
+        $image = $result['image'];
+    }
+
     return $image;
 }
 
 function fifu_add_size($image, $size) {
     // Fix lightbox
     if ($size == 'woocommerce_single') {
-        return $image;
+        return array(
+            'image' => $image,
+            'crop' => null
+        );
     }
 
     // Get size details using fifu_get_image_size_details
     $size_details = fifu_get_image_size_details($size);
 
-    // If no valid size details are found, return the original image
+    // If no valid size details are found, return the original image with null crop
     if (!$size_details['width'] && !$size_details['height']) {
-        return $image;
+        return array(
+            'image' => $image,
+            'crop' => null
+        );
     }
 
-    // Assign the size details to the image array
+    // Assign only width and height to the image array
     $image[1] = $size_details['width'];
-    $image[2] = $size_details['height'] == 9999 ? 0 : $size_details['height'];
-    $image[3] = $size_details['crop'];
+    $image[2] = $size_details['height'];
 
-    return $image;
+    // Return the modified image and crop separately
+    return array(
+        'image' => $image,
+        'crop' => $size_details['crop']
+    );
 }
 
 function fifu_get_photon_url($image, $size, $att_id) {
+    $result = fifu_add_size($image, $size);
+    $image = $result['image'];
     $w = $image[1];
     $h = $image[2];
-    $c = $image[3] ? 1 : 0;
-
-    if (!$w && !$h) {
-        $image = fifu_add_size($image, $size);
-        $w = $image[1];
-        $h = $image[2];
-        $c = $image[3] ? 1 : 0;
-    }
+    $c = $result['crop'] ? 1 : 0;
 
     if (fifu_is_from_proxy_urls($image[0])) {
         $image[0] = fifu_jetpack_photon_url($image[0], "?w={$w}&h={$h}&c={$c}", $att_id);

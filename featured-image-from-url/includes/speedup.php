@@ -43,14 +43,23 @@ function fifu_speedup_get_url($image, $size, $att_id) {
         $image[2] = $original_height;
     }
 
-    $image = fifu_add_size($image, $size);
+    // Get both the modified image and crop value
+    $result = fifu_add_size($image, $size);
+    $image = $result['image'];
+    $crop = $result['crop'];
+
+    if (!isset($image[1]) || !is_numeric($image[1]) || $image[1] >= 9999)
+        $image[1] = 0;
+
+    if (!isset($image[2]) || !is_numeric($image[2]) || $image[2] >= 9999)
+        $image[2] = 0;
 
     // no height
     if (!$image[2])
         $image[2] = (int) ($image[1] * $original_height / $original_width);
 
     // crop
-    if ($image[3] || $image[2]) {
+    if ($crop || $image[2]) {
         if ($has_video && $image[1] == 320 && $image[2] == 180) {
             $image[0] = $image[0] . "&resize=1280,720";
             $image[1] = 1280;

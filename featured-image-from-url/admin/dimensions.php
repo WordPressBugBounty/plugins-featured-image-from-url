@@ -54,18 +54,12 @@ function fifu_image_downsize($out, $att_id, $size) {
     if (fifu_is_from_speedup($original_image_url))
         return $out;
 
-    $defined = fifu_get_defined_size_key($size);
-    if ($defined) {
-        $defined_data = get_option($defined);
-        if ($defined_data) {
-            $width = $defined_data['w'];
-            $height = $defined_data['h'];
-            $crop = $defined_data['c'];
-            $size = array($width, $height, $crop);
-        }
-    }
-
     $image_url = $original_image_url;
+
+    $size_details = fifu_get_image_size_details($size);
+    $width = $size_details['width'];
+    $height = $size_details['height'];
+    $crop = $size_details['crop'];
 
     // Check if the requested size is "full"
     if ($size === 'full') {
@@ -87,10 +81,10 @@ function fifu_image_downsize($out, $att_id, $size) {
                 $new_width = intval($new_height / $aspect_ratio);
             }
 
-            $new_url = fifu_resize_with_photon($image_url, $new_width, $new_height, null, $att_id, $size);
+            $new_url = fifu_resize_with_photon($image_url, $new_width, $new_height, $crop, $att_id, $size);
 
             $FIFU_SESSION['cdn-new-old'][$new_url] = $original_image_url;
-            return array($new_url, $new_width, $new_height, false);
+            return array($new_url, $new_width, $new_height, true);
         } else {
             if (is_front_page() || is_home()) {
                 if (isset($FIFU_SESSION['cdn-new-old']) && !empty($FIFU_SESSION['cdn-new-old']))
@@ -114,26 +108,19 @@ function fifu_image_downsize($out, $att_id, $size) {
             $aspect_ratio = $small_height / $small_width;
             $large_height = intval($large_width * $aspect_ratio);
 
-            $resized_url = fifu_resize_with_photon($image_url, $large_width, $large_height, null, $att_id, $size);
+            $resized_url = fifu_resize_with_photon($image_url, $large_width, $large_height, $crop, $att_id, $size);
 
             $FIFU_SESSION['cdn-new-old'][$resized_url] = $original_image_url;
-            return array($resized_url, $large_width, $large_height, false);
+            return array($resized_url, $large_width, $large_height, true);
         }
     } else {
-        // Use the helper function to get size details
-        $size_details = fifu_get_image_size_details($size);
-        $width = $size_details['width'];
-        $height = $size_details['height'];
-        $crop = $size_details['crop'];
-
-        if (!$width && !$height) {
+        if (!$width && !$height)
             return $out;
-        }
 
         $new_url = fifu_resize_with_photon($image_url, $width, $height, $crop, $att_id, $size);
 
         $FIFU_SESSION['cdn-new-old'][$new_url] = $original_image_url;
-        return array($new_url, $width, $height, false);
+        return array($new_url, $width, $height, true);
     }
 }
 
@@ -153,8 +140,8 @@ function fifu_resize_with_photon($url, $width, $height, $crop, $att_id, $size) {
             return $url;
         }
 
-        $w = $width >= 9999 ? 0 : $width;
-        $h = $height >= 9999 ? 0 : $height;
+        $w = $width;
+        $h = $height;
 
         // force a square on WooCommerce when either width or height is undefined.
         if (is_string($size) && strpos($size, 'woocommerce') !== false) {
@@ -162,7 +149,7 @@ function fifu_resize_with_photon($url, $width, $height, $crop, $att_id, $size) {
             $w = $w == 0 ? $h : $w;
         }
 
-        $c = is_null($crop) ? 0 : $crop;
+        $c = is_null($crop) ? 0 : (int) $crop;
 
         $url = fifu_pubcdn_get_image_url($att_id, $url, "?w={$w}&h={$h}&c={$c}");
         return $url;
@@ -287,7 +274,7 @@ function fifu_detect_image_size_usage($image, $id, $size) {
     $current = get_option($option_key, $default_data);
 
     // Update pages array if we have a valid page type
-    if ($page_type !== "unknown" && !in_array($page_type, $current['pages'])) {
+    if (!in_array($page_type, $current['pages'])) {
         $current['pages'][] = $page_type;
         update_option($option_key, $current);
     }
@@ -449,6 +436,20 @@ function fifu_is_bot_request() {
 }
 
 function fifu_get_image_size_details($size) {
+    // Check for defined sizes first
+    $defined = fifu_get_defined_size_key($size);
+    if ($defined) {
+        $defined_data = get_option($defined);
+        if ($defined_data) {
+            return [
+                'width' => intval($defined_data['w']),
+                'height' => intval($defined_data['h']),
+                'crop' => intval($defined_data['c']),
+            ];
+        }
+    }
+
+    // Default values if no defined size is found
     $default_width = 0;
     $default_height = 0;
     $default_crop = 0;
