@@ -37,7 +37,7 @@ function fifu_image_downsize($out, $att_id, $size) {
         return $out;
     }
 
-    fifu_update_cdn_stats();
+    // fifu_update_cdn_stats();
 
     $original_image_url = get_post_meta($att_id, '_wp_attached_file', true);
     if ($original_image_url) {

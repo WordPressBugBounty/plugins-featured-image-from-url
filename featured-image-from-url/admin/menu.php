@@ -203,6 +203,7 @@ function fifu_get_menu_html() {
         'error' => $fifu['word']['error'](),
         'reset' => $fifu['word']['reset'](),
         'save' => $fifu['word']['save'](),
+        'pluginUrl' => plugins_url() . '/' . FIFU_SLUG,
     ]);
 
     $skip = esc_attr(get_option('fifu_skip'));

@@ -11,7 +11,7 @@ function fifu_replace_attached_file($att_url, $att_id) {
 function fifu_process_url($att_url, $att_id) {
     if (strpos($att_url, "https://thumbnails.odycdn.com") === 0 ||
             strpos($att_url, "https://res.cloudinary.com") === 0 ||
-            strpos($att_url, "//wp.fifu.app") === 0 ||
+            // strpos($att_url, "//wp.fifu.app") === 0 ||
             strpos($att_url, "https://i0.wp.com") === 0 ||
             strpos($att_url, "https://i1.wp.com") === 0 ||
             strpos($att_url, "https://i2.wp.com") === 0 ||

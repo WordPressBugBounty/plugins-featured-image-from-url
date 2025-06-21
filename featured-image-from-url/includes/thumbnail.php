@@ -34,8 +34,8 @@ function fifu_add_js() {
         for ($i = 0; $i <= 3; $i++) {
             echo "<link rel='dns-prefetch' href='https://i{$i}.wp.com/'>";
             echo "<link rel='preconnect' href='https://i{$i}.wp.com/' crossorigin>";
-            echo "<link rel='dns-prefetch' href='https://wp.fifu.app/'>";
-            echo "<link rel='preconnect' href='https://wp.fifu.app/' crossorigin>";
+            // echo "<link rel='dns-prefetch' href='https://wp.fifu.app/'>";
+            // echo "<link rel='preconnect' href='https://wp.fifu.app/' crossorigin>";
         }
     }
 
@@ -340,7 +340,7 @@ function fifu_optimize_content($content) {
 
         $content = str_replace($imgItem, $newImgItem, $content);
 
-        fifu_update_cdn_stats();
+        // fifu_update_cdn_stats();
     }
 
     $content = fifu_remove_source_tags($content);
@@ -526,3 +526,4 @@ add_filter('rank_math/opengraph/twitter/image', function ($image_url) {
     }
     return $image_url;
 });
+

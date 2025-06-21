@@ -537,3 +537,64 @@ function updateMetadataCounter(transient) {
         timeout: 60
     });
 }
+
+jQuery(document).ready(function ($) {
+    // Function to load JSON data into a container
+    function loadJsonContent(containerId, jsonUrl, height) {
+        const $container = $('#' + containerId);
+
+        if ($container.data('loaded'))
+            return;
+
+        $container.html('<p>Loading JSON content...</p>');
+
+        $.ajax({
+            url: jsonUrl,
+            dataType: 'json',
+            success(data) {
+                // Escapa HTML
+                let jsonString = JSON.stringify(data, null, 2)
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+
+                // Blue
+                jsonString = jsonString.replace(
+                        /"([^"]+)"(\s*:\s*)/g,
+                        '"<span style="color:#0066B3">$1</span>"$2'
+                        );
+
+                // Green
+                jsonString = jsonString.replace(
+                        /(:\s*|\[\s*|,\s*)"(?!(?:&lt;|<))([^"]*)"/g,
+                        '$1"<span style="color:#008000">$2</span>"'
+                        );
+
+                // Red for pipe |
+                jsonString = jsonString.replace(
+                        /\|/g,
+                        '<span style="color:#d60000">|</span>'
+                        );
+
+                $container.html('<pre style="margin:0">' + jsonString + '</pre>');
+                $container.data('loaded', true);
+            },
+            error(_, __, err) {
+                $container.html('<p style="color:red">Error loading JSON content: ' + err + '</p>');
+                console.error('Error loading JSON:', err);
+            }
+        });
+    }
+
+    // Add click handler to the developer tab
+    $('a[href="#tabs-q"]').on('click', function () {
+        // Load all JSON files in the developer tab when clicked
+        loadJsonContent('product-json', fifuScriptVars.pluginUrl + '/admin/html/txt/product.json', 275);
+        loadJsonContent('product-variation-json', fifuScriptVars.pluginUrl + '/admin/html/txt/product-variation.json', 450);
+        loadJsonContent('post-json', fifuScriptVars.pluginUrl + '/admin/html/txt/post.json', 175);
+        loadJsonContent('product-category-json', fifuScriptVars.pluginUrl + '/admin/html/txt/product-category.json', 250);
+        loadJsonContent('product-variable-json', fifuScriptVars.pluginUrl + '/admin/html/txt/product-variable.json', 590);
+        loadJsonContent('batch-product-json', fifuScriptVars.pluginUrl + '/admin/html/txt/batch-product.json', 535);
+        loadJsonContent('batch-category-json', fifuScriptVars.pluginUrl + '/admin/html/txt/batch-category.json', 535);
+    });
+});
