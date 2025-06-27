@@ -10,7 +10,7 @@ function fifu_replace_attached_file($att_url, $att_id) {
 
 function fifu_process_url($att_url, $att_id) {
     if (strpos($att_url, "https://thumbnails.odycdn.com") === 0 ||
-            strpos($att_url, "https://res.cloudinary.com") === 0 ||
+            strpos($att_url, "https://res.cloudinary.com/glide/") === 0 ||
             // strpos($att_url, "//wp.fifu.app") === 0 ||
             strpos($att_url, "https://i0.wp.com") === 0 ||
             strpos($att_url, "https://i1.wp.com") === 0 ||
@@ -126,14 +126,6 @@ function fifu_replace_attachment_image_src($image, $att_id, $size) {
 }
 
 function fifu_add_size($image, $size) {
-    // Fix lightbox
-    if ($size == 'woocommerce_single') {
-        return array(
-            'image' => $image,
-            'crop' => null
-        );
-    }
-
     // Get size details using fifu_get_image_size_details
     $size_details = fifu_get_image_size_details($size);
 

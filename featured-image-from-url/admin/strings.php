@@ -464,9 +464,6 @@ function fifu_get_strings_settings() {
     $fifu['support']['resolution'] = function () {
         _e("Low-resolution or unduly cropped images", FIFU_SLUG);
     };
-    $fifu['support']['cdn'] = function () {
-        _e("Image not visible (1px) or wrong sizes", FIFU_SLUG);
-    };
     $fifu['support']['disappeared-desc'] = function () {
         _e("You may solve it by: 1) accessing Metadata tab; 2) running Clear Metadata; 3) activating Image Metadata (~100,000 URLs/min); 4) clearing your cache (optional).", FIFU_SLUG);
     };
@@ -481,9 +478,6 @@ function fifu_get_strings_settings() {
     };
     $fifu['support']['resolution-desc'] = function () {
         _e("By default, the CDN loads images in the sizes registered by the theme or other plugins. You can adjust them at 'Image > Optimized images > Registered sizes'.", FIFU_SLUG);
-    };
-    $fifu['support']['cdn-desc'] = function () {
-        _e("Some themes or plugins may not work with remote images when the sizes are not saved in the database. Solve this by enabling 'Image → Optimized images'.", FIFU_SLUG);
     };
     $fifu['support']['wp-automatic'] = function () {
         _e("\"WP Automatic\" posts have no images", FIFU_SLUG);

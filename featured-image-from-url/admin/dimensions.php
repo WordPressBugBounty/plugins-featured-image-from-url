@@ -42,7 +42,7 @@ function fifu_image_downsize($out, $att_id, $size) {
     $original_image_url = get_post_meta($att_id, '_wp_attached_file', true);
     if ($original_image_url) {
         if (strpos($original_image_url, "https://thumbnails.odycdn.com") !== 0 &&
-                strpos($original_image_url, "https://res.cloudinary.com") !== 0 &&
+                strpos($original_image_url, "https://res.cloudinary.com/glide/") !== 0 &&
                 fifu_jetpack_blocked($original_image_url)) {
             return $out;
         }
@@ -86,32 +86,7 @@ function fifu_image_downsize($out, $att_id, $size) {
             $FIFU_SESSION['cdn-new-old'][$new_url] = $original_image_url;
             return array($new_url, $new_width, $new_height, true);
         } else {
-            if (is_front_page() || is_home()) {
-                if (isset($FIFU_SESSION['cdn-new-old']) && !empty($FIFU_SESSION['cdn-new-old']))
-                    return $out;
-            }
-
-            // Save dimensions (thread removed)
-            // Use a small width to quickly get the height
-            $small_width = 100;
-
-            $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
-            if (strpos($user_agent, 'Googlebot') !== false)
-                $small_resized_url = $image_url;
-            else
-                $small_resized_url = fifu_resize_with_photon($image_url, $small_width, 9999, null, $att_id, $size);
-
-            list(, $small_height) = @getimagesize($small_resized_url);
-
-            // Calculate width for a larger size based on the aspect ratio
-            $large_width = 1920;
-            $aspect_ratio = $small_height / $small_width;
-            $large_height = intval($large_width * $aspect_ratio);
-
-            $resized_url = fifu_resize_with_photon($image_url, $large_width, $large_height, $crop, $att_id, $size);
-
-            $FIFU_SESSION['cdn-new-old'][$resized_url] = $original_image_url;
-            return array($resized_url, $large_width, $large_height, true);
+            return $out;
         }
     } else {
         if (!$width && !$height)
@@ -488,7 +463,7 @@ function fifu_is_cdn_url($url) {
     if (strpos($url, "https://thumbnails.odycdn.com") === 0)
         return true;
 
-    if (strpos($url, "https://res.cloudinary.com") === 0)
+    if (strpos($url, "https://res.cloudinary.com/glide/") === 0)
         return true;
 
     for ($i = 0; $i <= 3; $i++) {
