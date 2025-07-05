@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.8.1
-Stable tag: 5.1.8
+Stable tag: 5.1.9
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -245,14 +245,14 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.1.9 =
+* Notice: the plugin collects the theme name anonymously (the goal is to identify the most common themes and ensure FIFU works correctly with all of them).
+
 = 5.1.8 =
 * Fix: Optimized Images (performance issue when serving full image size and possible conflicts with images from Cloudinary); Fix: images in the WooCommerce product gallery (not displayed when Optimized Images was disabled).
 
 = 5.1.7 =
 * Enhancement: REST API (JSON examples with highlighted syntax).
-
-= 5.1.6 =
-* Fix: images not visible in some themes (1px × 1px size); Fix: Optimized Images → Registered Sizes (not displaying sizes from unknown pages, crop not being applied); Fix: Optimized Images (conflict with Rank Math SEO plugin).
 
 = others =
 * [more](https://fifu.app/changelog)
@@ -260,5 +260,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.1.8 =
-* Fix: Optimized Images (performance issue when serving full image size and possible conflicts with images from Cloudinary); Fix: images in the WooCommerce product gallery (not displayed when Optimized Images was disabled).
+= 5.1.9 =
+* Notice: the plugin collects the theme name anonymously (the goal is to identify the most common themes and ensure FIFU works correctly with all of them).

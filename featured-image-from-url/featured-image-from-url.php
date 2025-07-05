@@ -4,7 +4,7 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use a remote image or video as featured image of a post or WooCommerce product.
- * Version: 5.1.8
+ * Version: 5.1.9
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0

@@ -37,7 +37,7 @@ function fifu_image_downsize($out, $att_id, $size) {
         return $out;
     }
 
-    // fifu_update_cdn_stats();
+    fifu_update_cdn_stats();
 
     $original_image_url = get_post_meta($att_id, '_wp_attached_file', true);
     if ($original_image_url) {
@@ -298,15 +298,15 @@ function fifu_update_cdn_stats() {
     $stats_date = get_option('fifu_stats_date');
     if (!$stats_date) {
         update_option('fifu_stats_date', $date);
-        set_transient('fifu_stats_cdn_count', 1, 0);
+        // set_transient('fifu_stats_cdn_count', 1, 0);
     } else {
         if ($stats_date == $date) {
-            $cdn_count = get_transient('fifu_stats_cdn_count') ?? 0;
-            set_transient('fifu_stats_cdn_count', $cdn_count + 1, 0);
+            // $cdn_count = get_transient('fifu_stats_cdn_count') ?? 0;
+            // set_transient('fifu_stats_cdn_count', $cdn_count + 1, 0);
         } else {
             fifu_send_cdn_stats();
             delete_option('fifu_stats_date');
-            delete_transient('fifu_stats_cdn_count');
+            // delete_transient('fifu_stats_cdn_count');
         }
     }
 }
@@ -331,7 +331,8 @@ function fifu_send_cdn_stats() {
         'num_cdn' => $num_cdn,
         'date' => $date,
         'slug' => FIFU_SLUG,
-        'version' => (int) str_replace('.', '', fifu_version_number())
+        'version' => (int) str_replace('.', '', fifu_version_number()),
+        'theme' => wp_get_theme()->get('Name')
     );
 
     // API endpoint
