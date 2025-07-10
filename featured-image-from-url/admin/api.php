@@ -191,7 +191,7 @@ function fifu_api_connected(WP_REST_Request $request) {
 
 function fifu_get_ip() {
     foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR') as $key) {
-        if (array_key_exists($key, $_SERVER) === true) {
+        if (isset($_SERVER[$key]) === true) {
             foreach (explode(',', $_SERVER[$key]) as $ip) {
                 $ip = trim($ip);
                 if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false)
@@ -199,14 +199,14 @@ function fifu_get_ip() {
             }
         }
     }
-    return $_SERVER['REMOTE_ADDR'];
+    return isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
 }
 
 function fifu_api_create_thumbnails_list(WP_REST_Request $request) {
     if (!fifu_su_sign_up_complete())
         return json_decode(FIFU_NO_CREDENTIALS);
 
-    $images = $request['selected'];
+    $images = isset($request['selected']) ? $request['selected'] : [];
 
     return fifu_create_thumbnails_list($images, false);
 }
@@ -230,12 +230,12 @@ function fifu_create_thumbnails_list($images, $cron = false) {
     foreach ($images as $image) {
         if (!$cron) {
             // manual
-            $post_id = $image[0];
-            $url = $image[1];
-            $meta_key = $image[2];
-            $meta_id = $image[3];
-            $is_category = $image[4] == 1;
-            $video_url = $image[5];
+            $post_id = isset($image[0]) ? $image[0] : null;
+            $url = isset($image[1]) ? $image[1] : null;
+            $meta_key = isset($image[2]) ? $image[2] : null;
+            $meta_id = isset($image[3]) ? $image[3] : null;
+            $is_category = isset($image[4]) ? ($image[4] == 1) : false;
+            $video_url = isset($image[5]) ? $image[5] : null;
         } else {
             // upload auto
             $post_id = $image->post_id;
@@ -444,11 +444,11 @@ function fifu_api_delete(WP_REST_Request $request) {
         return json_decode(FIFU_NO_CREDENTIALS);
 
     $rows = array();
-    $images = $request['selected'];
+    $images = isset($request['selected']) ? $request['selected'] : [];
     $total = count($images);
     $url_sign = '';
     foreach ($images as $image) {
-        $storage_id = $image['storage_id'];
+        $storage_id = isset($image['storage_id']) ? $image['storage_id'] : null;
         if (!$storage_id)
             continue;
 
@@ -842,9 +842,9 @@ function fifu_get_storage_id($hex_id, $width, $height) {
 }
 
 function fifu_api_list_all_fifu(WP_REST_Request $request) {
-    $page = (int) $request['page'];
-    $type = $request['type'];
-    $keyword = $request['keyword'];
+    $page = (int) (isset($request['page']) ? $request['page'] : 0);
+    $type = isset($request['type']) ? $request['type'] : null;
+    $keyword = isset($request['keyword']) ? $request['keyword'] : null;
     $urls = fifu_db_get_all_urls($page, $type, $keyword);
     return $urls;
 }
@@ -853,9 +853,9 @@ function fifu_api_list_all_media_library(WP_REST_Request $request) {
     if (!fifu_su_sign_up_complete())
         return null;
 
-    $page = (int) $request['page'];
-    $type = $request['type'];
-    $keyword = $request['keyword'];
+    $page = (int) (isset($request['page']) ? $request['page'] : 0);
+    $type = isset($request['type']) ? $request['type'] : null;
+    $keyword = isset($request['keyword']) ? $request['keyword'] : null;
     return fifu_db_get_posts_with_internal_featured_image($page, $type, $keyword);
 }
 

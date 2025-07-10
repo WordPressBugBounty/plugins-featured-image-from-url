@@ -95,8 +95,8 @@ function fifu_show_elements($post) {
     $height = 'height:200px;';
     $align = 'text-align:left;';
 
-    $url = get_post_meta($post->ID, 'fifu_image_url', true);
-    $alt = get_post_meta($post->ID, 'fifu_image_alt', true);
+    $url = esc_url(get_post_meta($post->ID, 'fifu_image_url', true));
+    $alt = esc_attr(get_post_meta($post->ID, 'fifu_image_alt', true));
 
     if ($url) {
         $show_button = 'display:none;';
@@ -386,7 +386,7 @@ add_action('dokan_product_edit_after_product_tags', 'fifu_dokan_product_edit_aft
 
 function fifu_dokan_product_edit_after_product_tags($post, $post_id) {
     $fifu = fifu_get_strings_dokan();
-    $url = get_post_meta($post_id, 'fifu_image_url', true);
+    $url = esc_url(get_post_meta($post_id, 'fifu_image_url', true));
     ?>
 
     <div class="dokan-form-group">
@@ -418,7 +418,7 @@ add_action('mvx_product_manager_right_panel_after', 'fifu_mvx_product_manager_ri
 
 function fifu_mvx_product_manager_right_panel_after($post_id) {
     $fifu = fifu_get_strings_dokan();
-    $url = get_post_meta($post_id, 'fifu_image_url', true);
+    $url = esc_url(get_post_meta($post_id, 'fifu_image_url', true));
     ?>
 
     <br>

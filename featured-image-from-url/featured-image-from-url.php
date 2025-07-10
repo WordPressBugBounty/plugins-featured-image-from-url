@@ -4,7 +4,7 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use a remote image or video as featured image of a post or WooCommerce product.
- * Version: 5.1.9
+ * Version: 5.2.0
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0
@@ -131,8 +131,8 @@ function fifu_row_meta($plugin_meta, $plugin_file, $plugin_data, $status) {
 }
 
 function fifu_uninstall() {
-    // buddyboss app
-    if (isset($_REQUEST['page']) && strpos($_REQUEST['page'], 'bbapp') !== false)
+    global $pagenow;
+    if ($pagenow !== 'plugins.php')
         return;
 
     $strings = fifu_get_strings_uninstall();

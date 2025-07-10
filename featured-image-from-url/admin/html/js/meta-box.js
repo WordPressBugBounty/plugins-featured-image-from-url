@@ -111,6 +111,10 @@ function fifu_get_sizes() {
 function fifu_get_image(url) {
     var image = new Image();
     jQuery(image).attr('onload', 'fifu_store_sizes(this);');
+    image.onerror = function () {
+        // Set the background to the fallback error image
+        jQuery("#fifu_image").css('background-image', "url('https://storage.googleapis.com/featuredimagefromurl/image-not-found.jpg')");
+    };
     jQuery(image).attr('src', url);
 }
 
@@ -122,6 +126,14 @@ function fifu_store_sizes($) {
 function fifu_open_lightbox() {
     jQuery("#fifu_image").on('click', function (evt) {
         evt.stopImmediatePropagation();
+
+        // Do not open lightbox if the error image is set as background
+        const errorImg = "https://storage.googleapis.com/featuredimagefromurl/image-not-found.jpg";
+        const bg = jQuery("#fifu_image").css('background-image');
+        if (bg && bg.includes(errorImg)) {
+            return;
+        }
+
         let url = fifu_convert(jQuery("#fifu_input_url").val());
         let adjustedUrl = fifu_cdn_adjust(url);
         jQuery.fancybox.open('<img loading="lazy" src="' + adjustedUrl + '" style="max-height:600px">');

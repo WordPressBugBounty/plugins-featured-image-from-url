@@ -24,6 +24,7 @@ define('PROXY_URLS', [
     "https://www.nzherald.co.nz",
     "https://img.youtube.com",
     "https://cdn.diariodeavisos.com",
+    "https://i.guim.co.uk",
 ]);
 
 function fifu_image_downsize($out, $att_id, $size) {

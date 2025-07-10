@@ -150,8 +150,8 @@ function fifu_speedup_get_sizes($url) {
     parse_str($parameters, $parameters);
 
     $aux = explode('-', $url);
-    $width = (int) $aux[1];
-    $height = (int) $aux[2];
+    $width = isset($aux[1]) ? (int) $aux[1] : 0;
+    $height = isset($aux[2]) ? (int) $aux[2] : 0;
 
     if (isset($parameters['resize'])) {
         $aux = explode(',', $parameters['resize']);

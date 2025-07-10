@@ -266,5 +266,5 @@ function fifu_get_language_code($locale) {
 
     // Dynamically handle locales not in the mapping
     $parts = explode('_', $locale);
-    return $parts[0]; // Return the first part of the locale (e.g., "es" from "es_ES")
+    return !empty($parts) ? $parts[0] : $locale; // Return the first part of the locale (e.g., "es" from "es_ES")
 }

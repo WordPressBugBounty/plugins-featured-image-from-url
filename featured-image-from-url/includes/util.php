@@ -6,8 +6,13 @@ function fifu_get_attribute($attribute, $html) {
         return null;
 
     $aux = explode($attribute, $html);
-    if ($aux)
+    if (isset($aux[1]))
         $aux = $aux[1];
+    else
+        return null;
+
+    if (empty($aux))
+        return null;
 
     $quote = $aux[0];
 

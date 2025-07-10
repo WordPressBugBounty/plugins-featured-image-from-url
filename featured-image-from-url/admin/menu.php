@@ -11,7 +11,7 @@ add_action('admin_menu', 'fifu_insert_menu');
 function fifu_insert_menu() {
     $fifu = fifu_get_strings_settings();
 
-    if (strpos($_SERVER['REQUEST_URI'], 'featured-image-from-url') !== false || strpos($_SERVER['REQUEST_URI'], 'fifu') !== false) {
+    if (isset($_SERVER['REQUEST_URI']) && (strpos($_SERVER['REQUEST_URI'], 'featured-image-from-url') !== false || strpos($_SERVER['REQUEST_URI'], 'fifu') !== false)) {
         wp_enqueue_script('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js');
         wp_enqueue_style('jquery-ui-style1', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css');
         wp_enqueue_style('jquery-ui-style2', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.structure.min.css');
@@ -275,7 +275,7 @@ function fifu_get_setting($type) {
     $arrEmpty = array('fifu_default_url', 'fifu_skip', 'fifu_html_cpt', 'fifu_hide_format', 'fifu_hide_type', 'fifu_pcontent_types');
     $arrDefaultType = array('fifu_default_cpt');
     $arrOn = array('fifu_wc_zoom', 'fifu_wc_lbox');
-    $arrOnNo = array('fifu_fake', 'fifu_photon');
+    $arrOnNo = array('fifu_fake');
     $arrOffNo = array('fifu_data_clean', 'fifu_run_delete_all', 'fifu_reset');
 
     if (get_option($type) === false) {

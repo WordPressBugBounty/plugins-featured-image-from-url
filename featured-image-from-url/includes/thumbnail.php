@@ -8,7 +8,7 @@ if (!function_exists('is_plugin_active'))
     require_once(ABSPATH . '/wp-admin/includes/plugin.php');
 
 global $pagenow;
-if (!in_array($pagenow, array('post.php', 'post-new.php', 'admin-ajax.php', 'wp-cron.php'))) {
+if (!isset($pagenow) || !in_array($pagenow, array('post.php', 'post-new.php', 'admin-ajax.php', 'wp-cron.php'))) {
     if (is_plugin_active('wordpress-seo/wp-seo.php')) {
         add_action('wpseo_opengraph_image', 'fifu_add_social_tag_yoast');
         add_action('wpseo_twitter_image', 'fifu_add_social_tag_yoast');
@@ -116,7 +116,7 @@ function fifu_home_add_social_tags() {
         $url = get_option('fifu_default_url');
         if (!empty($url)) {
             $buffer_contents = ob_get_contents();
-            if (strpos($buffer_contents, '<meta property="og:image"') === false) {
+            if ($buffer_contents !== false && strpos($buffer_contents, '<meta property="og:image"') === false) {
                 $url = esc_url($url);
                 include 'html/social-home.html';
             }
@@ -146,7 +146,7 @@ function fifu_wp_get_attachment_image_attributes($attr, $attachment, $size) {
         return $attr;
 
     // "all products" page
-    if (function_exists('get_current_screen') && isset(get_current_screen()->parent_file) && get_current_screen()->parent_file == 'edit.php?post_type=product') {
+    if (function_exists('get_current_screen') && get_current_screen() && isset(get_current_screen()->parent_file) && get_current_screen()->parent_file == 'edit.php?post_type=product') {
         $attr['src'] = fifu_optimized_column_image($url, $attachment->ID);
         return $attr;
     }
@@ -184,7 +184,7 @@ function fifu_replace($html, $post_id, $post_thumbnail_id, $size, $attr = null) 
     $height = fifu_get_attribute('height', $html);
 
     $src = fifu_get_attribute('src', $html);
-    if (isset($FIFU_SESSION[$src])) {
+    if (isset($FIFU_SESSION) && isset($FIFU_SESSION[$src])) {
         $data = $FIFU_SESSION[$src];
         if (strpos($html, 'fifu-replaced') !== false)
             return $html;
@@ -258,6 +258,9 @@ function fifu_remove_content_image($content) {
         return $content;
 
     global $post;
+    if (!isset($post) || !isset($post->ID))
+        return $content;
+
     $post_id = $post->ID;
     $att_id = get_post_thumbnail_id($post_id);
     $att_url = wp_get_attachment_url($att_id);
@@ -324,7 +327,8 @@ function fifu_optimize_content($content) {
             continue;
 
         $del = substr($src[0], - 1);
-        $url = fifu_normalize(explode($del, $src[0])[1]);
+        $url_parts = explode($del, $src[0]);
+        $url = isset($url_parts[1]) ? fifu_normalize($url_parts[1]) : '';
 
         if (!$url || fifu_jetpack_blocked($url) || strpos($url, 'data:image') === 0)
             continue;
@@ -442,6 +446,9 @@ add_action('rss2_item', 'fifu_add_rss');
 
 function fifu_add_rss() {
     global $post;
+    if (!isset($post) || !isset($post->ID))
+        return;
+
     if (has_post_thumbnail($post->ID)) {
         $thumbnail = fifu_main_image_url($post->ID, true); // external (no CDN)
         if ($thumbnail) {
@@ -464,9 +471,11 @@ function fifu_add_rss() {
 
 // for ajax pagination
 function fifu_posts_results($posts, $query) {
-    if (!is_admin() && $query->is_main_query() && is_paged()) {
+    if (!is_admin() && $query->is_main_query() && is_paged() && !empty($posts)) {
         foreach ($posts as $post) {
-            fifu_add_parameters_single_post($post->ID);
+            if (isset($post->ID)) {
+                fifu_add_parameters_single_post($post->ID);
+            }
         }
     }
     return $posts;

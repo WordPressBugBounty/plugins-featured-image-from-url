@@ -12,8 +12,12 @@ class Fifu_Widget_Image extends WP_Widget {
     }
 
     public function widget($args, $instance) {
-        echo $args['before_widget'];
-        echo $args['after_widget'];
+        if (isset($args['before_widget'])) {
+            echo $args['before_widget'];
+        }
+        if (isset($args['after_widget'])) {
+            echo $args['after_widget'];
+        }
     }
 
     public function form($instance) {
@@ -25,7 +29,6 @@ class Fifu_Widget_Image extends WP_Widget {
         $instance = array();
         return $instance;
     }
-
 }
 
 class Fifu_Widget_Grid extends WP_Widget {
@@ -41,8 +44,12 @@ class Fifu_Widget_Grid extends WP_Widget {
 
     public function widget($args, $instance) {
         extract($args);
-        echo $args['before_widget'];
-        echo $args['after_widget'];
+        if (isset($args['before_widget'])) {
+            echo $args['before_widget'];
+        }
+        if (isset($args['after_widget'])) {
+            echo $args['after_widget'];
+        }
     }
 
     public function form($instance) {
@@ -56,7 +63,6 @@ class Fifu_Widget_Grid extends WP_Widget {
         $instance = array();
         return $instance;
     }
-
 }
 
 class Fifu_Widget_Gallery extends WP_Widget {
@@ -71,8 +77,12 @@ class Fifu_Widget_Gallery extends WP_Widget {
     }
 
     public function widget($args, $instance) {
-        echo $args['before_widget'];
-        echo $args['after_widget'];
+        if (isset($args['before_widget'])) {
+            echo $args['before_widget'];
+        }
+        if (isset($args['after_widget'])) {
+            echo $args['after_widget'];
+        }
     }
 
     public function form($instance) {
@@ -85,7 +95,6 @@ class Fifu_Widget_Gallery extends WP_Widget {
         $instance = array();
         return $instance;
     }
-
 }
 
 add_action('widgets_init', 'fifu_register_widgets');
