@@ -66,7 +66,7 @@ function fifu_register_meta_box_script() {
         'get_the_ID' => get_the_ID(),
         'is_sirv_active' => fifu_is_sirv_active(),
         'wait' => $fifu['common']['wait'](),
-        'is_taxonomy' => get_current_screen()->taxonomy,
+        'is_taxonomy' => get_current_screen()->taxonomy ?? null,
         'txt_title_examples' => $fifu_help['title']['examples'](),
         'txt_title_keywords' => $fifu_help['title']['keywords'](),
         'txt_title_more' => $fifu_help['title']['more'](),
@@ -128,14 +128,15 @@ function fifu_save_properties($post_id) {
     if (!$_POST || get_post_type($post_id) == 'nav_menu_item' || get_post_type($post_id) == 'revision')
         return;
 
-    if (isset($_POST['action']) && $_POST['action'] == 'woocommerce_do_ajax_product_import')
+    $action = $_POST['action'] ?? '';
+    if ($action == 'woocommerce_do_ajax_product_import')
         return;
 
     if (isset($_POST['dokan_edit_product_nonce']))
         return;
 
     /* image url from wcfm */
-    if (isset($_POST['action']) && $_POST['action'] == 'wcfm_ajax_controller') {
+    if ($action == 'wcfm_ajax_controller') {
         if (fifu_is_wcfm_active() && isset($_POST['wcfm_products_manage_form'])) {
             $image_url = esc_url_raw(rtrim(fifu_get_wcfm_url($_POST['wcfm_products_manage_form'])));
             fifu_dev_set_image($post_id, $image_url);
@@ -147,17 +148,19 @@ function fifu_save_properties($post_id) {
         return;
 
     /* plugin: yoast duplicate post */
-    if (isset($_POST['post_status']) && $_POST['post_status'] == 'dp-rewrite-republish')
+    $post_status = $_POST['post_status'] ?? '';
+    if ($post_status == 'dp-rewrite-republish')
         fifu_dev_set_image($post_id, null);
 
     if (fifu_has_local_featured_image($post_id)) {
         $auto_set = false;
     } else {
-        if (empty($_POST['fifu_input_url'] ?? '')) {
+        $fifu_input_url = $_POST['fifu_input_url'] ?? '';
+        if (empty($fifu_input_url)) {
             $auto_set = true;
         } else {
             if (has_post_thumbnail($post_id)) {
-                if (fifu_main_image_url($post_id, false) != $_POST['fifu_input_url']) {
+                if (fifu_main_image_url($post_id, false) != $fifu_input_url) {
                     $auto_set = true;
                 } else {
                     $auto_set = fifu_is_on('fifu_ovw_first');
@@ -254,7 +257,8 @@ function fifu_is_wcfm_active() {
 }
 
 function fifu_get_wcfm_url($content) {
-    $url = explode('fifu_image_url=', $content)[1];
+    $url_parts = explode('fifu_image_url=', $content);
+    $url = $url_parts[1] ?? null;
     return $url ? urldecode(explode('&', $url)[0]) : null;
 }
 
@@ -406,7 +410,7 @@ function fifu_dokan_save_meta($post_id, $data) {
 
     /* featured image */
 
-    $url = esc_url_raw(rtrim($data['fifu_input_url']));
+    $url = esc_url_raw(rtrim($data['fifu_input_url'] ?? ''));
     fifu_update_or_delete($post_id, 'fifu_image_url', $url);
 
     fifu_update_fake_attach_id($post_id);

@@ -18,7 +18,7 @@ function fifu_ctgr_edit_box($term) {
     $align = 'text-align:left;';
     $url = $alt = null;
 
-    if (is_object($term)) {
+    if (is_object($term) && isset($term->term_id)) {
         $url = get_term_meta($term->term_id, 'fifu_image_url', true);
         $alt = get_term_meta($term->term_id, 'fifu_image_alt', true);
     }

@@ -6,25 +6,22 @@ function fifu_get_attribute($attribute, $html) {
         return null;
 
     $aux = explode($attribute, $html);
-    if (isset($aux[1]))
-        $aux = $aux[1];
-    else
-        return null;
+    $aux = $aux[1] ?? null;
 
     if (empty($aux))
         return null;
 
-    $quote = $aux[0];
+    $quote = $aux[0] ?? '';
 
     if ($quote == '&') {
         preg_match('/^&[^;]+;/', $aux, $matches);
         if ($matches)
-            $quote = $matches[0];
+            $quote = $matches[0] ?? '';
     }
 
     $aux = explode($quote, $aux);
     if ($aux)
-        return $aux[1];
+        return $aux[1] ?? null;
 
     return null;
 }
@@ -102,11 +99,11 @@ function fifu_is_remote_image_url($url) {
 
 function fifu_get_delimiter($property, $html) {
     $delimiter = explode($property . '=', $html);
-    return $delimiter ? substr($delimiter[1], 0, 1) : null;
+    return $delimiter ? substr($delimiter[1] ?? '', 0, 1) : null;
 }
 
 function fifu_is_ajax_call() {
-    return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') || wp_doing_ajax();
+    return (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') == 'XMLHttpRequest') || wp_doing_ajax();
 }
 
 function fifu_normalize($tag) {
@@ -135,7 +132,8 @@ function fifu_get_tags($post_id) {
 }
 
 function fifu_get_home_url() {
-    return explode('//', get_home_url())[1];
+    $parts = explode('//', get_home_url());
+    return $parts[1] ?? '';
 }
 
 function fifu_dashboard() {
@@ -197,7 +195,8 @@ function fifu_is_valid_cpt($post_id) {
 }
 
 function fifu_on_cpt_page() {
-    return strpos($_SERVER['REQUEST_URI'], 'wp-admin/edit.php') !== false && strpos($_SERVER['REQUEST_URI'], 'post_type=') !== false;
+    return strpos($_SERVER['REQUEST_URI'] ?? '', 'wp-admin/edit.php') !== false && 
+           strpos($_SERVER['REQUEST_URI'] ?? '', 'post_type=') !== false;
 }
 
 function fifu_set_author() {

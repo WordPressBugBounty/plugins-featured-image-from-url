@@ -3,8 +3,8 @@ Contributors: marceljm
 Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
-Tested up to: 6.8.1
-Stable tag: 5.2.0
+Tested up to: 6.8.2
+Stable tag: 5.2.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -245,6 +245,9 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.2.1 =
+* Fix: possible fatal error when activating or upgrading the plugin; Fix: potential undefined index/property notices.
+
 = 5.2.0 =
 * Enhancement: Image Not Found message displayed in the post editor when the image URL is invalid; Fix: vulnerability reported by Wordfence (improved validation of values added in FIFU fields via post editor for better security); Fix: potential undefined index notices.
 
@@ -260,5 +263,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.2.0 =
-* Enhancement: Image Not Found message displayed in the post editor when the image URL is invalid; Fix: vulnerability reported by Wordfence (improved validation of values added in FIFU fields via post editor for better security); Fix: potential undefined index notices.
+= 5.2.1 =
+* Fix: possible fatal error when activating or upgrading the plugin; Fix: potential undefined index/property notices.

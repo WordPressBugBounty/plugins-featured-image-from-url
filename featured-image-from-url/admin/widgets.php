@@ -54,8 +54,8 @@ class Fifu_Widget_Grid extends WP_Widget {
 
     public function form($instance) {
         $fifu = fifu_get_strings_widget();
-        $rows = isset($instance['rows']) ? $instance['rows'] : 1;
-        $columns = isset($instance['columns']) ? $instance['columns'] : 1;
+        $rows = ($instance['rows'] ?? 1);
+        $columns = ($instance['columns'] ?? 1);
         include 'html/widget-grid.html';
     }
 

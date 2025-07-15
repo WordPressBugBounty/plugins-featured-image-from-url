@@ -21,18 +21,18 @@ function fifu_woocommerce_product_duplicate($array) {
     $post_id = $array->get_id();
     foreach ($array->get_meta_data() as $meta_data) {
         $data = $meta_data->get_data();
-        if (in_array($data['key'], array('fifu_image_url'))) {
+        if (in_array($data['key'] ?? '', array('fifu_image_url'))) {
             delete_post_meta($post_id, '_thumbnail_id');
         }
     }
 }
 
 function fifu_on_products_page() {
-    return strpos($_SERVER['REQUEST_URI'], 'wp-admin/edit.php') !== false && strpos($_SERVER['REQUEST_URI'], 'post_type=product') !== false;
+    return strpos($_SERVER['REQUEST_URI'] ?? '', 'wp-admin/edit.php') !== false && strpos($_SERVER['REQUEST_URI'] ?? '', 'post_type=product') !== false;
 }
 
 function fifu_on_categories_page() {
-    return strpos($_SERVER['REQUEST_URI'], 'wp-admin/edit-tags.php?taxonomy=product_cat&post_type=product') !== false;
+    return strpos($_SERVER['REQUEST_URI'] ?? '', 'wp-admin/edit-tags.php?taxonomy=product_cat&post_type=product') !== false;
 }
 
 function fifu_get_pretty_variation_attributes_map($parent_product_id) {
@@ -125,11 +125,11 @@ function fifu_get_pretty_attribute_names($product_id) {
     if (is_array($attributes)) {
         // Iterate over the attributes
         foreach ($attributes as $attribute) {
-            if (!$attribute['is_variation'])
+            if (!($attribute['is_variation'] ?? false))
                 continue;
 
             // Get the attribute name
-            $name = $attribute['name'];
+            $name = $attribute['name'] ?? '';
 
             // Get the pretty name
             $pretty_name = wc_attribute_label($name);

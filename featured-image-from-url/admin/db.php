@@ -1895,7 +1895,7 @@ class FifuDb {
     }
 
     function get_main_image_url($meta_data, $post_id) {
-        $url = $meta_data['fifu_image_url'];
+        $url = $meta_data['fifu_image_url'] ?? '';
 
         if (!$url && fifu_no_internal_image($post_id) && (get_option('fifu_default_url') && fifu_is_on('fifu_enable_default_url'))) {
             if (fifu_is_valid_default_cpt($post_id))

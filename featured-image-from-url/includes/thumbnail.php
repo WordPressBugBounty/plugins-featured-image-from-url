@@ -146,16 +146,17 @@ function fifu_wp_get_attachment_image_attributes($attr, $attachment, $size) {
         return $attr;
 
     // "all products" page
-    if (function_exists('get_current_screen') && get_current_screen() && isset(get_current_screen()->parent_file) && get_current_screen()->parent_file == 'edit.php?post_type=product') {
-        $attr['src'] = fifu_optimized_column_image($url, $attachment->ID);
+    $current_screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    if ($current_screen && ($current_screen->parent_file ?? '') == 'edit.php?post_type=product') {
+        $attr['src'] = fifu_optimized_column_image($url, $attachment->ID ?? 0);
         return $attr;
     }
 
     $sizes = fifu_speedup_get_sizes($url);
-    $width = $sizes[0];
-    $height = $sizes[1];
-    $is_video = $sizes[2];
-    $clean_url = $sizes[3];
+    $width = $sizes[0] ?? 0;
+    $height = $sizes[1] ?? 0;
+    $is_video = $sizes[2] ?? false;
+    $clean_url = $sizes[3] ?? null;
 
     $attr['src'] = fifu_speedup_get_signed_url($url, $width, $height, null, null, false);
     $attr['loading'] = 'lazy';
@@ -269,7 +270,7 @@ function fifu_remove_content_image($content) {
         $pattern = '/<img[^>]+src=[\'"]([^\'"]+)[\'"][^>]*>/i';
         preg_match_all($pattern, $content, $matches);
 
-        if (!empty($matches[1])) {
+        if (!empty($matches[1] ?? [])) {
             foreach ($matches[1] as $match) {
                 $content_img_url = html_entity_decode($match);
                 if ($content_img_url == $att_url) {
@@ -315,13 +316,13 @@ function fifu_optimize_content($content) {
     if (!isset($post) || !isset($post->ID))
         return $content;
 
-    $post_id = $post->ID;
+    $post_id = $post->ID ?? 0;
 
     $srcType = "src";
     $imgList = array();
     preg_match_all('/<img[^>]*>/', $content, $imgList);
 
-    foreach ($imgList[0] as $imgItem) {
+    foreach (($imgList[0] ?? []) as $imgItem) {
         preg_match('/(' . $srcType . ')([^\'\"]*[\'\"]){2}/', $imgItem, $src);
         if (!$src)
             continue;

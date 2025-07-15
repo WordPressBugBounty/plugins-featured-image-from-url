@@ -401,7 +401,7 @@ function fifu_update_option($input, $field) {
     if (!isset($_POST[$input]))
         return;
 
-    $value = $_POST[$input];
+    $value = $_POST[$input] ?? '';
 
     $arr_boolean = array('fifu_auto_alt', 'fifu_cdn_content', 'fifu_check', 'fifu_data_clean', 'fifu_decode', 'fifu_enable_default_url', 'fifu_fake', 'fifu_get_first', 'fifu_hide', 'fifu_pcontent_add', 'fifu_pcontent_remove', 'fifu_debug', 'fifu_ovw_first', 'fifu_photon', 'fifu_pop_first', 'fifu_reset', 'fifu_run_delete_all', 'fifu_wc_lbox', 'fifu_wc_zoom', 'fifu_cloud_upload_auto', 'fifu_cloud_delete_auto', 'fifu_cloud_hotlink');
     if (in_array($field, $arr_boolean)) {
@@ -489,11 +489,14 @@ function fifu_disable_fake() {
 
 function fifu_version() {
     $plugin_data = get_plugin_data(FIFU_PLUGIN_DIR . 'featured-image-from-url.php');
-    return $plugin_data ? $plugin_data['Name'] . ':' . $plugin_data['Version'] : '';
+    $name = $plugin_data['Name'] ?? '';
+    $version = $plugin_data['Version'] ?? '';
+    return $plugin_data && $name && $version ? $name . ':' . $version : '';
 }
 
 function fifu_version_number() {
-    return get_plugin_data(FIFU_PLUGIN_DIR . 'featured-image-from-url.php')['Version'];
+    $plugin_data = get_plugin_data(FIFU_PLUGIN_DIR . 'featured-image-from-url.php');
+    return $plugin_data['Version'] ?? '';
 }
 
 function fifu_version_number_enq() {
@@ -507,7 +510,8 @@ function fifu_su_sign_up_complete() {
 }
 
 function fifu_su_get_email() {
-    return base64_decode(get_option('fifu_su_email')[0]);
+    $su_email_option = get_option('fifu_su_email');
+    return base64_decode($su_email_option[0] ?? '');
 }
 
 function fifu_get_last($meta_key) {
@@ -530,8 +534,10 @@ function fifu_get_plugins_list() {
 
 function fifu_get_active_plugins_list() {
     $list = '';
-    foreach (get_option('active_plugins') as $key) {
-        $name = explode('/', $key)[0];
+    $active_plugins = get_option('active_plugins', []);
+    foreach ($active_plugins as $key) {
+        $plugin_parts = explode('/', $key);
+        $name = $plugin_parts[0] ?? '';
         $list .= '&#10; - ' . $name;
     }
     return $list;

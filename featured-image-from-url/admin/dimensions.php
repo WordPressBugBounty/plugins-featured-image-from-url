@@ -58,17 +58,17 @@ function fifu_image_downsize($out, $att_id, $size) {
     $image_url = $original_image_url;
 
     $size_details = fifu_get_image_size_details($size);
-    $width = $size_details['width'];
-    $height = $size_details['height'];
-    $crop = $size_details['crop'];
+    $width = $size_details['width'] ?? 0;
+    $height = $size_details['height'] ?? 0;
+    $crop = $size_details['crop'] ?? 0;
 
     // Check if the requested size is "full"
     if ($size === 'full') {
         // Check if dimensions are already saved
         $metadata = wp_get_attachment_metadata($att_id);
         if (!empty($metadata['width']) && !empty($metadata['height'])) {
-            $original_width = intval($metadata['width']);
-            $original_height = intval($metadata['height']);
+            $original_width = intval($metadata['width'] ?? 0);
+            $original_height = intval($metadata['height'] ?? 0);
             $aspect_ratio = $original_height / $original_width;
             $max_dimension = 1920;
 
@@ -84,6 +84,7 @@ function fifu_image_downsize($out, $att_id, $size) {
 
             $new_url = fifu_resize_with_photon($image_url, $new_width, $new_height, $crop, $att_id, $size);
 
+            $FIFU_SESSION['cdn-new-old'] = $FIFU_SESSION['cdn-new-old'] ?? [];
             $FIFU_SESSION['cdn-new-old'][$new_url] = $original_image_url;
             return array($new_url, $new_width, $new_height, true);
         } else {
@@ -95,6 +96,7 @@ function fifu_image_downsize($out, $att_id, $size) {
 
         $new_url = fifu_resize_with_photon($image_url, $width, $height, $crop, $att_id, $size);
 
+        $FIFU_SESSION['cdn-new-old'] = $FIFU_SESSION['cdn-new-old'] ?? [];
         $FIFU_SESSION['cdn-new-old'][$new_url] = $original_image_url;
         return array($new_url, $width, $height, true);
     }
@@ -105,9 +107,9 @@ add_filter('image_downsize', 'fifu_image_downsize', 10, 3);
 function fifu_resize_with_photon($url, $width, $height, $crop, $att_id, $size) {
     if (!$width && !$height) {
         $size_details = fifu_get_image_size_details($size);
-        $width = $size_details['width'];
-        $height = $size_details['height'];
-        $crop = $size_details['crop'];
+        $width = $size_details['width'] ?? 0;
+        $height = $size_details['height'] ?? 0;
+        $crop = $size_details['crop'] ?? 0;
     }
 
     if (fifu_is_from_proxy_urls($url)) {
@@ -233,16 +235,16 @@ function fifu_detect_image_size_usage($image, $id, $size) {
     if (is_string($size)) {
         $registered_sizes = wp_get_registered_image_subsizes();
         if (array_key_exists($size, $registered_sizes)) {
-            $default_data['w'] = $registered_sizes[$size]['width'];
-            $default_data['h'] = $registered_sizes[$size]['height'];
-            $default_data['c'] = $registered_sizes[$size]['crop'];
+            $default_data['w'] = $registered_sizes[$size]['width'] ?? 0;
+            $default_data['h'] = $registered_sizes[$size]['height'] ?? 0;
+            $default_data['c'] = $registered_sizes[$size]['crop'] ?? false;
         }
     }
     // For array sizes, use the array values
     elseif (is_array($size) && count($size) >= 2) {
-        $default_data['w'] = (int) $size[0];
-        $default_data['h'] = (int) $size[1];
-        $default_data['c'] = isset($size[2]) ? (bool) $size[2] : false;
+        $default_data['w'] = (int) ($size[0] ?? 0);
+        $default_data['h'] = (int) ($size[1] ?? 0);
+        $default_data['c'] = (bool) ($size[2] ?? false);
     } else {
         return $image; // Invalid size format
     }
@@ -263,9 +265,9 @@ function fifu_get_size_option_key($size) {
         return empty($size) ? "fifu_detected_size_empty" : "fifu_detected_size_{$size}";
 
     if (is_array($size) && count($size) >= 2) {
-        $w = (int) $size[0];
-        $h = (int) $size[1];
-        $c = isset($size[2]) ? (bool) $size[2] : false;
+        $w = (int) ($size[0] ?? 0);
+        $h = (int) ($size[1] ?? 0);
+        $c = (bool) ($size[2] ?? false);
         return "fifu_detected_size_{$w}x{$h}x" . ($c ? '1' : '0');
     }
 
@@ -363,7 +365,7 @@ function fifu_send_cdn_stats() {
 }
 
 function fifu_is_bot_request() {
-    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     if (empty($user_agent)) {
         return true;
     }
@@ -419,9 +421,9 @@ function fifu_get_image_size_details($size) {
         $defined_data = get_option($defined);
         if ($defined_data) {
             return [
-                'width' => intval($defined_data['w']),
-                'height' => intval($defined_data['h']),
-                'crop' => intval($defined_data['c']),
+                'width' => intval($defined_data['w'] ?? 0),
+                'height' => intval($defined_data['h'] ?? 0),
+                'crop' => intval($defined_data['c'] ?? 0),
             ];
         }
     }
@@ -444,9 +446,9 @@ function fifu_get_image_size_details($size) {
         $crop = isset($size[2]) ? (boolval($size[2]) ? 1 : 0) : $default_crop;
     } elseif (is_string($size) && in_array($size, $image_sizes, true)) {
         if (isset($registered_sizes[$size])) {
-            $width = intval($registered_sizes[$size]['width']);
-            $height = intval($registered_sizes[$size]['height']);
-            $crop = intval(boolval($registered_sizes[$size]['crop']));
+            $width = intval($registered_sizes[$size]['width'] ?? 0);
+            $height = intval($registered_sizes[$size]['height'] ?? 0);
+            $crop = intval(boolval($registered_sizes[$size]['crop'] ?? false));
         } else {
             $width = intval(get_option("{$size}_size_w", $default_width));
             $height = intval(get_option("{$size}_size_h", $default_height));

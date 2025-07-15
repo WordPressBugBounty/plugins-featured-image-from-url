@@ -13,10 +13,10 @@ function fifu_resize_speedup_image_size($size, $url, $width, $height, $is_video)
 
 function fifu_speedup_get_set($url) {
     $sizes = fifu_speedup_get_sizes($url);
-    $width = $sizes[0];
-    $height = $sizes[1];
-    $is_video = $sizes[2];
-    $clean_url = $sizes[3];
+    $width = $sizes[0] ?? 0;
+    $height = $sizes[1] ?? 0;
+    $is_video = $sizes[2] ?? false;
+    $clean_url = $sizes[3] ?? null;
 
     $set = '';
     $count = 0;
@@ -34,9 +34,15 @@ function fifu_speedup_get_url($image, $size, $att_id) {
     $has_video = fifu_speedup_has_video_thumb($image[0]);
 
     // add sizes
-    $aux = explode('/', $image[0])[4];
-    $original_width = (int) explode('-', $aux)[1];
-    $original_height = (int) explode('-', $aux)[2];
+    $aux = explode('/', $image[0]);
+    if (isset($aux[4])) {
+        $aux = explode('-', $aux[4]);
+        $original_width = (int) ($aux[1] ?? 0);
+        $original_height = (int) ($aux[2] ?? 0);
+    } else {
+        $original_width = 0;
+        $original_height = 0;
+    }
 
     if ($image[1] <= 1) {
         $image[1] = $original_width;
@@ -45,8 +51,8 @@ function fifu_speedup_get_url($image, $size, $att_id) {
 
     // Get both the modified image and crop value
     $result = fifu_add_size($image, $size);
-    $image = $result['image'];
-    $crop = $result['crop'];
+    $image = $result['image'] ?? $image;
+    $crop = $result['crop'] ?? false;
 
     if (!isset($image[1]) || !is_numeric($image[1]) || $image[1] >= 9999)
         $image[1] = 0;
@@ -86,7 +92,7 @@ function fifu_speedup_get_signed_url($url, $width, $height, $bucket_id, $storage
     list($width, $height) = fifu_speedup_fix_size($width, $height);
 
     if ($url)
-        $url = explode('?', $url)[0];
+        $url = explode('?', $url)[0] ?? $url;
 
     $proxy_auth = get_option('fifu_proxy_auth');
     if (!$proxy_auth)
@@ -94,20 +100,20 @@ function fifu_speedup_get_signed_url($url, $width, $height, $bucket_id, $storage
 
     if ($url) {
         $aux = explode('/', $url);
-        $bucket_id = $aux[3];
-        $storage_id = $aux[4];
+        $bucket_id = $aux[3] ?? '';
+        $storage_id = $aux[4] ?? '';
     }
 
     $aux = explode('-', $storage_id);
     if (count($aux) < 7)
         return $url;
 
-    $original_width = (int) $aux[1];
-    $original_height = (int) $aux[2];
-    $center_x = (int) $aux[3];
-    $center_y = (int) $aux[4];
-    $top_head = (int) $aux[5];
-    $bottom = (int) $aux[6];
+    $original_width = (int) ($aux[1] ?? 0);
+    $original_height = (int) ($aux[2] ?? 0);
+    $center_x = (int) ($aux[3] ?? 0);
+    $center_y = (int) ($aux[4] ?? 0);
+    $top_head = (int) ($aux[5] ?? 0);
+    $bottom = (int) ($aux[6] ?? 0);
 
     $watermark = $is_video ? '/wm:0.85:ce:0:0:0.25' : '';
 
@@ -135,8 +141,8 @@ function fifu_speedup_get_signed_url($url, $width, $height, $bucket_id, $storage
         }
     }
 
-    $key = pack("H*", $proxy_auth[0]);
-    $salt = pack("H*", $proxy_auth[1]);
+    $key = pack("H*", $proxy_auth[0] ?? '');
+    $salt = pack("H*", $proxy_auth[1] ?? '');
 
     $path = "/rs:fill:{$width}:{$height}:1/g:fp:{$x_fp}:{$y_fp}{$watermark}/plain/{$bucket_id}/{$storage_id}@webp";
     $signature = rtrim(strtr(base64_encode(hash_hmac('sha256', $salt . $path, $key, true)), '+/', '-_'), '=');
@@ -145,18 +151,18 @@ function fifu_speedup_get_signed_url($url, $width, $height, $bucket_id, $storage
 
 function fifu_speedup_get_sizes($url) {
     $aux = explode('?', $url);
-    $url = $aux[0];
-    $parameters = isset($aux[1]) ? $aux[1] : '';
+    $url = $aux[0] ?? $url;
+    $parameters = $aux[1] ?? '';
     parse_str($parameters, $parameters);
 
     $aux = explode('-', $url);
-    $width = isset($aux[1]) ? (int) $aux[1] : 0;
-    $height = isset($aux[2]) ? (int) $aux[2] : 0;
+    $width = (int) ($aux[1] ?? 0);
+    $height = (int) ($aux[2] ?? 0);
 
     if (isset($parameters['resize'])) {
         $aux = explode(',', $parameters['resize']);
-        $width = (int) $aux[0];
-        $height = (int) $aux[1];
+        $width = (int) ($aux[0] ?? 0);
+        $height = (int) ($aux[1] ?? 0);
     }
 
     $is_video = isset($parameters['video-thumb']);

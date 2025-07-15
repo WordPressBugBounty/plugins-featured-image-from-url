@@ -4,11 +4,11 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use a remote image or video as featured image of a post or WooCommerce product.
- * Version: 5.2.0
+ * Version: 5.2.1
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0
- * WC tested up to: 9.9.5
+ * WC tested up to: 10.0.2
  * Text Domain: featured-image-from-url
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -25,42 +25,65 @@ define('FIFU_CLOUD_DEBUG', false);
 
 $FIFU_SESSION = array();
 
-require_once (FIFU_INCLUDES_DIR . '/attachment.php');
-require_once (FIFU_INCLUDES_DIR . '/convert-url.php');
-require_once (FIFU_INCLUDES_DIR . '/external-post.php');
-require_once (FIFU_INCLUDES_DIR . '/jetpack.php');
-require_once (FIFU_INCLUDES_DIR . '/speedup.php');
-require_once (FIFU_INCLUDES_DIR . '/thumbnail.php');
-require_once (FIFU_INCLUDES_DIR . '/thumbnail-category.php');
-require_once (FIFU_INCLUDES_DIR . '/util.php');
-require_once (FIFU_INCLUDES_DIR . '/woo.php');
+// Required includes with error handling
+$required_includes = [
+    FIFU_INCLUDES_DIR . '/attachment.php',
+    FIFU_INCLUDES_DIR . '/convert-url.php',
+    FIFU_INCLUDES_DIR . '/external-post.php',
+    FIFU_INCLUDES_DIR . '/jetpack.php',
+    FIFU_INCLUDES_DIR . '/speedup.php',
+    FIFU_INCLUDES_DIR . '/thumbnail.php',
+    FIFU_INCLUDES_DIR . '/thumbnail-category.php',
+    FIFU_INCLUDES_DIR . '/util.php',
+    FIFU_INCLUDES_DIR . '/woo.php'
+];
 
-require_once (FIFU_ADMIN_DIR . '/api.php');
-require_once (FIFU_ADMIN_DIR . '/db.php');
-require_once (FIFU_ADMIN_DIR . '/debug.php');
-require_once (FIFU_ADMIN_DIR . '/category.php');
-require_once (FIFU_ADMIN_DIR . '/column.php');
-require_once (FIFU_ADMIN_DIR . '/cron.php');
-require_once (FIFU_ADMIN_DIR . '/dimensions.php');
-require_once (FIFU_ADMIN_DIR . '/languages.php');
-require_once (FIFU_ADMIN_DIR . '/log.php');
-require_once (FIFU_ADMIN_DIR . '/menu.php');
-require_once (FIFU_ADMIN_DIR . '/meta-box.php');
-require_once (FIFU_ADMIN_DIR . '/rsa.php');
-require_once (FIFU_ADMIN_DIR . '/strings.php');
-require_once (FIFU_ADMIN_DIR . '/sheet-editor.php');
-require_once (FIFU_ADMIN_DIR . '/transient.php');
-require_once (FIFU_ADMIN_DIR . '/widgets.php');
-
-require_once (FIFU_ELEMENTOR_DIR . '/elementor-fifu-extension.php');
-
-if (fifu_is_gravity_forms_active()) {
-    require_once (WP_PLUGIN_DIR . '/gravityforms/gravityforms.php');
-    if (class_exists('GFForms'))
-        require_once (FIFU_GRAVITY_DIR . '/fifufieldaddon.php');
+foreach ($required_includes as $file) {
+    if (file_exists($file)) {
+        require_once $file;
+    }
 }
 
-if (defined('WP_CLI') && WP_CLI)
+$required_admin = [
+    FIFU_ADMIN_DIR . '/api.php',
+    FIFU_ADMIN_DIR . '/category.php',
+    FIFU_ADMIN_DIR . '/column.php',
+    FIFU_ADMIN_DIR . '/cron.php',
+    FIFU_ADMIN_DIR . '/db.php',
+    FIFU_ADMIN_DIR . '/debug.php',
+    FIFU_ADMIN_DIR . '/dimensions.php',
+    FIFU_ADMIN_DIR . '/languages.php',
+    FIFU_ADMIN_DIR . '/log.php',
+    FIFU_ADMIN_DIR . '/menu.php',
+    FIFU_ADMIN_DIR . '/meta-box.php',
+    FIFU_ADMIN_DIR . '/rsa.php',
+    FIFU_ADMIN_DIR . '/strings.php',
+    FIFU_ADMIN_DIR . '/sheet-editor.php',
+    FIFU_ADMIN_DIR . '/transient.php',
+    FIFU_ADMIN_DIR . '/widgets.php',
+];
+
+foreach ($required_admin as $file) {
+    if (file_exists($file)) {
+        require_once $file;
+    }
+}
+
+if (file_exists(FIFU_ELEMENTOR_DIR . '/elementor-fifu-extension.php')) {
+    require_once (FIFU_ELEMENTOR_DIR . '/elementor-fifu-extension.php');
+}
+
+if (function_exists('fifu_is_gravity_forms_active') && fifu_is_gravity_forms_active()) {
+    $gravity_forms_file = WP_PLUGIN_DIR . '/gravityforms/gravityforms.php';
+    if (file_exists($gravity_forms_file)) {
+        require_once $gravity_forms_file;
+    }
+    if (class_exists('GFForms') && file_exists(FIFU_GRAVITY_DIR . '/fifufieldaddon.php')) {
+        require_once (FIFU_GRAVITY_DIR . '/fifufieldaddon.php');
+    }
+}
+
+if (defined('WP_CLI') && WP_CLI && file_exists(FIFU_ADMIN_DIR . '/cli-commands.php'))
     require_once (FIFU_ADMIN_DIR . '/cli-commands.php');
 
 register_activation_hook(__FILE__, 'fifu_activate');
@@ -71,11 +94,16 @@ function fifu_activate($network_wide) {
         foreach ($wpdb->get_col("SELECT blog_id FROM $wpdb->blogs") as $blog_id) {
             switch_to_blog($blog_id);
             fifu_activate_actions();
+            fifu_set_author();
+            restore_current_blog();
         }
+        // Execute network-wide operations on main site
+        switch_to_blog(get_main_site_id());
+        restore_current_blog();
     } else {
         fifu_activate_actions();
+        fifu_set_author();
     }
-    fifu_set_author();
 }
 
 function fifu_activate_actions() {
@@ -95,15 +123,30 @@ add_action('upgrader_process_complete', 'fifu_upgrade', 10, 2);
 
 function fifu_upgrade($upgrader_object, $options) {
     $current_plugin_path_name = plugin_basename(__FILE__);
-    if (isset($options['action']) && $options['action'] == 'update' && $options['type'] == 'plugin') {
+    if (($options['action'] ?? '') == 'update' && ($options['type'] ?? '') == 'plugin') {
         if (isset($options['plugins'])) {
             foreach ((array) $options['plugins'] as $each_plugin) {
                 if ($each_plugin == $current_plugin_path_name) {
-                    fifu_activate_actions();
+                    if (is_multisite()) {
+                        global $wpdb;
+                        foreach ($wpdb->get_col("SELECT blog_id FROM $wpdb->blogs") as $blog_id) {
+                            switch_to_blog($blog_id);
+                            fifu_upgrade_actions();
+                            restore_current_blog();
+                        }
+                    } else {
+                        fifu_upgrade_actions();
+                    }
                 }
             }
         }
     }
+}
+
+function fifu_upgrade_actions() {
+    fifu_db_create_table_invalid_media_su();
+    fifu_db_maybe_create_table_meta_in();
+    fifu_db_maybe_create_table_meta_out();
 }
 
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'fifu_action_links');
@@ -119,8 +162,6 @@ add_filter('plugin_row_meta', 'fifu_row_meta', 10, 4);
 
 function fifu_row_meta($plugin_meta, $plugin_file, $plugin_data, $status) {
     if (strpos($plugin_file, 'featured-image-from-url.php') !== false) {
-        $strings = fifu_get_strings_plugins();
-
         $email = '<a style="color:#2271b1">support@fifu.app</a>';
         $new_links = array(
             'email' => $email,

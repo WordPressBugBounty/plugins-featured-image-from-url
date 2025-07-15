@@ -131,11 +131,11 @@ function fifu_ctgr_column_content($internal_image, $column, $term_id) {
 
     // add vars
     foreach ($term_ids as $id)
-        $FIFU_SESSION['fifu-quick-edit-ctgr'][$id] = $vars[$id];
+        $FIFU_SESSION['fifu-quick-edit-ctgr'][$id] = $vars[$id] ?? [];
 
     wp_enqueue_script('fifu-quick-edit', plugins_url('/html/js/quick-edit.js', __FILE__), array('jquery'), fifu_version_number_enq());
     wp_localize_script('fifu-quick-edit', 'fifuQuickEditCtgrVars', [
-        'terms' => $FIFU_SESSION['fifu-quick-edit-ctgr'],
+        'terms' => $FIFU_SESSION['fifu-quick-edit-ctgr'] ?? [],
     ]);
 }
 
@@ -231,7 +231,7 @@ function fifu_column_content($column, $post_id) {
 
     // add vars
     foreach ($post_ids as $id)
-        $FIFU_SESSION['fifu-quick-edit'][$id] = $vars[$id];
+        $FIFU_SESSION['fifu-quick-edit'][$id] = $vars[$id] ?? [];
 
     // the values will be send to the JS once in fifu_footer
 }
@@ -242,8 +242,8 @@ function fifu_footer() {
     if (isset($FIFU_SESSION)) {
         wp_enqueue_script('fifu-quick-edit', plugins_url('/html/js/quick-edit.js', __FILE__), array('jquery'), fifu_version_number_enq());
         wp_localize_script('fifu-quick-edit', 'fifuQuickEditVars', [
-            'posts' => isset($FIFU_SESSION['fifu-quick-edit']) ? $FIFU_SESSION['fifu-quick-edit'] : null,
-            'parent' => isset($FIFU_SESSION['fifu-quick-edit-parent']) ? $FIFU_SESSION['fifu-quick-edit-parent'] : null,
+            'posts' => $FIFU_SESSION['fifu-quick-edit'] ?? null,
+            'parent' => $FIFU_SESSION['fifu-quick-edit-parent'] ?? null,
         ]);
     }
 }
@@ -256,7 +256,7 @@ function fifu_column_custom_post_type() {
 function fifu_optimized_column_image($url, $att_id) {
     if (fifu_is_from_speedup($url)) {
         $aux = explode('?', $url);
-        $url = isset($aux[0]) ? $aux[0] : $url;
+        $url = $aux[0] ?? $url;
         return fifu_speedup_get_signed_url($url, 128, 128, null, null, false);
     }
 

@@ -132,7 +132,7 @@ class FIFU_GF_Image_Field extends GF_Field {
 
     public function get_value_save_entry($value, $form, $input_name, $lead_id, $lead) {
         if ($this->phoneFormat == 'standard' && preg_match('/^\D?(\d{3})\D?\D?(\d{3})\D?(\d{4})$/', $value, $matches)) {
-            $value = sprintf('(%s) %s-%s', isset($matches[1]) ? $matches[1] : '', isset($matches[2]) ? $matches[2] : '', isset($matches[3]) ? $matches[3] : '');
+            $value = sprintf('(%s) %s-%s', $matches[1] ?? '', $matches[2] ?? '', $matches[3] ?? '');
         }
 
         $_POST['fifu_input_url'] = $value;

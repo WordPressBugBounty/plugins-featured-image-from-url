@@ -27,7 +27,7 @@ function fifu_create_keys($email) {
 
     // Extract the public key from $res to $pubKey
     $pubKey = openssl_pkey_get_details($res);
-    $pubKey = $pubKey["key"];
+    $pubKey = $pubKey["key"] ?? '';
 
     // Store key
     update_option('fifu_su_email', array(base64_encode($email)), 'no');
@@ -38,8 +38,8 @@ function fifu_create_keys($email) {
 
 function fifu_create_signature($data) {
     // Recover key
-    $email = base64_decode(get_option('fifu_su_email')[0]);
-    $privKey = openssl_decrypt(base64_decode(get_option('fifu_su_privkey')[0]), "AES-128-ECB", $email . fifu_get_home_url());
+    $email = base64_decode((get_option('fifu_su_email')[0] ?? ''));
+    $privKey = openssl_decrypt(base64_decode((get_option('fifu_su_privkey')[0] ?? '')), "AES-128-ECB", $email . fifu_get_home_url());
 
     // $data is assumed to contain the data to be signed
     // fetch private key from file and ready it

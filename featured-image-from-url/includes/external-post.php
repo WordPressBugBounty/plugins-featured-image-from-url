@@ -7,15 +7,15 @@ function fifu_save_properties_ext($post_id) {
         return;
 
     $first = fifu_first_url_in_content($post_id);
-    $url = $first ? esc_url_raw(rtrim($first)) : null;
+    $image_url = $first ? esc_url_raw(rtrim($first)) : null;
 
-    if ((!isset($_POST['action']) || $_POST['action'] != 'elementor_ajax') && $url && fifu_is_on('fifu_get_first') && !fifu_has_local_featured_image($post_id) && fifu_is_valid_cpt($post_id)) {
-        update_post_meta($post_id, 'fifu_image_url', fifu_convert($url));
+    if ((($_POST['action'] ?? '') != 'elementor_ajax') && $image_url && fifu_is_on('fifu_get_first') && !fifu_has_local_featured_image($post_id) && fifu_is_valid_cpt($post_id)) {
+        update_post_meta($post_id, 'fifu_image_url', fifu_convert($image_url));
         fifu_db_update_fake_attach_id($post_id);
         return;
     }
 
-    if (!$url && get_option('fifu_default_url') && fifu_is_on('fifu_enable_default_url')) {
+    if (!$image_url && get_option('fifu_default_url') && fifu_is_on('fifu_enable_default_url')) {
         if (fifu_is_valid_default_cpt($post_id))
             fifu_db_update_fake_attach_id($post_id);
     }
@@ -43,7 +43,7 @@ function fifu_first_url_in_content($post_id) {
 
     // $matches
     $tag = null;
-    foreach ($matches[0] as $tag) {
+    foreach (($matches[0] ?? []) as $tag) {
         if (($tag && strpos($tag, 'data:image/jpeg') !== false))
             continue;
 

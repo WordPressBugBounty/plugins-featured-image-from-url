@@ -1,19 +1,19 @@
 <?php
 
 function fifu_api_debug_slug(WP_REST_Request $request) {
-    $slug = $request->get_param('slug');
+    $slug = $request->get_param('slug') ?? '';
     $posts = fifu_db_debug_slug($slug);
     return new WP_REST_Response($posts, 200);
 }
 
 function fifu_api_debug_postmeta(WP_REST_Request $request) {
-    $post_id = $request->get_param('post_id');
+    $post_id = $request->get_param('post_id') ?? 0;
     $postmeta = fifu_db_debug_postmeta($post_id);
     return new WP_REST_Response($postmeta, 200);
 }
 
 function fifu_api_debug_posts(WP_REST_Request $request) {
-    $id = $request->get_param('id');
+    $id = $request->get_param('id') ?? 0;
     $posts = fifu_db_debug_posts($id);
     return new WP_REST_Response($posts, 200);
 }

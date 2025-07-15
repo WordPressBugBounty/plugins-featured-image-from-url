@@ -21,7 +21,7 @@ function fifu_from_google_drive($url) {
 
 function fifu_google_drive_id($url) {
     preg_match("/[-\w]{25,}/", $url, $matches);
-    return isset($matches[0]) ? $matches[0] : null;
+    return $matches[0] ?? null;
 }
 
 function fifu_google_drive_url($url) {
@@ -35,7 +35,11 @@ function fifu_from_onedrive($url) {
 }
 
 function fifu_onedrive_id($url) {
-    return explode("?", explode("/", $url)[4])[0];
+    $url_parts = explode("/", $url);
+    if (!isset($url_parts[4])) {
+        return null;
+    }
+    return explode("?", $url_parts[4])[0] ?? '';
 }
 
 function fifu_onedrive_url($url) {

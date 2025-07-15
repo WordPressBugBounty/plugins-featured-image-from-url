@@ -9,7 +9,7 @@ function fifu_plugin_log($entry, $mode = 'a', $file = 'fifu-plugin') {
 }
 
 function fifu_log($entry, $file, $mode = 'a') {
-    $upload_dir = wp_upload_dir()['basedir'];
+    $upload_dir = wp_upload_dir()['basedir'] ?? '';
     $filepath = "{$upload_dir}/{$file}.log";
 
     // Remove the file

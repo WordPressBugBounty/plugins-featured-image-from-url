@@ -10,11 +10,11 @@ function fifu_resize_jetpack_image_size($size, $url) {
     if (strpos($url, 'wp.fifu.app/') !== false) {
         // Parse the URL to extract its components
         $parts = parse_url($url);
-        $path_parts = explode('/', trim($parts['path'], '/'));
+        $path_parts = explode('/', trim($parts['path'] ?? '', '/'));
         $path_count = count($path_parts);
 
         // Extract query parameters (if any)
-        $query = isset($parts['query']) ? $parts['query'] : '';
+        $query = $parts['query'] ?? '';
         parse_str($query, $query_params);
 
         // Add or update the size parameter in the query
@@ -36,7 +36,7 @@ function fifu_resize_jetpack_image_size($size, $url) {
             $new_query = http_build_query($query_params);
 
             // Create the unsigned URL to calculate a new signature
-            $unsigned_url = '//' . $parts['host'] . $new_path . ($new_query ? '?' . $new_query : '');
+            $unsigned_url = '//' . ($parts['host'] ?? '') . $new_path . ($new_query ? '?' . $new_query : '');
 
             // Generate a new signature
             $new_signature = fifu_get_signature($unsigned_url, 'fifu');
@@ -48,7 +48,7 @@ function fifu_resize_jetpack_image_size($size, $url) {
             $final_path = '/' . implode('/', $path_parts);
 
             // Return the complete URL with the new signature
-            return $parts['scheme'] . '://' . $parts['host'] . $final_path . ($new_query ? '?' . $new_query : '');
+            return ($parts['scheme'] ?? 'https') . '://' . ($parts['host'] ?? '') . $final_path . ($new_query ? '?' . $new_query : '');
         }
         return $url;
     } else {
