@@ -11,7 +11,7 @@ add_action('admin_menu', 'fifu_insert_menu');
 function fifu_insert_menu() {
     $fifu = fifu_get_strings_settings();
 
-    if (isset($_SERVER['REQUEST_URI']) && (strpos($_SERVER['REQUEST_URI'], 'featured-image-from-url') !== false || strpos($_SERVER['REQUEST_URI'], 'fifu') !== false)) {
+    if (isset($_SERVER['REQUEST_URI']) && (strpos($_SERVER['REQUEST_URI'], FIFU_SLUG) !== false || strpos($_SERVER['REQUEST_URI'], 'fifu') !== false)) {
         wp_enqueue_script('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js');
         wp_enqueue_style('jquery-ui-style1', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css');
         wp_enqueue_style('jquery-ui-style2', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.structure.min.css');
@@ -39,12 +39,12 @@ function fifu_insert_menu() {
         ]);
     }
 
-    add_menu_page('Featured Image from URL', 'FIFU', 'manage_options', 'featured-image-from-url', 'fifu_get_menu_html', 'dashicons-camera', 57);
-    add_submenu_page('featured-image-from-url', 'FIFU Settings', $fifu['options']['settings'](), 'manage_options', 'featured-image-from-url');
-    add_submenu_page('featured-image-from-url', 'FIFU Cloud', $fifu['options']['cloud'](), 'manage_options', 'fifu-cloud', 'fifu_cloud');
-    add_submenu_page('featured-image-from-url', 'FIFU Troubleshooting', $fifu['options']['troubleshooting'](), 'manage_options', 'fifu-troubleshooting', 'fifu_troubleshooting');
-    add_submenu_page('featured-image-from-url', 'FIFU Status', $fifu['options']['status'](), 'manage_options', 'fifu-support-data', 'fifu_support_data');
-    add_submenu_page('featured-image-from-url', 'FIFU Pro', '<a href="https://fifu.app/" target="_blank"><div style="padding:5px;color:white;background-color:#1da867">' . $fifu['options']['upgrade']() . '</div></a>', 'manage_options', '#', null);
+    add_menu_page('Featured Image from URL', 'FIFU', 'manage_options', FIFU_SLUG, 'fifu_get_menu_html', 'dashicons-camera', 57);
+    add_submenu_page(FIFU_SLUG, 'FIFU Settings', $fifu['options']['settings'](), 'manage_options', FIFU_SLUG);
+    add_submenu_page(FIFU_SLUG, 'FIFU Cloud', $fifu['options']['cloud'](), 'manage_options', 'fifu-cloud', 'fifu_cloud');
+    add_submenu_page(FIFU_SLUG, 'FIFU Troubleshooting', $fifu['options']['troubleshooting'](), 'manage_options', 'fifu-troubleshooting', 'fifu_troubleshooting');
+    add_submenu_page(FIFU_SLUG, 'FIFU Status', $fifu['options']['status'](), 'manage_options', 'fifu-support-data', 'fifu_support_data');
+    add_submenu_page(FIFU_SLUG, 'FIFU Pro', '<a href="https://fifu.app/" target="_blank"><div style="padding:5px;color:white;background-color:#1da867">' . $fifu['options']['upgrade']() . '</div></a>', 'manage_options', '#', null);
 
     add_action('admin_init', 'fifu_get_menu_settings');
 }

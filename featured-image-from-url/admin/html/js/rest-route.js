@@ -1,6 +1,6 @@
 function fifu_get_rest_url() {
     var out = null;
-    error = false;
+    let error = false;
     jQuery.ajax({
         method: "POST",
         url: fifuScriptVars.homeUrl + '/wp-json/featured-image-from-url/v2/rest_url_api/',
@@ -9,7 +9,7 @@ function fifu_get_rest_url() {
             out = data;
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            protocol = fifuScriptVars.homeUrl.includes('http:') ? 'https:' : 'http:';
+            let protocol = fifuScriptVars.homeUrl.includes('http:') ? 'https:' : 'http:';
             jQuery.ajax({
                 method: "POST",
                 url: fifuScriptVars.homeUrl.replace(/[^:]+:/, protocol) + '/wp-json/featured-image-from-url/v2/rest_url_api/',
@@ -32,7 +32,7 @@ function fifu_get_rest_url() {
                 out = data;
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                protocol = fifuScriptVars.homeUrl.includes('http:') ? 'https:' : 'http:';
+                let protocol = fifuScriptVars.homeUrl.includes('http:') ? 'https:' : 'http:';
                 jQuery.ajax({
                     method: "POST",
                     url: fifuScriptVars.homeUrl.replace(/[^:]+:/, protocol) + '?rest_route=/featured-image-from-url/v2/rest_url_api/',

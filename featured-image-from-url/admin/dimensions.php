@@ -120,13 +120,6 @@ function fifu_resize_with_photon($url, $width, $height, $crop, $att_id, $size) {
 
         $w = $width;
         $h = $height;
-
-        // force a square on WooCommerce when either width or height is undefined.
-        if (is_string($size) && strpos($size, 'woocommerce') !== false) {
-            $h = $h == 0 ? $w : $h;
-            $w = $w == 0 ? $h : $w;
-        }
-
         $c = is_null($crop) ? 0 : (int) $crop;
 
         $url = fifu_pubcdn_get_image_url($att_id, $url, "?w={$w}&h={$h}&c={$c}");

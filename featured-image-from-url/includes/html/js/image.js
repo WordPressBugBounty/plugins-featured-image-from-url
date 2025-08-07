@@ -24,8 +24,8 @@ jQuery(document).ready(function ($) {
 
 function disableClick($) {
     if (!fifuImageVars.fifu_woo_lbox_enabled) {
-        firstParentClass = '';
-        parentClass = '';
+        let firstParentClass = '';
+        let parentClass = '';
         jQuery('figure.woocommerce-product-gallery__wrapper').find('div.woocommerce-product-gallery__image').each(function (index) {
             parentClass = jQuery(this).parent().attr('class').split(' ')[0];
             if (!firstParentClass)
@@ -44,8 +44,8 @@ function disableClick($) {
 
 function disableLink($) {
     if (!fifuImageVars.fifu_woo_lbox_enabled) {
-        firstParentClass = '';
-        parentClass = '';
+        let firstParentClass = '';
+        let parentClass = '';
         jQuery('figure.woocommerce-product-gallery__wrapper').find('div.woocommerce-product-gallery__image').each(function (index) {
             parentClass = jQuery(this).parent().attr('class').split(' ')[0];
             if (!firstParentClass)
@@ -65,7 +65,7 @@ jQuery(document).click(function ($) {
 
 function fifu_fix_gallery_height() {
     if (fifuImageVars.fifu_is_flatsome_active) {
-        mainImage = jQuery('.woocommerce-product-gallery__wrapper div.flickity-viewport').find('img')[0];
+        let mainImage = jQuery('.woocommerce-product-gallery__wrapper div.flickity-viewport').find('img')[0];
         if (mainImage)
             jQuery('.woocommerce-product-gallery__wrapper div.flickity-viewport').css('height', mainImage.clientHeight + 'px');
     }

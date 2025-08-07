@@ -1,10 +1,10 @@
+var metaIntervalId = null;
+
 jQuery(document).ready(function () {
     jQuery('link[href*="jquery-ui.css"]').attr("disabled", "true");
     jQuery('div.wrap div.header-box div.notice').hide();
     jQuery('div.wrap div.header-box div#message').hide();
     jQuery('div.wrap div.header-box div.updated').remove();
-
-    var metaIntervalId = null;
 });
 
 var restUrl = fifuScriptVars.restUrl;
@@ -140,13 +140,13 @@ function updateMessage(title, message, state) {
 function fifu_default_js() {
     jQuery('#tabs-top').block({message: fifuScriptVars.wait, css: {backgroundColor: 'none', border: 'none', color: 'white'}});
 
-    toggle = jQuery("#fifu_toggle_enable_default_url").attr('class');
+    let toggle = jQuery("#fifu_toggle_enable_default_url").attr('class');
     switch (toggle) {
         case "toggleoff":
             option = "disable_default_api";
             break;
         default:
-            url = jQuery("#fifu_input_default_url").val();
+            let url = jQuery("#fifu_input_default_url").val();
             option = url ? "none_default_api" : "disable_default_api";
     }
     jQuery.ajax({
@@ -399,7 +399,7 @@ function fifu_save_sizes() {
 function fifu_fake_js() {
     jQuery('#tabs-top').block({message: fifuScriptVars.wait, css: {backgroundColor: 'none', border: 'none', color: 'white'}});
 
-    toggle = jQuery("#fifu_toggle_fake").attr('class');
+    let toggle = jQuery("#fifu_toggle_fake").attr('class');
     switch (toggle) {
         case "toggleon":
             option = "enable_fake_api";
@@ -534,7 +534,7 @@ function updateMetadataCounter(transient) {
         error: function (xhr, status, error) {
             console.error('Error updating metadata counter:', error);
         },
-        timeout: 60
+        timeout: 60000
     });
 }
 

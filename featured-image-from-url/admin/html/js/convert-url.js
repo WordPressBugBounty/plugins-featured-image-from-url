@@ -39,7 +39,7 @@ function fifu_onedrive_id($url) {
 }
 
 function fifu_onedrive_url($url) {
-    id = fifu_onedrive_id($url);
+    let id = fifu_onedrive_id($url);
     return `https://api.onedrive.com/v1.0/shares/${id}/root/content`;
 }
 

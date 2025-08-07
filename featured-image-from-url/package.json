@@ -1,0 +1,13 @@
+{
+    "name": "featured-image-from-url",
+    "version": "1.0.0",
+    "description": "FIFU Block Development",
+    "main": "index.js",
+    "scripts": {
+        "build": "wp-scripts build blocks/fifu-image/index.js --output-path=blocks/fifu-image/build",
+        "start": "wp-scripts start blocks/fifu-image/index.js --output-path=blocks/fifu-image/build"
+    },
+    "devDependencies": {
+        "@wordpress/scripts": "^27.5.0"
+    }
+}

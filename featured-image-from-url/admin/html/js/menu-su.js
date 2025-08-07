@@ -506,18 +506,18 @@ function listAllFifu(page, type, keyword) {
 }
 
 async function addSu(table) {
-    selected = table.rows({selected: true});
-    count = selected.count();
+    let selected = table.rows({selected: true});
+    let count = selected.count();
 
     if (count == 0)
         return;
 
     fifu_block_progress();
 
-    var arr = [];
-    var finished = 0;
-    for (var i = 0; i < count; i++) {
-        data = selected.data()[i];
+    let arr = [];
+    let finished = 0;
+    for (let i = 0; i < count; i++) {
+        let data = selected.data()[i];
         arr.push([
             data[3], // post_id
             data[5], // url
@@ -551,7 +551,7 @@ async function addSu(table) {
                 },
                 complete: function (data) {
                     finished++;
-                    progress = 100 * finished / (count / MAX_ROWS_BY_REQUEST);
+                    let progress = 100 * finished / (count / MAX_ROWS_BY_REQUEST);
                     jQuery('#progressBar').attr('value', progress);
                     jQuery('#progressBar').attr('text', progress);
                     if (finished >= count / MAX_ROWS_BY_REQUEST) {

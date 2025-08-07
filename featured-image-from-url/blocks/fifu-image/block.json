@@ -1,0 +1,23 @@
+{
+    "apiVersion": 2,
+    "name": "fifu/image",
+    "category": "media",
+    "icon": "camera",
+    "keywords": ["image", "featured", "remote", "fifu"],
+    "supports": {
+        "html": false
+    },
+    "attributes": {
+        "imageUrl": {
+            "type": "string",
+            "source": "meta",
+            "meta": "fifu_image_url"
+        },
+        "altText": {
+            "type": "string",
+            "source": "meta",
+            "meta": "fifu_image_alt"
+        }
+    },
+    "editorScript": "file:./build/index.js"
+}

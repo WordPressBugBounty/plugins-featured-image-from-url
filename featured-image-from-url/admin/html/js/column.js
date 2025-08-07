@@ -1,20 +1,89 @@
+var FIFU_IMAGE_NOT_FOUND_URL = 'https://storage.googleapis.com/featuredimagefromurl/image-not-found-a.jpg';
+var WC_PLACEHOLDER_IMAGE_URL = window.location.origin + '/wp-content/uploads/woocommerce-placeholder.webp';
+
 jQuery(document).ready(function () {
     fifu_open_quick_lightbox();
     fifu_register_help_quick_edit();
+
+    // Check all .fifu-quick thumbnails for invalid images
+    fifu_check_image_validity();
+});
+
+// Extract the image validity checking into a separate function
+function fifu_check_image_validity() {
+    jQuery('div.fifu-quick').each(function () {
+        var $div = jQuery(this);
+        var imageUrl = $div.attr('image-url');
+        var postId = $div.attr('post-id');
+
+        // Skip if already processed
+        if ($div.data('fifu-processed')) {
+            return;
+        }
+        $div.data('fifu-processed', true);
+
+        // IMAGE NOT FOUND: set background only, do NOT set placeholder for <img>
+        if (imageUrl) {
+            var img = new Image();
+            img.onerror = function () {
+                $div.css('background-image', 'url("' + FIFU_IMAGE_NOT_FOUND_URL + '")');
+                // Update category thumbnail <img>
+                jQuery(`tr#tag-${postId} td.thumb.column-thumb img[alt="Thumbnail"]`).each(function () {
+                    if (!jQuery(this).attr('src').includes('woocommerce-placeholder')) {
+                        this.src = WC_PLACEHOLDER_IMAGE_URL;
+                    }
+                });
+                // Update product thumbnail <img>
+                jQuery(`td.thumb.column-thumb a[href*="post=${postId}"] img`).each(function () {
+                    if (!jQuery(this).attr('src').includes('woocommerce-placeholder')) {
+                        this.src = WC_PLACEHOLDER_IMAGE_URL;
+                    }
+                });
+            };
+            img.src = imageUrl;
+        }
+    });
+}
+
+// Add a mutation observer to detect new .fifu-quick elements
+var observer = new MutationObserver(function (mutations) {
+    mutations.forEach(function (mutation) {
+        if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach(function (node) {
+                if (node.nodeType === 1) { // Element node
+                    // Check if the added node is a .fifu-quick element
+                    if (jQuery(node).hasClass('fifu-quick')) {
+                        setTimeout(fifu_check_image_validity, 100);
+                    }
+                    // Check if the added node contains .fifu-quick elements
+                    if (jQuery(node).find('.fifu-quick').length > 0) {
+                        setTimeout(fifu_check_image_validity, 100);
+                    }
+                }
+            });
+        }
+    });
+});
+
+// Start observing
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
 });
 
 var currentLightbox = null;
 
 function fifu_open_quick_lightbox() {
-    jQuery("div.fifu-quick").on('click', function (evt) {
+    // Use delegated event binding to support dynamic elements
+    jQuery(document).on('click', 'div.fifu-quick', function (evt) {
         evt.stopImmediatePropagation();
-        post_id = jQuery(this).attr('post-id');
-        image_url = jQuery(this).attr('image-url');
-        is_ctgr = jQuery(this).attr('is-ctgr');
-        is_variable = jQuery(this).attr('is-variable');
+        let post_id = jQuery(this).attr('post-id');
+        let image_url = jQuery(this).attr('image-url');
+        let is_ctgr = jQuery(this).attr('is-ctgr');
+        let is_variable = jQuery(this).attr('is-variable');
 
         if (is_variable) {
-            variable_box = `
+            let variable_box = `
                 <div style="background: white; padding: 10px; border-radius: 1em;">
                     <div style="background-color:#32373c; text-align:center; width:100%; color:white; padding:6px; border-radius:5px;">
                         ${fifuColumnVars.labelVariable}
@@ -58,7 +127,7 @@ function fifu_open_quick_lightbox() {
                     fifu_open_quick_lightbox();
                 },
                 beforeClose: function () {
-                    postParent = jQuery('table#fifu-variable-table').attr('post-parent');
+                    let postParent = jQuery('table#fifu-variable-table').attr('post-parent');
                     fifuQuickEditVars.posts[postParent]['fifu_variable_table'] = jQuery('#fifu-variable-table')[0].outerHTML;
                 },
                 afterClose: function () {
@@ -71,27 +140,28 @@ function fifu_open_quick_lightbox() {
         currentLightbox = post_id;
 
         // display
-        DISPLAY_NONE = 'display:none';
-        EMPTY = '';
-        showVideo = EMPTY;
-        showImageGallery = fifuColumnVars.onProductsPage ? EMPTY : DISPLAY_NONE;
-        showSlider = !fifuColumnVars.onCategoriesPage ? EMPTY : DISPLAY_NONE;
-        showVideoGallery = fifuColumnVars.onProductsPage ? EMPTY : DISPLAY_NONE;
-        showUploadButton = EMPTY;
+        let DISPLAY_NONE = 'display:none';
+        let EMPTY = '';
+        let showVideo = EMPTY;
+        let showImageGallery = fifuColumnVars.onProductsPage ? EMPTY : DISPLAY_NONE;
+        let showSlider = !fifuColumnVars.onCategoriesPage ? EMPTY : DISPLAY_NONE;
+        let showVideoGallery = fifuColumnVars.onProductsPage ? EMPTY : DISPLAY_NONE;
+        let showUploadButton = EMPTY;
 
-        url = image_url;
+        let url = image_url;
         url = (url == 'about:invalid' ? '' : url);
+        let media, box;
         media = `<img loading="lazy" id="fifu-quick-preview" src="" post-id="${post_id}" style="max-height:600px; width:100%;">`;
         box = `
             <table>
                 <tr>
-                    <td id="fifu-left-column" style="background-color:#f6f7f7">${media}</td>
-                    <td style="vertical-align:top; padding: 10px; background-color:#f6f7f7; width:250px">
+                    <td id="fifu-left-column">${media}</td>
+                    <td style="vertical-align:top; padding: 10px; background-color:#f6f7f7; width:250px; border-radius: 8px;">
                     <div class="fifu-pro" style="float:right;position:relative;top:-30px;left:35px"><a class="fifu-pro-link" href="https://fifu.app/" target="_blank" title="${fifuColumnVars.unlock}"><span class="dashicons dashicons-lock fifu-pro-icon"></span></a></div>
                         <div style="opacity:0.5;pointer-events:none;">
                             <div style="padding-bottom:5px">
                                 <span class="dashicons dashicons-camera" style="font-size:20px;cursor:auto;" title="${fifuColumnVars.tipImage}"></span>
-                                <b>${fifuColumnVars.labelImage}</b>
+                                ${fifuColumnVars.labelImage}
                             </div>
                             <input id="fifu-quick-input-url" type="text" placeholder="${fifuColumnVars.urlImage}" value="" style="width:98%"/>
                             <br><br>
@@ -99,7 +169,7 @@ function fifu_open_quick_lightbox() {
                             <div style="${showImageGallery}">
                                 <div style="padding-bottom:5px">
                                     <span class="dashicons dashicons-format-gallery" style="font-size:20px;cursor:auto;"></span>
-                                    <b>${fifuColumnVars.labelImageGallery}</b>
+                                    ${fifuColumnVars.labelImageGallery}
                                 </div>
                                 <div id="gridDemoImage"></div>
                                 <table>
@@ -115,7 +185,7 @@ function fifu_open_quick_lightbox() {
 
                             <div style="padding-bottom:5px">
                                 <span class="dashicons dashicons-search" style="font-size:20px;cursor:auto" title="${fifuColumnVars.tipSearch}"></span>
-                                <b>${fifuColumnVars.labelSearch}</b>
+                                ${fifuColumnVars.labelSearch}
                                 <span id="fifu_help_quick_edit" 
                                     class="dashicons dashicons-editor-help" 
                                     style="font-size:20px;cursor:pointer;">
@@ -141,7 +211,7 @@ function fifu_open_quick_lightbox() {
         `;
         jQuery.fancybox.open(box, {
             touch: false,
-            afterShow: function () {
+            afterShow: async function () {
                 if (currentLightbox) {
                     fifu_get_image_info(currentLightbox);
                 }
@@ -169,7 +239,19 @@ function fifu_keypress_event() {
 function fifu_get_image_info(post_id) {
     image_url = null;
 
+    // Fix: Initialize category data if missing (new category case)
     if (fifuColumnVars.onCategoriesPage) {
+        if (!fifuQuickEditCtgrVars.terms[post_id]) {
+            // Try to get from DOM
+            let $div = jQuery('.fifu-quick[post-id="' + post_id + '"]');
+            let videoSrc = $div.attr('video-src') || '';
+            fifuQuickEditCtgrVars.terms[post_id] = {
+                fifu_image_url: videoSrc ? '' : ($div.attr('image-url') || ''),
+                fifu_image_alt: '',
+                fifu_video_url: $div.attr('video-url') || '',
+                fifu_video_src: videoSrc
+            };
+        }
         image_url = fifuQuickEditCtgrVars.terms[post_id]['fifu_image_url'];
         image_alt = fifuQuickEditCtgrVars.terms[post_id]['fifu_image_alt'];
     } else {
@@ -180,7 +262,9 @@ function fifu_get_image_info(post_id) {
         jQuery('input#fifu-quick-input-url').val(image_url);
         jQuery('#fifu-quick-input-url').select();
         let adjustedUrl = fifu_cdn_adjust(image_url);
-        jQuery('img#fifu-quick-preview').attr('src', adjustedUrl);
+        jQuery('img#fifu-quick-preview')
+                .attr('src', adjustedUrl)
+                .attr('onerror', `this.onerror=null;this.src='${FIFU_IMAGE_NOT_FOUND_URL}';`);
     }
 }
 

@@ -25,12 +25,12 @@ async function fifu_get_unsplash_urls(keywords, page) {
 var fifu_scrolling = false;
 var idSet = new Set();
 
-function fifu_start_lightbox(keywords, unsplash, post_id, is_ctgr) {
+function fifu_start_lightbox(keywords, unsplash, post_id, is_ctgr, context) {
     idSet = new Set();
-    fifu_register_unsplash_click_event();
+    fifu_register_unsplash_click_event(context);
 
-    txt_loading = typeof fifuMetaBoxVars !== 'undefined' ? fifuMetaBoxVars.txt_loading : '';
-    txt_more = typeof fifuMetaBoxVars !== 'undefined' ? fifuMetaBoxVars.txt_more : '';
+    let txt_loading = typeof fifuMetaBoxVars !== 'undefined' ? fifuMetaBoxVars.txt_loading : '';
+    let txt_more = typeof fifuMetaBoxVars !== 'undefined' ? fifuMetaBoxVars.txt_more : '';
 
     jQuery.fancybox.open('<div><div class="masonry"></div></div>');
     jQuery('div.masonry').after('<center><div id="fifu-loading"><img loading="lazy" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.lazyloadxt/1.1.0/loading.gif"><div>' + txt_loading + '</div><div></center>');
@@ -43,21 +43,25 @@ function fifu_start_lightbox(keywords, unsplash, post_id, is_ctgr) {
     fifu_get_unsplash_urls(keywords, page);
 }
 
-function fifu_register_unsplash_click_event() {
+function fifu_register_unsplash_click_event(context) {
+    // Remove previous handlers to avoid duplicates
+    jQuery('body').off('click', 'div.mItem > img');
+
     jQuery('body').on('click', 'div.mItem > img', function (evt) {
         evt.stopImmediatePropagation();
 
-        src = jQuery(this).attr('original');
+        let src = jQuery(this).attr('original');
         if (!src) {
-            // unsplash
             src = jQuery(this).attr('src');
             src = src.replace('&w=400', '&w=1200');
         }
 
-        // meta-box
-        if (jQuery("#fifu_input_url").length) {
-            jQuery("#fifu_input_url").val(src);
-            previewImage();
+        if (context === 'meta-box') {
+            // meta-box
+            if (jQuery("#fifu_input_url").length) {
+                jQuery("#fifu_input_url").val(src);
+                previewImage();
+            }
         }
         jQuery.fancybox.close();
     });

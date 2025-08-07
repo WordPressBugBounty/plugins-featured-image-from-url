@@ -32,7 +32,7 @@ jQuery(document).ready(function ($) {
             }, 250);
         }
 
-        href = jQuery('a#deactivate-featured-image-from-url').attr('href');
+        let href = jQuery('a#deactivate-featured-image-from-url').attr('href');
         window.location.href = href;
     });
 
@@ -54,7 +54,7 @@ jQuery(document).ready(function ($) {
                     xhr.setRequestHeader('X-WP-Nonce', fifuUninstallVars.nonce);
                 },
                 success: function (data) {
-                    href = jQuery('a#deactivate-featured-image-from-url').attr('href');
+                    let href = jQuery('a#deactivate-featured-image-from-url').attr('href');
                     window.location.href = href;
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -84,7 +84,7 @@ jQuery(document).ready(function ($) {
                     xhr.setRequestHeader('X-WP-Nonce', fifuUninstallVars.nonce);
                 },
                 success: function (data) {
-                    href = jQuery('a#activate-fifu-premium').attr('href');
+                    let href = jQuery('a#activate-fifu-premium').attr('href');
                     if (!href)
                         href = jQuery('a#activate-featured-image-from-url-fifu-premium').attr('href');
                     window.location.href = href;

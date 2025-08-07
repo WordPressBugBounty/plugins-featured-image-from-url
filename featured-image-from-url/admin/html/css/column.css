@@ -18,3 +18,14 @@
 tr.color:nth-child(even) {
     background-color: #efefef !important;
 }
+
+#fifu-quick-preview {
+    border-radius: 8px;
+}
+
+#fifu-left-column {
+    background-color:rgb(38, 42, 45);
+    border-radius: 8px;
+    padding: unset;
+    line-height: 0;
+}

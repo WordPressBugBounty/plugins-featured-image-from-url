@@ -1805,6 +1805,9 @@ function fifu_get_strings_meta_box() {
     $fifu['placeholder']['embed'] = function () {
         _e("Embed code", FIFU_SLUG);
     };
+    $fifu['placeholder']['image-video'] = function () {
+        return __("Image/Video URL", FIFU_SLUG);
+    };
 
     return $fifu;
 }
@@ -2568,6 +2571,9 @@ function fifu_get_strings_elementor() {
     $fifu['control']['image'] = function () {
         return __("Image URL", FIFU_SLUG);
     };
+    $fifu['control']['alt'] = function () {
+        return __("Alternative text", FIFU_SLUG);
+    };
     $fifu['title']['video'] = function () {
         return __("Featured Video", FIFU_SLUG);
     };
@@ -2579,6 +2585,9 @@ function fifu_get_strings_elementor() {
     };
     $fifu['control']['pro'] = function () {
         return __("Requires FIFU PRO", FIFU_SLUG);
+    };
+    $fifu['help']['alt'] = function () {
+        return __("This field is used to provide alternative text for images, enhancing accessibility and SEO. If it is empty, then FIFU will use the post title automatically.", FIFU_SLUG);
     };
 
     return $fifu;
@@ -2673,6 +2682,43 @@ function fifu_get_strings_notice() {
     };
     $fifu['notice']['expired'] = function () {
         return __("Your license key has expired. Please renew or upgrade it to continue receiving updates and support.", FIFU_SLUG);
+    };
+
+    return $fifu;
+}
+
+function fifu_get_strings_block() {
+    $fifu = array();
+
+    $fifu['title']['image'] = function () {
+        return __("Featured Image (URL)", FIFU_SLUG);
+    };
+    $fifu['description']['image'] = function () {
+        return __("Display a post's featured image from a URL.", FIFU_SLUG);
+    };
+    $fifu['label']['set'] = function () {
+        return __("No featured image set.", FIFU_SLUG);
+    };
+    $fifu['label']['settings'] = function () {
+        return __("Settings", FIFU_SLUG);
+    };
+    $fifu['label']['image'] = function () {
+        return __("Image URL", FIFU_SLUG);
+    };
+    $fifu['label']['alt'] = function () {
+        return __("Alternative text", FIFU_SLUG);
+    };
+    $fifu['section']['image'] = function () {
+        return __("Featured image", FIFU_SLUG);
+    };
+    $fifu['placeholder']['paste'] = function () {
+        return __("Paste image URL here…", FIFU_SLUG);
+    };
+    $fifu['link']['remove'] = function () {
+        return __("Remove remote image", FIFU_SLUG);
+    };
+    $fifu['help']['alt'] = function () {
+        return __("This field is used to provide alternative text for images, enhancing accessibility and SEO. If it is empty, then FIFU will use the post title automatically.", FIFU_SLUG);
     };
 
     return $fifu;

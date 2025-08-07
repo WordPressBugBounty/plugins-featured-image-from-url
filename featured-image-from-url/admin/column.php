@@ -105,7 +105,7 @@ function fifu_ctgr_column_featured($term_id) {
     if ($image_url == '') {
         $thumb_id = get_term_meta($term_id, 'thumbnail_id', true);
         $image_url = wp_get_attachment_url($thumb_id);
-        $border = 'border-color: #ca4a1f !important; border: 2px; border-style: dotted;';
+        $border = 'border-color: #ca4a1f !important; border: 2px; border-style: dotted; border-radius: 8px;';
     }
     $url = fifu_optimized_column_image($image_url, fifu_get_term_thumbnail_id($term_id));
 
@@ -154,7 +154,7 @@ function fifu_column_featured($post_id, $is_variable) {
     $image_alt = get_post_meta($post_id, 'fifu_image_alt', true);
     if ($image_url == '') {
         $image_url = wp_get_attachment_url(get_post_thumbnail_id($post_id));
-        $border = 'border-color: #ca4a1f !important; border: 2px; border-style: dotted;';
+        $border = 'border-color: #ca4a1f !important; border: 2px; border-style: dotted; border-radius: 8px;';
     }
     $url = fifu_optimized_column_image($image_url, get_post_thumbnail_id($post_id));
 

@@ -24,7 +24,7 @@
 
     <div id="fifu_image"
          style="<?php echo $height, $show_image ?>
-         background:url('<?php echo esc_url($url); ?>') no-repeat center center;
+         background:url('<?php echo esc_url($url ?? ''); ?>') no-repeat center center;
          background-size:cover;
          cursor:zoom-in;
          border-radius:3px;
@@ -38,7 +38,7 @@
                        type="text" 
                        name="fifu_input_url" 
                        placeholder="<?php $fifu['image']['keywords']() ?>"
-                       value="<?php echo esc_url($url); ?>"
+                       value="<?php echo esc_url($url ?? ''); ?>"
                        style="<?php echo $width ?>;font-size:13px;" />
             </td>
             <td>
@@ -52,7 +52,7 @@
 
     <center>
         <a id="fifu_link" 
-           onClick="removeImage();" 
+           onClick="removeImage(false);" 
            style="<?php echo $show_link ?>; cursor:pointer" ><?php $fifu['image']['remove']() ?></a>
     </center>
 
