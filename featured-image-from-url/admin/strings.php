@@ -1604,12 +1604,6 @@ function fifu_get_strings_settings() {
     $fifu['key']['renew'] = function () {
         _e("You can renew your license key(s) or get more information about that <a href='https://ws.featuredimagefromurl.com/keys/' target='_blank'>here</a>.", FIFU_SLUG);
     };
-    $fifu['key']['email'] = function () {
-        _e("Email", FIFU_SLUG);
-    };
-    $fifu['key']['address'] = function () {
-        _e("Address where you received the license key", FIFU_SLUG);
-    };
     $fifu['key']['key'] = function () {
         _e("License key", FIFU_SLUG);
     };

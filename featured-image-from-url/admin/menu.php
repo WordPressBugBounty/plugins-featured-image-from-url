@@ -535,10 +535,29 @@ function fifu_get_plugins_list() {
 function fifu_get_active_plugins_list() {
     $list = '';
     $active_plugins = get_option('active_plugins', []);
-    foreach ($active_plugins as $key) {
-        $plugin_parts = explode('/', $key);
-        $name = $plugin_parts[0] ?? '';
-        $list .= '&#10; - ' . $name;
+    $all_plugins = get_plugins();
+
+    foreach ($active_plugins as $basename) {
+        if (isset($all_plugins[$basename])) {
+            $data = $all_plugins[$basename];
+            $name = $data['Name'] ?? $basename;
+            $text_domain = $data['TextDomain'] ?? '';
+            $author = isset($data['Author']) ? wp_strip_all_tags($data['Author']) : '';
+
+            $display = $name;
+            if ($text_domain !== '') {
+                $display .= ' (' . $text_domain . ')';
+            }
+            if ($author !== '') {
+                $display .= ': ' . $author;
+            }
+        } else {
+            // Fallback to directory name if metadata is missing
+            $parts = explode('/', $basename);
+            $display = $parts[0] ?? $basename;
+        }
+
+        $list .= '&#10; - ' . $display;
     }
     return $list;
 }

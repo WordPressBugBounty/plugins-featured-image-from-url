@@ -3,7 +3,9 @@
 add_action('init', 'fifu_load_textdomain');
 
 function fifu_load_textdomain() {
-    $locale = fifu_get_language_code(get_locale());
+    // Use user locale in admin, site locale on frontend
+    $raw_locale = function_exists('determine_locale') ? determine_locale() : (is_admin() ? get_user_locale() : get_locale());
+    $locale = fifu_get_language_code($raw_locale);
 
     // Do nothing if the selected language is en_US
     if ($locale === 'en' || fifu_get_transient("fifu_language_$locale")) {

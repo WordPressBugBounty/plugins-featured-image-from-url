@@ -25,6 +25,7 @@ define('PROXY_URLS', [
     "https://img.youtube.com",
     "https://cdn.diariodeavisos.com",
     "https://i.guim.co.uk",
+    "https://www.liveaction.org",
 ]);
 
 function fifu_image_downsize($out, $att_id, $size) {

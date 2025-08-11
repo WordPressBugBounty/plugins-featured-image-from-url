@@ -84,7 +84,7 @@ function fifu_open_quick_lightbox() {
 
         if (is_variable) {
             let variable_box = `
-                <div style="background: white; padding: 10px; border-radius: 1em;">
+                <div data-variable-product="1" style="background: white; padding: 10px; border-radius: 1em;">
                     <div style="background-color:#32373c; text-align:center; width:100%; color:white; padding:6px; border-radius:5px;">
                         ${fifuColumnVars.labelVariable}
                     </div>
@@ -142,6 +142,10 @@ function fifu_open_quick_lightbox() {
         // display
         let DISPLAY_NONE = 'display:none';
         let EMPTY = '';
+        // Detect if this click originated inside the variable modal as well
+        const inVariableContext = jQuery(this).closest('[data-variable-product="1"]').length > 0;
+        const isVariableProduct = !!is_variable || inVariableContext;
+
         let showVideo = EMPTY;
         let showImageGallery = fifuColumnVars.onProductsPage ? EMPTY : DISPLAY_NONE;
         let showSlider = !fifuColumnVars.onCategoriesPage ? EMPTY : DISPLAY_NONE;

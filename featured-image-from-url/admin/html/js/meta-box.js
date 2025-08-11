@@ -184,6 +184,142 @@ jQuery(document).ready(function () {
     });
 });
 
+// Block editor: auto-remove featured image if displayed URL is external (not this site's domain)
+(function () {
+    if (typeof wp === 'undefined' || !wp.data || !wp.data.select || !wp.data.dispatch) {
+        return;
+    }
+
+    // Guard against multiple registrations
+    if (window.__fifuAuthorRemoveInit) {
+        return;
+    }
+    window.__fifuAuthorRemoveInit = true;
+
+    let scheduled = false;
+    let lastCheckedMediaId = -1; // skip repeated same IDs within a bounce
+    const processedIds = new Set(); // permanently skip IDs already checked this session
+    let tickScheduled = false; // debounce wp.data churn
+
+    const MAX_URL_RESOLVE_RETRIES = 10;
+    const URL_RETRY_DELAY_MS = 200;
+
+    function isInternalUrl(url) {
+        if (!url || typeof url !== 'string')
+            return false;
+        try {
+            const u = new URL(url, window.location.href);
+            return u.origin === window.location.origin;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function getDisplayedFeaturedImageUrl() {
+        // Try common Gutenberg selectors
+        const selectors = [
+            '.editor-post-featured-image img',
+            '.editor-post-featured-image .components-responsive-wrapper__content',
+            '.editor-post-featured-image__container img',
+            '.components-panel__body .editor-post-featured-image img'
+        ];
+        for (const s of selectors) {
+            const img = document.querySelector(s);
+            if (img && (img.currentSrc || img.src)) {
+                return img.currentSrc || img.src;
+            }
+        }
+        return null;
+    }
+
+    async function resolveDisplayedUrlWithRetry() {
+        for (let i = 0; i < MAX_URL_RESOLVE_RETRIES; i++) {
+            const url = getDisplayedFeaturedImageUrl();
+            if (url)
+                return url;
+            await new Promise((r) => setTimeout(r, URL_RETRY_DELAY_MS));
+        }
+        return null;
+    }
+
+    function clickWpRemoveButton() {
+        const btns = document.querySelectorAll(
+                '.editor-post-featured-image__actions button.editor-post-featured-image__action, button.components-button.editor-post-featured-image__action'
+                );
+        const removeBtn = btns[btns.length - 1];
+        if (removeBtn) {
+            removeBtn.click();
+            return true;
+        }
+        return false;
+    }
+
+    wp.data.subscribe(function () {
+        if (tickScheduled)
+            return;
+        tickScheduled = true;
+        setTimeout(function () {
+            tickScheduled = false;
+            try {
+                const sel = wp.data.select('core/editor');
+                if (!sel || !sel.getEditedPostAttribute)
+                    return;
+
+                const mediaId = sel.getEditedPostAttribute('featured_media') || 0;
+
+                // Skip if same ID already processed in last tick
+                if (mediaId === lastCheckedMediaId)
+                    return;
+
+                // Track 0 as well to avoid repeated work when removed
+                if (!mediaId) {
+                    lastCheckedMediaId = 0;
+                    return;
+                }
+
+                // Hard skip IDs already checked this session (prevents loops after save)
+                if (processedIds.has(mediaId)) {
+                    lastCheckedMediaId = mediaId;
+                    return;
+                }
+
+                // From here we will process this new ID exactly once for this session
+                lastCheckedMediaId = mediaId;
+
+                if (scheduled)
+                    return;
+                scheduled = true;
+
+                resolveDisplayedUrlWithRetry().then(function (url) {
+                    // Mark as processed regardless of result to avoid repeated churn
+                    processedIds.add(mediaId);
+
+                    if (url && !isInternalUrl(url)) {
+                        setTimeout(function () {
+                            if (!clickWpRemoveButton()) {
+                                const dispatch = wp.data.dispatch('core/editor');
+                                if (dispatch && typeof dispatch.editPost === 'function') {
+                                    dispatch.editPost({featured_media: 0});
+                                }
+                            }
+                            scheduled = false;
+                        }, 10);
+                    } else {
+                        scheduled = false;
+                    }
+                }).catch(function (e) {
+                    console.log('[FIFU][domain-remove] error resolving displayed URL:', e);
+                    processedIds.add(mediaId); // guard anyway
+                    scheduled = false;
+                });
+            } catch (e) {
+                console.log('[FIFU][domain-remove] subscribe handler error:', e);
+                scheduled = false;
+            }
+        }, 100); // debounce
+    });
+})();
+
 function fifu_get_sizes() {
     var image_url = jQuery("#fifu_input_url").val();
     if (!image_url || (!image_url.startsWith("http") && !image_url.startsWith("//"))) {
@@ -294,57 +430,52 @@ function fifu_toggle_featured_image_panel(show) {
         const dispatchStore = wp.data.dispatch(EDIT_POST_STORE);
         const selectStore = wp.data.select(EDIT_POST_STORE);
 
-        // Safely get toggleEditorPanelEnabled and isEditorPanelEnabled
-        const toggleEditorPanelEnabled = dispatchStore && dispatchStore.toggleEditorPanelEnabled ? dispatchStore.toggleEditorPanelEnabled : null;
-        const isEditorPanelEnabled = selectStore && selectStore.isEditorPanelEnabled ? selectStore.isEditorPanelEnabled : null;
-
-        // Try multiple selectors for the WP featured image panel in block editor
-        const panelSelectors = [
-            '[aria-label="Featured image"]',
-            '[data-panel="featured-image"]',
-            '.editor-post-featured-image',
-            '.components-panel__body[data-title="Featured image"]'
-        ];
-        let panelSelectorFound = '';
-        let panelExists = false;
-        for (const sel of panelSelectors) {
-            if (document.querySelector(sel)) {
-                panelExists = true;
-                panelSelectorFound = sel;
-                break;
-            }
+        // Clear any pending timeouts
+        if (window.fifuFeaturedImageTimer) {
+            clearTimeout(window.fifuFeaturedImageTimer);
         }
 
-        const enabled = isEditorPanelEnabled
-                ? isEditorPanelEnabled('featured-image')
-                : true;
+        // Single timeout with all operations
+        window.fifuFeaturedImageTimer = setTimeout(function () {
+            // Get panel selectors
+            const panelSelectors = [
+                '[aria-label="Featured image"]',
+                '[data-panel="featured-image"]',
+                '.editor-post-featured-image',
+                '.components-panel__body[data-title="Featured image"]'
+            ];
+            let panelSelectorFound = '';
+            let panelExists = false;
 
-        setTimeout(function () {
-            // Only call toggleEditorPanelEnabled if it exists
-            if (toggleEditorPanelEnabled) {
-                if (show && !enabled) {
-                    toggleEditorPanelEnabled('featured-image');
-                } else if (!show && enabled) {
+            for (const sel of panelSelectors) {
+                if (document.querySelector(sel)) {
+                    panelExists = true;
+                    panelSelectorFound = sel;
+                    break;
+                }
+            }
+
+            // Try WordPress API first
+            const toggleEditorPanelEnabled = dispatchStore && dispatchStore.toggleEditorPanelEnabled;
+            const isEditorPanelEnabled = selectStore && selectStore.isEditorPanelEnabled;
+
+            if (toggleEditorPanelEnabled && isEditorPanelEnabled) {
+                const enabled = isEditorPanelEnabled('featured-image') || false;
+
+                if ((show && !enabled) || (!show && enabled)) {
                     toggleEditorPanelEnabled('featured-image');
                 }
             }
-            setTimeout(function () {
-                const refreshedEnabled = isEditorPanelEnabled
-                        ? isEditorPanelEnabled('featured-image')
-                        : true;
 
-                // Fallback: forcibly hide panel if it should be hidden but remains
-                if (!show && panelExists && refreshedEnabled) {
-                    if (panelSelectorFound) {
-                        jQuery(panelSelectorFound).hide();
-                    }
-                }
-                // Fallback: forcibly show panel if it should be shown but remains hidden
-                if (show && panelSelectorFound) {
+            // Fallback to direct DOM manipulation
+            if (panelSelectorFound) {
+                if (show) {
                     jQuery(panelSelectorFound).show();
+                } else {
+                    jQuery(panelSelectorFound).hide();
                 }
-            }, 200);
-        }, 100);
+            }
+        }, 150);
     }
 }
 

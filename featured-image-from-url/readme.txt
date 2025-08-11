@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.8.2
-Stable tag: 5.2.2
+Stable tag: 5.2.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -249,6 +249,9 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.2.3 =
+* Fix: the plugin was being translated into the site language instead of the user language; Fix: input field for featured image.
+
 = 5.2.2 =
 * New: WordPress block for remote featured images; Enhancement: Alternative Text field added to the Elementor widget; Enhancement: Registers are no longer listed in the Custom Fields box; Enhancements and fixes: Input fields for posts, products, and categories; Fix: Images were being cropped unnecessarily in WooCommerce.
 
@@ -270,5 +273,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.2.2 =
-* New: WordPress block for remote featured images; Enhancement: Alternative Text field added to the Elementor widget; Enhancement: Registers are no longer listed in the Custom Fields box; Enhancements and fixes: Input fields for posts, products, and categories; Fix: Images were being cropped unnecessarily in WooCommerce.
+= 5.2.3 =
+* Fix: the plugin was being translated into the site language instead of the user language; Fix: input field for featured image.
