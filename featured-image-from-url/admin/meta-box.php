@@ -43,6 +43,8 @@ function fifu_register_meta_box_script() {
     wp_enqueue_style('fancy-box-css', 'https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.css');
     wp_enqueue_script('fancy-box-js', 'https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js');
 
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+
     wp_enqueue_script('fifu-rest-route-js', plugins_url('/html/js/rest-route.js', __FILE__), array('jquery'), fifu_version_number_enq());
     wp_enqueue_script('fifu-meta-box-js', plugins_url('/html/js/meta-box.js', __FILE__), fifu_is_gutenberg_screen() ? array('jquery', 'wp-edit-post') : array('jquery'), fifu_version_number_enq());
     wp_enqueue_script('fifu-convert-url-js', plugins_url('/html/js/convert-url.js', __FILE__), array('jquery'), fifu_version_number_enq());
@@ -66,7 +68,7 @@ function fifu_register_meta_box_script() {
         'get_the_ID' => get_the_ID(),
         'is_sirv_active' => fifu_is_sirv_active(),
         'wait' => $fifu['common']['wait'](),
-        'is_taxonomy' => get_current_screen()->taxonomy ?? null,
+        'is_taxonomy' => $screen->taxonomy ?? null,
         'txt_title_examples' => $fifu_help['title']['examples'](),
         'txt_title_keywords' => $fifu_help['title']['keywords'](),
         'txt_title_more' => $fifu_help['title']['more'](),

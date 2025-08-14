@@ -38,6 +38,7 @@ jQuery(function () {
     jQuery("#tabsHide").tabs();
     jQuery("#tabsPcontent").tabs();
     jQuery("#tabsJetpack").tabs();
+    jQuery("#tabsJetpackSizes").tabs();
     jQuery("#tabsShortcode").tabs();
     jQuery("#tabsFifuShortcode").tabs();
     jQuery("#tabsAutoSet").tabs();

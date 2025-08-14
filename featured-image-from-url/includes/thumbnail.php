@@ -416,7 +416,17 @@ function fifu_is_main_page() {
 }
 
 function fifu_is_in_editor() {
-    return !is_admin() || get_current_screen() == null ? false : get_current_screen()->parent_base == 'edit' || get_current_screen()->is_block_editor;
+    if (!is_admin() || !function_exists('get_current_screen'))
+        return false;
+
+    $screen = get_current_screen();
+    if (!$screen)
+        return false;
+
+    $parent_base = isset($screen->parent_base) ? $screen->parent_base : '';
+    $is_block_editor = isset($screen->is_block_editor) ? $screen->is_block_editor : false;
+
+    return $parent_base === 'edit' || $is_block_editor;
 }
 
 function fifu_get_default_url() {

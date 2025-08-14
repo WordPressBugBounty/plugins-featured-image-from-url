@@ -833,31 +833,140 @@
                         </div>
 
                         <div id="tabs-3">
-                            <?php $fifu['jetpack']['sizes']['desc']() ?>                            
-                            <br>
-                            <br>
-                            <?php $fifu['jetpack']['sizes']['reset']() ?>
-                            <br>
-                            <br>
-                            <table id="fifu-sizes-table" style="text-align: left; width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #888; border-radius: 5px; overflow: hidden;">
-                                <tr class="color">
-                                    <th>
-                                        <b><?php $fifu['word']['name']() ?></b>
-                                    </th>
-                                    <th style="width:100px">
-                                        <b><?php $fifu['word']['width']() ?></b>
-                                    </th>
-                                    <th style="width:100px">
-                                        <b><?php $fifu['word']['height']() ?></b>
-                                    </th>
-                                    <th>
-                                        <b><?php $fifu['word']['crop']() ?></b>
-                                    </th>
-                                    <th>
-                                        <b><?php $fifu['word']['pages']() ?></b>
-                                    </th>
-                                </tr>
-                            </table>
+                            <div id="tabsJetpackSizes">
+                                <ul>
+                                    <li><a href="#tabsJetpackSizes-a"><?php $fifu['jetpack']['tab']['square']() ?></a></li>
+                                    <li onclick="fifu_sizes_js()"><a href="#tabsJetpackSizes-b"><?php $fifu['jetpack']['tab']['registered']() ?></a></li>
+                                    <br>
+                                    <br>
+                                    <div id="tabsJetpackSizes-a">
+                                        <?php $fifu['jetpack']['square']['description']() ?>
+                                        <br>
+                                        <br>
+                                        <table style="text-align: left; width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #888; border-radius: 5px; overflow: hidden;">
+                                            <tr class="color">
+                                                <th>
+                                                    <b><?php $fifu['word']['option']() ?></b>
+                                                </th>
+                                                <th>
+                                                    <b><?php $fifu['word']['description']() ?></b>
+                                                </th>
+                                            </tr>
+                                            <tr class="color">
+                                                <th>
+                                                </th>
+                                                <th>
+                                                    <?php $fifu['jetpack']['square']['details']['none']() ?>
+                                                </th>
+                                            </tr>
+                                            <tr class="color">
+                                                <th>
+                                                    <?php $fifu['jetpack']['square']['select']['crop']() ?>
+                                                </th>
+                                                <th>
+                                                    <?php $fifu['jetpack']['square']['details']['crop']() ?>
+                                                </th>
+                                            </tr>
+                                            <tr class="color">
+                                                <th>
+                                                    <?php $fifu['jetpack']['square']['select']['extend']() ?>
+                                                </th>
+                                                <th>
+                                                    <?php $fifu['jetpack']['square']['details']['extend']() ?>
+                                                </th>
+                                            </tr>
+                                        </table>
+
+                                        <br>
+
+                                        <form
+                                            id="fifu_form_square"
+                                            action="javascript:void(0)"
+                                            method="post">
+                                                <?php wp_nonce_field(FIFU_ACTION_SETTINGS, 'nonce_fifu_form_square'); ?>
+                                            <table>
+                                                <tr style="text-align:left">
+                                                    <th>
+                                                        <?php $fifu['jetpack']['square']['label']['desktop']() ?>
+                                                    </th>
+                                                    <th>
+                                                        <script>
+                                                            jQuery(document).ready(function () {
+                                                                jQuery("#select_square_desktop").val("<?php echo $square_desktop; ?>");
+                                                                jQuery("#select_square_desktop").change(function () {
+                                                                    jQuery("#fifu_input_square_desktop").val(jQuery("#select_square_desktop").val());
+                                                                });
+                                                            });
+                                                        </script>
+                                                        <select id="select_square_desktop" style="width:320px">
+                                                            <option value=""></option>
+                                                            <option value="crop"><?php $fifu['jetpack']['square']['select']['crop']() ?></option>
+                                                            <option value="extend"><?php $fifu['jetpack']['square']['select']['extend']() ?></option>
+                                                        </select>
+                                                        <input
+                                                            type="hidden"
+                                                            id="fifu_input_square_desktop"
+                                                            name="fifu_input_square_desktop"
+                                                            value="<?php echo $square_desktop; ?>" >
+                                                    </th>
+                                                </tr>
+                                                <tr style="text-align:left">
+                                                    <th>
+                                                        <?php $fifu['jetpack']['square']['label']['mobile']() ?>
+                                                    </th>
+                                                    <th>
+                                                        <script>
+                                                            jQuery(document).ready(function () {
+                                                                jQuery("#select_square_mobile").val("<?php echo $square_mobile; ?>");
+                                                                jQuery("#select_square_mobile").change(function () {
+                                                                    jQuery("#fifu_input_square_mobile").val(jQuery("#select_square_mobile").val());
+                                                                });
+                                                            });
+                                                        </script>
+                                                        <select id="select_square_mobile" style="width:320px">
+                                                            <option value=""></option>
+                                                            <option value="crop"><?php $fifu['jetpack']['square']['select']['crop']() ?></option>
+                                                            <option value="extend"><?php $fifu['jetpack']['square']['select']['extend']() ?></option>
+                                                        </select>
+                                                        <input
+                                                            type="hidden"
+                                                            id="fifu_input_square_mobile"
+                                                            name="fifu_input_square_mobile"
+                                                            value="<?php echo $square_mobile; ?>" >
+                                                    </th>
+                                                </tr>
+                                            </table>
+                                        </form>
+                                    </div>
+                                    <div id="tabsJetpackSizes-b">
+                                        <?php $fifu['jetpack']['sizes']['desc']() ?>                            
+                                        <br>
+                                        <br>
+                                        <?php $fifu['jetpack']['sizes']['reset']() ?>
+                                        <br>
+                                        <br>
+                                        <table id="fifu-sizes-table" style="text-align: left; width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #888; border-radius: 5px; overflow: hidden;">
+                                            <tr class="color">
+                                                <th>
+                                                    <b><?php $fifu['word']['name']() ?></b>
+                                                </th>
+                                                <th style="width:100px">
+                                                    <b><?php $fifu['word']['width']() ?></b>
+                                                </th>
+                                                <th style="width:100px">
+                                                    <b><?php $fifu['word']['height']() ?></b>
+                                                </th>
+                                                <th>
+                                                    <b><?php $fifu['word']['crop']() ?></b>
+                                                </th>
+                                                <th>
+                                                    <b><?php $fifu['word']['pages']() ?></b>
+                                                </th>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </ul>
+                            </div>
                         </div>
 
                         <div id="tabs-2">
@@ -991,18 +1100,6 @@
                                     </td>
                                     <td>
                                         <?php $fifu['jetpack']['toggle']['domain']() ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <input
-                                            type="submit"
-                                            class="toggleoff"
-                                            value=""
-                                            style="display:block;border:none">
-                                    </td>
-                                    <td>
-                                        <?php $fifu['jetpack']['toggle']['square']() ?>
                                     </td>
                                 </tr>
                             </table>
@@ -3696,13 +3793,13 @@
                                             <?php $fifu['title']['jetpack']() ?>
                                         </th>
                                         <th>
-                                            <?php $fifu['jetpack']['toggle']['square']() ?>
+                                            <?php $fifu['jetpack']['tab']['square']() ?>
                                         </th>
                                         <th>
-                                            wp fifu cdn --square &lt;toggle&gt;
+                                            wp fifu square --desktop &lt;string&gt;
                                         </th>
                                         <th>
-                                            on, off
+                                            crop, extend
                                         </th>
                                     </tr>
                                     <tr class="color">
@@ -3713,7 +3810,24 @@
                                             <?php $fifu['title']['jetpack']() ?>
                                         </th>
                                         <th>
-                                            <?php $fifu['jetpack']['tab']['sizes']() ?>
+                                            <?php $fifu['jetpack']['tab']['square']() ?>
+                                        </th>
+                                        <th>
+                                            wp fifu square --mobile &lt;string&gt;
+                                        </th>
+                                        <th>
+                                            crop, extend
+                                        </th>
+                                    </tr>
+                                    <tr class="color">
+                                        <th>
+                                            <?php $fifu['tab']['image']() ?>
+                                        </th>
+                                        <th>
+                                            <?php $fifu['title']['jetpack']() ?>
+                                        </th>
+                                        <th>
+                                            <?php $fifu['jetpack']['tab']['registered']() ?>
                                         </th>
                                         <th>
                                             wp fifu sizes --save &lt;string&gt;

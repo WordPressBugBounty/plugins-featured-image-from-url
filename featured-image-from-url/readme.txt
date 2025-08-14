@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.8.2
-Stable tag: 5.2.3
+Stable tag: 5.2.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -23,6 +23,7 @@ Use a remote image as featured image of your post, page or custom post type.
 
 * Remote featured image
 * Optimized images
+* Make all images square
 * Image search (Unsplash)
 * Default featured image
 * Hide featured media
@@ -87,10 +88,6 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 * **[PRO]** Mute
 * **[PRO]** Privacy enhanced mode
 * **[PRO]** Background video
-
-#### Blocks for WordPress
-
-* Featured image 
 
 #### Widgets for Elementor
 
@@ -249,6 +246,9 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.2.4 =
+* New: Optimized Images > Sizes > Make all images square; Enhancement: Collection of anonymous stats is not necessary for now and has been disabled; Fix: Resolved conflict with Rank Math SEO plugin (fatal error).
+
 = 5.2.3 =
 * Fix: the plugin was being translated into the site language instead of the user language; Fix: input field for featured image.
 
@@ -273,5 +273,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.2.3 =
-* Fix: the plugin was being translated into the site language instead of the user language; Fix: input field for featured image.
+= 5.2.4 =
+* New: Optimized Images > Sizes > Make all images square; Enhancement: Collection of anonymous stats is not necessary for now and has been disabled; Fix: Resolved conflict with Rank Math SEO plugin (fatal error).

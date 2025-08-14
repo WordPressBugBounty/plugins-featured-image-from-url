@@ -91,6 +91,22 @@ function fifu_speedup_get_signed_url($url, $width, $height, $bucket_id, $storage
 
     list($width, $height) = fifu_speedup_fix_size($width, $height);
 
+    $resize = 'fill';
+
+    if (wp_is_mobile()) {
+        $square_mobile = get_option('fifu_square_mobile');
+        if ($square_mobile) {
+            $height = $width;
+            $resize = $square_mobile == 'crop' ? 'fill' : 'fit';
+        }
+    } else {
+        $square_desktop = get_option('fifu_square_desktop');
+        if ($square_desktop) {
+            $height = $width;
+            $resize = $square_desktop == 'crop' ? 'fill' : 'fit';
+        }
+    }
+
     if ($url)
         $url = explode('?', $url)[0] ?? $url;
 
@@ -144,7 +160,7 @@ function fifu_speedup_get_signed_url($url, $width, $height, $bucket_id, $storage
     $key = pack("H*", $proxy_auth[0] ?? '');
     $salt = pack("H*", $proxy_auth[1] ?? '');
 
-    $path = "/rs:fill:{$width}:{$height}:1/g:fp:{$x_fp}:{$y_fp}{$watermark}/plain/{$bucket_id}/{$storage_id}@webp";
+    $path = "/rs:{$resize}:{$width}:{$height}:1:1/g:fp:{$x_fp}:{$y_fp}{$watermark}/plain/{$bucket_id}/{$storage_id}@webp";
     $signature = rtrim(strtr(base64_encode(hash_hmac('sha256', $salt . $path, $key, true)), '+/', '-_'), '=');
     return "https://cloud.fifu.app/{$signature}{$path}";
 }

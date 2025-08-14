@@ -195,8 +195,8 @@ function fifu_is_valid_cpt($post_id) {
 }
 
 function fifu_on_cpt_page() {
-    return strpos($_SERVER['REQUEST_URI'] ?? '', 'wp-admin/edit.php') !== false && 
-           strpos($_SERVER['REQUEST_URI'] ?? '', 'post_type=') !== false;
+    return strpos($_SERVER['REQUEST_URI'] ?? '', 'wp-admin/edit.php') !== false &&
+            strpos($_SERVER['REQUEST_URI'] ?? '', 'post_type=') !== false;
 }
 
 function fifu_set_author() {
@@ -266,10 +266,17 @@ function fifu_get_parent_slug($att_id) {
 }
 
 function fifu_is_gutenberg_screen() {
-    $current_screen = get_current_screen();
-    if (method_exists($current_screen, 'is_block_editor') && $current_screen->is_block_editor())
-        return true;
-    return false;
+    if (!is_admin() || !function_exists('get_current_screen'))
+        return false;
+
+    $screen = get_current_screen();
+    if (!$screen)
+        return false;
+
+    if (method_exists($screen, 'is_block_editor'))
+        return (bool) $screen->is_block_editor();
+
+    return (bool) ($screen->is_block_editor ?? false);
 }
 
 function fifu_base64($url) {

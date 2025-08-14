@@ -1,6 +1,6 @@
 <?php
 
-define('FIFU_SETTINGS', serialize(array('fifu_skip', 'fifu_html_cpt', 'fifu_debug', 'fifu_photon', 'fifu_cdn_content', 'fifu_reset', 'fifu_enable_default_url', 'fifu_fake', 'fifu_default_url', 'fifu_default_cpt', 'fifu_pcontent_types', 'fifu_hide_format', 'fifu_hide_type', 'fifu_wc_lbox', 'fifu_wc_zoom', 'fifu_hide', 'fifu_pcontent_add', 'fifu_pcontent_remove', 'fifu_get_first', 'fifu_ovw_first', 'fifu_run_delete_all', 'fifu_data_clean', 'fifu_cloud_upload_auto', 'fifu_cloud_delete_auto', 'fifu_cloud_hotlink')));
+define('FIFU_SETTINGS', serialize(array('fifu_skip', 'fifu_html_cpt', 'fifu_square_mobile', 'fifu_square_desktop', 'fifu_debug', 'fifu_photon', 'fifu_cdn_content', 'fifu_reset', 'fifu_enable_default_url', 'fifu_fake', 'fifu_default_url', 'fifu_default_cpt', 'fifu_pcontent_types', 'fifu_hide_format', 'fifu_hide_type', 'fifu_wc_lbox', 'fifu_wc_zoom', 'fifu_hide', 'fifu_pcontent_add', 'fifu_pcontent_remove', 'fifu_get_first', 'fifu_ovw_first', 'fifu_run_delete_all', 'fifu_data_clean', 'fifu_cloud_upload_auto', 'fifu_cloud_delete_auto', 'fifu_cloud_hotlink')));
 define('FIFU_ACTION_SETTINGS', '/wp-admin/admin.php?page=featured-image-from-url');
 define('FIFU_ACTION_CLOUD', '/wp-admin/admin.php?page=fifu-cloud');
 
@@ -153,6 +153,8 @@ function fifu_support_data() {
 
     $skip = esc_attr(get_option('fifu_skip'));
     $html_cpt = esc_attr(get_option('fifu_html_cpt'));
+    $square_mobile = esc_attr(get_option('fifu_square_mobile'));
+    $square_desktop = esc_attr(get_option('fifu_square_desktop'));
     $enable_debug = get_option('fifu_debug');
     $enable_photon = get_option('fifu_photon');
     $enable_cdn_content = get_option('fifu_cdn_content');
@@ -208,6 +210,8 @@ function fifu_get_menu_html() {
 
     $skip = esc_attr(get_option('fifu_skip'));
     $html_cpt = esc_attr(get_option('fifu_html_cpt'));
+    $square_mobile = esc_attr(get_option('fifu_square_mobile'));
+    $square_desktop = esc_attr(get_option('fifu_square_desktop'));
     $enable_debug = get_option('fifu_debug');
     $enable_photon = get_option('fifu_photon');
     $enable_cdn_content = get_option('fifu_cdn_content');
@@ -272,7 +276,7 @@ function fifu_reset_settings() {
 function fifu_get_setting($type) {
     register_setting('settings-group', $type);
 
-    $arrEmpty = array('fifu_default_url', 'fifu_skip', 'fifu_html_cpt', 'fifu_hide_format', 'fifu_hide_type', 'fifu_pcontent_types');
+    $arrEmpty = array('fifu_default_url', 'fifu_skip', 'fifu_html_cpt', 'fifu_square_mobile', 'fifu_square_desktop', 'fifu_hide_format', 'fifu_hide_type', 'fifu_pcontent_types');
     $arrDefaultType = array('fifu_default_cpt');
     $arrOn = array('fifu_wc_zoom', 'fifu_wc_lbox');
     $arrOnNo = array('fifu_fake');
@@ -300,6 +304,11 @@ function fifu_update_menu_options() {
 
     if (fifu_is_valid_nonce('nonce_fifu_form_html_cpt'))
         fifu_update_option('fifu_input_html_cpt', 'fifu_html_cpt');
+
+    if (fifu_is_valid_nonce('nonce_fifu_form_square')) {
+        fifu_update_option('fifu_input_square_mobile', 'fifu_square_mobile');
+        fifu_update_option('fifu_input_square_desktop', 'fifu_square_desktop');
+    }
 
     if (fifu_is_valid_nonce('nonce_fifu_form_debug'))
         fifu_update_option('fifu_input_debug', 'fifu_debug');
@@ -413,6 +422,13 @@ function fifu_update_option($input, $field) {
     $arr_int = array('fifu_spinner_nth');
     if (in_array($field, $arr_int)) {
         if (filter_var($value, FILTER_VALIDATE_INT))
+            update_option($field, $value);
+        return;
+    }
+
+    $arr_square_type = array('fifu_square_mobile', 'fifu_square_desktop');
+    if (in_array($field, $arr_square_type)) {
+        if (in_array($value, array('', 'crop', 'extend')))
             update_option($field, $value);
         return;
     }

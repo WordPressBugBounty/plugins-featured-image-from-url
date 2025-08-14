@@ -540,7 +540,7 @@ function showImageFallback() {
 
 (function ($) {
     function toggleCategoryThumbnail(isUserAction = false) {
-        var imgUrl = $('#fifu_input_url').val().trim();
+        var imgUrl = ($('#fifu_input_url').val() || '').trim();
 
         if (imgUrl) {
             $('.form-field.term-thumbnail-wrap').hide();
@@ -569,10 +569,10 @@ function showImageFallback() {
         // also poll for programmatic .val() changes - pass false for polling
         var last = '';
         setInterval(function () {
-            var curr = $('#fifu_input_url').val().trim();
+            var curr = ($('#fifu_input_url').val() || '').trim();
             if (curr !== last) {
                 last = curr;
-                toggleCategoryThumbnail();
+                toggleCategoryThumbnail(false);
             }
         }, 250);
     });

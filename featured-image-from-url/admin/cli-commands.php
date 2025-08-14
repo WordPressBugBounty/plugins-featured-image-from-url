@@ -182,6 +182,17 @@ class fifu_cli extends WP_CLI_Command {
         }
     }
 
+    function square($args, $assoc_args) {
+        if (!empty($assoc_args['desktop'])) {
+            update_option('fifu_square_desktop', $args[0] ?? '', 'no');
+            return;
+        }
+        if (!empty($assoc_args['mobile'])) {
+            update_option('fifu_square_mobile', $args[0] ?? '', 'no');
+            return;
+        }
+    }
+
     // sizes
 
     function sizes($args, $assoc_args) {

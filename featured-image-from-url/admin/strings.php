@@ -129,6 +129,12 @@ function fifu_get_strings_settings() {
     $fifu['word']['data'] = function () {
         _e("Data", FIFU_SLUG);
     };
+    $fifu['word']['option'] = function () {
+        _e("Option", FIFU_SLUG);
+    };
+    $fifu['word']['description'] = function () {
+        _e("Description", FIFU_SLUG);
+    };
     $fifu['word']['width'] = function () {
         _e("Width", FIFU_SLUG);
     };
@@ -1016,7 +1022,13 @@ function fifu_get_strings_settings() {
         _e("Optimize", FIFU_SLUG);
     };
     $fifu['jetpack']['tab']['sizes'] = function () {
+        _e("Sizes", FIFU_SLUG);
+    };
+    $fifu['jetpack']['tab']['registered'] = function () {
         _e("Registered sizes", FIFU_SLUG);
+    };
+    $fifu['jetpack']['tab']['square'] = function () {
+        _e("Make all images square", FIFU_SLUG);
     };
     $fifu['jetpack']['tab']['fifu'] = function () {
         _e("FIFU CDN", FIFU_SLUG);
@@ -1036,14 +1048,35 @@ function fifu_get_strings_settings() {
     $fifu['jetpack']['toggle']['domain'] = function () {
         _e("use your site's domain", FIFU_SLUG);
     };
-    $fifu['jetpack']['toggle']['square'] = function () {
-        _e("square all images", FIFU_SLUG);
-    };
     $fifu['jetpack']['sizes']['desc'] = function () {
         _e("Registered sizes are predefined dimensions that themes and plugins create to display images, and the FIFU CDN reads these values to deliver remote images in the exact requested size.", FIFU_SLUG);
     };
     $fifu['jetpack']['sizes']['reset'] = function () {
         _e("The sizes listed here are automatically detected by FIFU during page load. So, if you need to reset the size values for any reason, simply navigate through your pages again or wait for your visitors to do so, and FIFU will detect and list them here once more.", FIFU_SLUG);
+    };
+    $fifu['jetpack']['square']['description'] = function () {
+        _e("These options apply to images served by FIFU CDN or FIFU Cloud.", FIFU_SLUG);
+    };
+    $fifu['jetpack']['square']['details']['none'] = function () {
+        _e("Does not make the images square and automatically applies the registered sizes.", FIFU_SLUG);
+    };
+    $fifu['jetpack']['square']['details']['crop'] = function () {
+        _e("Cut off parts of the images to make them square.", FIFU_SLUG);
+    };
+    $fifu['jetpack']['square']['details']['extend'] = function () {
+        _e("Adds empty space around the images to make them square.", FIFU_SLUG);
+    };
+    $fifu['jetpack']['square']['label']['desktop'] = function () {
+        _e("Desktop computer", FIFU_SLUG);
+    };
+    $fifu['jetpack']['square']['label']['mobile'] = function () {
+        _e("Mobile phone", FIFU_SLUG);
+    };
+    $fifu['jetpack']['square']['select']['crop'] = function () {
+        _e("Make square by cropping", FIFU_SLUG);
+    };
+    $fifu['jetpack']['square']['select']['extend'] = function () {
+        _e("Make square by extending", FIFU_SLUG);
     };
     $fifu['jetpack']['otfcdn']['desc'] = function () {
         _e("For a long time, the 'Optimized Images' feature relied solely on a public third-party CDN. While this approach offered cost advantages, it also introduced several challenges. Now, FIFU provides its own CDN, designed to achieve the following goals:", FIFU_SLUG);
