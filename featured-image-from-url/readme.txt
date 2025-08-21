@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.8.2
-Stable tag: 5.2.4
+Stable tag: 5.2.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -246,6 +246,9 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.2.5 =
+* Enhancement: Improved translations and support for 40 new languages; Enhancement: Alternative Text field now opens in the lightbox for easier editing; Enhancement: Redirects to the plugin settings after activation; Fix: Quick Edit not working for variable products with multiple attributes; Fix: Google Drive images not displaying in the admin area.
+
 = 5.2.4 =
 * New: Optimized Images > Sizes > Make all images square; Enhancement: Collection of anonymous stats is not necessary for now and has been disabled; Fix: Resolved conflict with Rank Math SEO plugin (fatal error).
 
@@ -273,5 +276,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.2.4 =
-* New: Optimized Images > Sizes > Make all images square; Enhancement: Collection of anonymous stats is not necessary for now and has been disabled; Fix: Resolved conflict with Rank Math SEO plugin (fatal error).
+= 5.2.5 =
+* Enhancement: Improved translations and support for 40 new languages; Enhancement: Alternative Text field now opens in the lightbox for easier editing; Enhancement: Redirects to the plugin settings after activation; Fix: Quick Edit not working for variable products with multiple attributes; Fix: Google Drive images not displaying in the admin area.

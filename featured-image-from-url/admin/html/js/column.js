@@ -7,13 +7,21 @@ jQuery(document).ready(function () {
 
     // Check all .fifu-quick thumbnails for invalid images
     fifu_check_image_validity();
+
+    // Add MutationObserver safely
+    if (document.body) {
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
 });
 
 // Extract the image validity checking into a separate function
 function fifu_check_image_validity() {
     jQuery('div.fifu-quick').each(function () {
         var $div = jQuery(this);
-        var imageUrl = $div.attr('image-url');
+        var imageUrl = fifu_cdn_adjust($div.attr('image-url'));
         var postId = $div.attr('post-id');
 
         // Skip if already processed
@@ -63,12 +71,6 @@ var observer = new MutationObserver(function (mutations) {
             });
         }
     });
-});
-
-// Start observing
-observer.observe(document.body, {
-    childList: true,
-    subtree: true
 });
 
 var currentLightbox = null;

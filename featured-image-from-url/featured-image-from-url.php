@@ -3,12 +3,12 @@
 /*
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
- * Description: Use a remote image or video as featured image of a post or WooCommerce product.
- * Version: 5.2.4
+ * Description: Use remote media as the featured image and beyond.
+ * Version: 5.2.5
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0
- * WC tested up to: 10.1.0
+ * WC tested up to: 10.1.1
  * Text Domain: featured-image-from-url
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -104,8 +104,21 @@ function fifu_activate($network_wide) {
     } else {
         fifu_activate_actions();
         fifu_set_author();
+        // Set redirect transient only for non-multisite
+        set_transient('fifu_redirect_to_settings', true, 30);
     }
 }
+
+// Redirect to plugin settings page after activation (non-multisite only)
+add_action('admin_init', function () {
+    if (!is_multisite() && get_transient('fifu_redirect_to_settings')) {
+        delete_transient('fifu_redirect_to_settings');
+        if (is_admin() && !isset($_GET['activate-multi'])) {
+            wp_safe_redirect(admin_url('admin.php?page=' . FIFU_SLUG));
+            exit;
+        }
+    }
+});
 
 function fifu_activate_actions() {
     fifu_db_create_table_invalid_media_su();

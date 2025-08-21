@@ -42,6 +42,8 @@ function fifu_register_meta_box_script() {
     wp_enqueue_script('jquery-block-ui', 'https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js');
     wp_enqueue_style('fancy-box-css', 'https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.css');
     wp_enqueue_script('fancy-box-js', 'https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js');
+    wp_enqueue_style('fifu-column-css', plugins_url('/html/css/column.css', __FILE__), array(), fifu_version_number_enq());
+    wp_enqueue_script('fifu-column-js', plugins_url('/html/js/column.js', __FILE__), array('jquery', 'jquery-ui-sortable'), fifu_version_number_enq());
 
     $screen = function_exists('get_current_screen') ? get_current_screen() : null;
 
@@ -81,6 +83,7 @@ function fifu_register_meta_box_script() {
         'txt_unlock' => $fifu_help['unsplash']['unlock'](),
         'txt_more' => $fifu_help['unsplash']['more'](),
         'txt_loading' => $fifu_help['unsplash']['loading'](),
+        'alt_text_label' => $fifu['common']['alt']()
     ]);
 }
 

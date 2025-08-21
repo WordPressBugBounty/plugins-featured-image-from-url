@@ -123,7 +123,7 @@ jQuery(document).ready(function () {
 
     // Add click handler for preview button to open lightbox
     jQuery("#fifu_button").on('click', function () {
-        var $url = jQuery("#fifu_input_url").val();
+        var $url = fifu_convert(jQuery("#fifu_input_url").val());
         if (!$url.startsWith("http") && !$url.startsWith("//")) {
             if ($url && $url != ' ') {
                 fifu_start_lightbox($url, true, null, null, 'meta-box');
@@ -181,6 +181,155 @@ jQuery(document).ready(function () {
                 removeImage(false);
             }
         }
+    });
+
+    jQuery('#fifu_input_alt').on('click', function () {
+        var currentAlt = jQuery(this).val();
+        var imageUrl = fifu_convert(jQuery("#fifu_input_url").val());
+        var adjustedUrl = fifu_cdn_adjust(imageUrl);
+
+        // Create a temporary image to get dimensions
+        var tempImg = new Image();
+        tempImg.onload = function () {
+            var imgWidth = this.naturalWidth;
+            var imgHeight = this.naturalHeight;
+            var aspectRatio = imgWidth / imgHeight;
+
+            // Calculate lightbox dimensions while respecting viewport limits
+            var maxWidth = Math.min(600, window.innerWidth * 0.8);
+            var maxHeight = Math.min(500, window.innerHeight * 0.8);
+
+            var lightboxWidth, lightboxHeight;
+
+            if (aspectRatio > 1) {
+                // Landscape image
+                lightboxWidth = maxWidth;
+                lightboxHeight = lightboxWidth / aspectRatio;
+                if (lightboxHeight > maxHeight) {
+                    lightboxHeight = maxHeight;
+                    lightboxWidth = lightboxHeight * aspectRatio;
+                }
+            } else {
+                // Portrait or square image
+                lightboxHeight = maxHeight;
+                lightboxWidth = lightboxHeight * aspectRatio;
+                if (lightboxWidth > maxWidth) {
+                    lightboxWidth = maxWidth;
+                    lightboxHeight = lightboxWidth / aspectRatio;
+                }
+            }
+
+            // Ensure minimum size for usability
+            lightboxWidth = Math.max(300, lightboxWidth);
+            lightboxHeight = Math.max(200, lightboxHeight);
+
+            jQuery.fancybox.open({
+                src: `
+                <div style="
+                    width:${lightboxWidth}px;
+                    height:${lightboxHeight}px;
+                    padding:20px;
+                    background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)), url('${adjustedUrl}') no-repeat center center;
+                    background-size: cover;
+                    border-radius: 8px;
+                    box-sizing: border-box;
+                    position: relative;
+                ">
+                    <textarea id="fifu-alt-textarea" placeholder="${fifuMetaBoxVars.alt_text_label}" style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 90%;
+                        height: 20%;
+                        border-radius:4px;
+                        padding:8px;
+                        font-size:15px;
+                        background: rgba(255,255,255,0.85);
+                        border: 1px solid #ccc;
+                        resize: none;
+                        box-sizing: border-box;
+                    ">${currentAlt}</textarea>
+                </div>
+            `,
+                type: 'html',
+                opts: {
+                    width: lightboxWidth + 40, // Add some margin
+                    height: lightboxHeight + 40,
+                    autoFocus: false,
+                    touch: false,
+                    smallBtn: false,
+                    baseClass: 'fancybox-custom-backdrop',
+                    afterShow: function () {
+                        // Focus on textarea and select all text
+                        jQuery('#fifu-alt-textarea').focus();
+                    },
+                    beforeClose: function () {
+                        // Copy textarea value to input field when closing
+                        var newAlt = jQuery('#fifu-alt-textarea').val();
+                        jQuery('#fifu_input_alt').val(newAlt);
+                    }
+                }
+            });
+
+            setTimeout(function () {
+                jQuery('#fifu-alt-ok-btn').on('click', function () {
+                    var newAlt = jQuery('#fifu-alt-textarea').val();
+                    jQuery('#fifu_input_alt').val(newAlt);
+                    jQuery.fancybox.close();
+                });
+            }, 500);
+        };
+
+        tempImg.onerror = function () {
+            // Fallback to original fixed size if image fails to load
+            jQuery.fancybox.open({
+                src: `
+                <div style="
+                    width:400px;
+                    height:300px;
+                    padding:20px;
+                    background: url('${adjustedUrl}') no-repeat center center;
+                    background-size: cover;
+                    border-radius: 8px;
+                    box-sizing: border-box;
+                ">
+                    <h3 style="background:rgba(255,255,255,0.9);padding:8px 12px;border-radius:4px;margin:0 0 15px 0;">Edit Alt Text</h3>
+                    <textarea id="fifu-alt-textarea" style="
+                        width:calc(100% - 16px);
+                        height:calc(100% - 100px);
+                        border-radius:4px;
+                        padding:8px;
+                        font-size:15px;
+                        background: rgba(255,255,255,0.85);
+                        border: 1px solid #ccc;
+                        resize: none;
+                        box-sizing: border-box;
+                    ">${currentAlt}</textarea>
+                    <div style="margin-top:15px;">
+                        <button id="fifu-alt-ok-btn" class="button">OK</button>
+                    </div>
+                </div>
+            `,
+                type: 'html',
+                opts: {
+                    afterShow: function () {
+                        // Focus on textarea and select all text
+                        jQuery('#fifu-alt-textarea').focus().select();
+                    }
+                }
+            });
+
+            setTimeout(function () {
+                jQuery('#fifu-alt-ok-btn').on('click', function () {
+                    var newAlt = jQuery('#fifu-alt-textarea').val();
+                    jQuery('#fifu_input_alt').val(newAlt);
+                    jQuery.fancybox.close();
+                });
+            }, 500);
+        };
+
+        tempImg.src = adjustedUrl;
     });
 });
 
@@ -321,7 +470,8 @@ jQuery(document).ready(function () {
 })();
 
 function fifu_get_sizes() {
-    var image_url = jQuery("#fifu_input_url").val();
+    var image_url = fifu_convert(jQuery("#fifu_input_url").val());
+    image_url = fifu_cdn_adjust(image_url);
     if (!image_url || (!image_url.startsWith("http") && !image_url.startsWith("//"))) {
         // No image URL: reset to initial state, do NOT show fallback
         jQuery("#fifu_table_alt").hide();
@@ -515,7 +665,7 @@ function ensureImageFallback() {
 }
 
 function showImageFallback() {
-    var image_url = jQuery("#fifu_input_url").val();
+    var image_url = fifu_convert(jQuery("#fifu_input_url").val());
     if (!image_url) {
         // No image URL: do NOT show fallback
         jQuery("#fifu_image_fallback").hide();

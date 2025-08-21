@@ -90,6 +90,7 @@ function fifu_cloud() {
         'gallery' => $fifucloud['table']['gallery'](),
         'featured' => $fifucloud['table']['featured'](),
         'filterResults' => $fifucloud['table']['filter'](),
+        'showResults' => $fifucloud['table']['show'](),
     ]);
 
     $enable_cloud_upload_auto = get_option('fifu_cloud_upload_auto');

@@ -55,14 +55,18 @@ function fifu_get_pretty_variation_attributes_map($parent_product_id) {
         $pretty_names = filterPrettyNames($pretty_names, $attributes);
 
         foreach ($attributes as $variation_id => $attribute_values) {
-            if (is_array($pretty_names) && is_array($attribute_values) && count($pretty_names) == count($attribute_values)) {
-                $variation_map[$variation_id] = array_combine($pretty_names, $attribute_values);
-            } else {
-                error_log("Error in variation ID $variation_id: Mismatch in array lengths or non-array arguments.");
-                error_log(print_r($pretty_names, true));
-                error_log(print_r($attribute_values, true));
-                $variation_map[$variation_id] = []; // Assign default value or skip
+            $mapped = [];
+            foreach ($attribute_values as $key => $value) {
+                // Strip 'attribute_' prefix for pretty name lookup
+                $stripped_key = preg_replace('/^attribute_/', '', $key);
+                if (isset($pretty_names[$stripped_key])) {
+                    $mapped[$pretty_names[$stripped_key]] = $value;
+                } else {
+                    // Use stripped key as fallback instead of raw key
+                    $mapped[$stripped_key] = $value;
+                }
             }
+            $variation_map[$variation_id] = $mapped;
         }
     }
 

@@ -205,7 +205,8 @@ function listAllSu(page, type, keyword) {
         "order": [[3, 'desc']],
         dom: 'lfrtBip',
         language: {
-            search: fifuScriptCloudVars.filterResults + ': ' // Replace "Search:" with custom text
+            search: fifuScriptCloudVars.filterResults + ': ', // Replace "Search:" with custom text
+            lengthMenu: fifuScriptCloudVars.showResults + ": _MENU_",
         },
         select: true,
         buttons: [
@@ -404,7 +405,8 @@ function listAllFifu(page, type, keyword) {
         "order": [[3, 'desc']],
         dom: 'lfrtBip',
         language: {
-            search: fifuScriptCloudVars.filterResults + ': ' // Replace "Search:" with custom text
+            search: fifuScriptCloudVars.filterResults + ': ', // Replace "Search:" with custom text
+            lengthMenu: fifuScriptCloudVars.showResults + ": _MENU_",
         },
         select: true,
         buttons: [
@@ -652,7 +654,6 @@ function fifu_hide_log_in() {
 function fifu_disable_edition_buttons(text) {
     jQuery("button#cloud-add").attr('disabled', 'true');
     jQuery("button#cloud-del").attr('disabled', 'true');
-    showFifuCloudDialog(text ? text : fifuScriptCloudVars.notConnected);
 }
 
 function fifu_enable_edition_buttons() {
@@ -672,7 +673,8 @@ function listAllMediaLibrary(page, type, keyword) {
         "order": [[3, 'desc']],
         dom: 'lfrtBip',
         language: {
-            search: fifuScriptCloudVars.filterResults + ': ' // Replace "Search:" with custom text
+            search: fifuScriptCloudVars.filterResults + ': ', // Replace "Search:" with custom text
+            lengthMenu: fifuScriptCloudVars.showResults + ": _MENU_",
         },
         select: true,
         buttons: [
