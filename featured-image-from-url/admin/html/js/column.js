@@ -7,14 +7,6 @@ jQuery(document).ready(function () {
 
     // Check all .fifu-quick thumbnails for invalid images
     fifu_check_image_validity();
-
-    // Add MutationObserver safely
-    if (document.body) {
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    }
 });
 
 // Extract the image validity checking into a separate function
@@ -72,6 +64,14 @@ var observer = new MutationObserver(function (mutations) {
         }
     });
 });
+
+// Start observing
+if (document.body) {
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
 
 var currentLightbox = null;
 

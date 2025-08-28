@@ -19,7 +19,8 @@ class Elementor_FIFU_Widget extends \Elementor\Widget_Base {
         return ['basic'];
     }
 
-    protected function _register_controls() {
+    // Use the current API method name (no underscore)
+    protected function register_controls() {
         $strings = fifu_get_strings_elementor();
 
         $this->start_controls_section(
@@ -49,7 +50,7 @@ class Elementor_FIFU_Widget extends \Elementor\Widget_Base {
                     'type' => \Elementor\Controls_Manager::TEXT,
                     'input_type' => 'text',
                     'placeholder' => '',
-                    'description' => $strings['help']['alt'](), // Add help text here
+                    'description' => $strings['help']['alt'](),
                 ]
         );
         $this->end_controls_section();
@@ -69,29 +70,52 @@ class Elementor_FIFU_Widget extends \Elementor\Widget_Base {
     }
 }
 
-function fifu_image_after_save_elementor_data($post_id, $editor_data) {
-    foreach ($editor_data as $data) {
-        if (isset($data['elements'][0]['widgetType'])) {
-            $widgetType = $data['elements'][0]['widgetType'];
-            if (strpos($widgetType, 'fifu') !== false) {
-                $settings = $data['elements'][0]['settings'] ?? [];
+// Recursively traverse the editor data tree and apply logic to FIFU widgets
+function fifu_walk_elements_and_apply($elements, $post_id) {
+    if (!is_array($elements))
+        return;
 
-                if ($widgetType == 'fifu-elementor') {
-                    if (isset($settings['fifu_input_url'])) {
-                        $image_url = $settings['fifu_input_url'];
-                        if (filter_var($image_url, FILTER_VALIDATE_URL) === false)
-                            $image_url = '';
-                        fifu_dev_set_image($post_id, $image_url);
+    foreach ($elements as $el) {
+        if (
+                isset($el['elType']) && $el['elType'] === 'widget' &&
+                isset($el['widgetType'])
+        ) {
+            $widgetType = $el['widgetType'];
+            $settings = $el['settings'] ?? [];
+
+            if ($widgetType == 'fifu-elementor') {
+                if (isset($settings['fifu_input_url'])) {
+                    $image_url = $settings['fifu_input_url'];
+                    if ($image_url && filter_var($image_url, FILTER_VALIDATE_URL) === false)
+                        $image_url = '';
+                    fifu_dev_set_image($post_id, $image_url);
+                    $att_id = get_post_thumbnail_id($post_id);
+                    if ($att_id && $image_url) {
+                        $image_sizes = getimagesize($image_url);
+                        if ($image_sizes && isset($image_sizes[0], $image_sizes[1])) {
+                            fifu_save_dimensions($att_id, $image_sizes[0], $image_sizes[1]);
+                        }
                     }
-                    // Save alternative text
-                    if (isset($settings['fifu_input_alt'])) {
-                        $alt = esc_html(wp_strip_all_tags($settings['fifu_input_alt']));
-                        fifu_update_or_delete_value($post_id, 'fifu_image_alt', $alt);
-                    }
+                }
+                // Save alternative text
+                if (isset($settings['fifu_input_alt'])) {
+                    $alt = esc_html(wp_strip_all_tags($settings['fifu_input_alt']));
+                    fifu_update_or_delete_value($post_id, 'fifu_image_alt', $alt);
                 }
             }
         }
+
+        // Recursively process child elements
+        if (!empty($el['elements']) && is_array($el['elements'])) {
+            fifu_walk_elements_and_apply($el['elements'], $post_id);
+        }
     }
+}
+
+function fifu_image_after_save_elementor_data($post_id, $editor_data) {
+    if (!is_array($editor_data))
+        return;
+    fifu_walk_elements_and_apply($editor_data, $post_id);
 }
 
 add_action('elementor/editor/after_save', 'fifu_image_after_save_elementor_data', 10, 2);

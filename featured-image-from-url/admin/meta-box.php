@@ -299,42 +299,6 @@ function fifu_is_sirv_active() {
     return is_plugin_active('sirv/sirv.php');
 }
 
-/* woocommerce variation elements */
-
-// add_action('woocommerce_product_after_variable_attributes', 'fifu_variation_settings_fields', 10, 3);
-
-function fifu_variation_settings_fields($loop, $variation_data, $variation) {
-    $fifu = fifu_get_strings_meta_box_php();
-
-    // variation
-    woocommerce_wp_text_input(
-            array(
-                'id' => "fifu_image_url{$loop}",
-                'name' => "fifu_image_url[{$loop}]",
-                'value' => get_post_meta($variation->ID, 'fifu_image_url', true),
-                'label' => '<span class="dashicons dashicons-camera" style="font-size:20px"></span>' . $fifu['variation']['field'](),
-                'desc_tip' => true,
-                'description' => $fifu['variation']['info'](),
-                'placeholder' => $fifu['variation']['image'](),
-                'wrapper_class' => 'form-row form-row-full',
-            )
-    );
-    // variation gallery
-    for ($i = 0; $i < 3; $i++) {
-        woocommerce_wp_text_input(
-                array(
-                    'id' => "fifu_image_url_" . $i . "{$loop}",
-                    'name' => "fifu_image_url_" . $i . "[{$loop}]",
-                    'value' => get_post_meta($variation->ID, 'fifu_image_url_' . $i, true),
-                    'label' => '<span class="dashicons dashicons-format-gallery" style="font-size:20px"></span>' . $fifu['variation']['images']() . ' #' . ($i + 1),
-                    'desc_tip' => true,
-                    'placeholder' => $fifu['variation']['image'](),
-                    'wrapper_class' => 'form-row form-row-full',
-                )
-        );
-    }
-}
-
 /* dimensions */
 
 function fifu_get_width_meta($req) {

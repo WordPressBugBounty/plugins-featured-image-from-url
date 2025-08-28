@@ -466,9 +466,6 @@ function fifu_get_strings_settings() {
     $fifu['support']['plugin'] = function () {
         _e("A plugin isn't working with FIFU", FIFU_SLUG);
     };
-    $fifu['support']['facebook'] = function () {
-        _e("Facebook doesn't share images", FIFU_SLUG);
-    };
     $fifu['support']['money'] = function () {
         _e("Broken image icon", FIFU_SLUG);
     };
@@ -480,9 +477,6 @@ function fifu_get_strings_settings() {
     };
     $fifu['support']['plugin-desc'] = function () {
         _e("Contact us. If you are available to discuss the details, we should provide an integration. Or contact its developer and ask him to use the functions at 'Developers → FIFU API'.", FIFU_SLUG);
-    };
-    $fifu['support']['facebook-desc'] = function () {
-        _e("You probably have a plugin or theme that sets a default image as the Facebook image (og:image meta tag). Just find and disable the option.", FIFU_SLUG);
     };
     $fifu['support']['money-desc'] = function () {
         _e("Possibilities: a) CDN can't serve it; b) image deleted by owner; c) hotlink protection; d) incorrect URL. For (a), disable 'Image → Optimized images' temporarily and contact us. For (b) or (c), try FIFU Cloud.", FIFU_SLUG);
@@ -496,17 +490,11 @@ function fifu_get_strings_settings() {
     $fifu['support']['media-library'] = function () {
         _e("Images saved in the media library", FIFU_SLUG);
     };
-    $fifu['support']['others'] = function () {
-        _e("Changes have no effect", FIFU_SLUG);
-    };
     $fifu['support']['wp-automatic-desc'] = function () {
         _e("Notify WP Automatic (or WPeMatico) support that image URLs are not sent to FIFU. Alternatively, use our PRO version to obtain images using page addresses or post titles.", FIFU_SLUG);
     };
     $fifu['support']['media-library-desc'] = function () {
         _e("This plugin doesn't save images to the media library unless you're using the 'Image → Save in the media library' feature. So, another plugin or your theme may be causing this.", FIFU_SLUG);
-    };
-    $fifu['support']['others-desc'] = function () {
-        _e("If you're using a performance plugin, clearing the cache may help. This ensures that backend changes propagate effectively to the frontend.", FIFU_SLUG);
     };
 
     // start
@@ -1829,20 +1817,14 @@ function fifu_get_strings_meta_box_php() {
     };
 
     // variation
-    $fifu['variation']['field'] = function () {
-        return __("Product Image (URL)", FIFU_SLUG);
-    };
-    $fifu['variation']['info'] = function () {
-        return __("Powered by FIFU plugin", FIFU_SLUG);
-    };
-    $fifu['variation']['image'] = function () {
-        return __("Image URL", FIFU_SLUG);
-    };
-    $fifu['variation']['images'] = function () {
-        return __("Gallery Image (URL)", FIFU_SLUG);
-    };
-    $fifu['variation']['upload'] = function () {
+    $fifu['variation']['new']['upload'] = function () {
         return __("Upload to media library", FIFU_SLUG);
+    };
+    $fifu['variation']['new']['images'] = function () {
+        return __("Images", FIFU_SLUG);
+    };
+    $fifu['variation']['new']['help'] = function () {
+        return __("The first slot is for the featured image, and the others are for the image gallery.", FIFU_SLUG);
     };
 
     return $fifu;
@@ -2298,7 +2280,7 @@ function fifu_get_strings_cloud() {
 
     // media
     $fifu['media']['desc'] = function () {
-        _e("Before uploading local images to the cloud, you should copy their URLs to FIFU custom fields by clicking the \"link\" button. Have a database backup as post metadata will be replaced, making this plugin responsible for displaying images. Do not delete images from the media library until ensuring they were saved in the cloud.", FIFU_SLUG);
+        _e("To have local images listed on the 'Upload' tab, you should first select them here and click the 'link' button, which will copy the local image URLs to the FIFU custom field, making FIFU responsible for displaying the images. Then you should be able to upload the local images to the cloud. Do not delete any image from the media library before doing this.", FIFU_SLUG);
     };
 
     // billing

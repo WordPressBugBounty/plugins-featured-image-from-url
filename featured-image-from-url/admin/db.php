@@ -516,7 +516,7 @@ class FifuDb {
                     (SELECT meta_value FROM {$this->postmeta} pm2 WHERE pm2.post_id = pm.post_id AND pm2.meta_key = '_product_image_gallery') AS gallery_ids,
                     false AS category
                 FROM {$this->postmeta} pm
-                INNER JOIN {$this->posts} p ON pm.post_id = p.id {$filter}
+                INNER JOIN {$this->posts} p ON pm.post_id = p.id {$filter} AND p.post_title <> ''
                 INNER JOIN {$this->posts} att ON (
                     pm.meta_key = '_thumbnail_id'
                     AND pm.meta_value = att.id
@@ -829,12 +829,12 @@ class FifuDb {
 
         // featured group
         if (count($featured_list) > 0) {
-            $att_ids_map = $this->get_thumbnail_ids($featured_list, false);
-            if (count($att_ids_map) > 0) {
-                $this->revert_attachments($urls, $featured_list, $att_ids_map);
-                $meta_ids_map = $this->get_thumbnail_meta_ids($featured_list, $att_ids_map);
-                if (count($meta_ids_map) > 0)
-                    $this->revert_attachments_meta($urls, $featured_list, $meta_ids_map);
+            $att_ids_map_featured = $this->get_thumbnail_ids($featured_list, false);
+            if (count($att_ids_map_featured) > 0) {
+                $this->revert_attachments($urls, $featured_list, $att_ids_map_featured);
+                $meta_ids_map_featured = $this->get_thumbnail_meta_ids($featured_list, $att_ids_map_featured);
+                if (count($meta_ids_map_featured) > 0)
+                    $this->revert_attachments_meta($urls, $featured_list, $meta_ids_map_featured);
             }
         }
     }
@@ -1042,24 +1042,26 @@ class FifuDb {
 
     function insert_attachment_by($value) {
         $this->wpdb->query("
-            INSERT INTO {$this->posts} (post_author, guid, post_title, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, post_excerpt, to_ping, pinged, post_content_filtered) 
+            INSERT INTO {$this->posts} (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered) 
             VALUES " . str_replace('\\', '', $value));
     }
 
     function insert_ctgr_attachment_by($value) {
         $this->wpdb->query("
-            INSERT INTO {$this->posts} (post_author, guid, post_title, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, post_excerpt, to_ping, pinged, post_content_filtered, post_name) 
+            INSERT INTO {$this->posts} (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered, post_name) 
             VALUES " . str_replace('\\', '', $value));
     }
 
     function get_formatted_value($url, $alt, $post_parent) {
         $alt = $alt ?? '';
-        return "({$this->author}, '', '" . str_replace("'", "", $alt) . "', 'image/jpeg', 'attachment', 'inherit', '{$post_parent}', now(), now(), now(), now(), '', '', '', '', '{$url}')";
+        $alt = str_replace("'", "", $alt);
+        return "({$this->author}, '', '{$alt}', '{$alt}', 'image/jpeg', 'attachment', 'inherit', '{$post_parent}', now(), now(), now(), now(), '', '', '', '{$url}')";
     }
 
     function get_ctgr_formatted_value($url, $alt, $post_parent) {
         $alt = $alt ?? '';
-        return "({$this->author}, '', '" . str_replace("'", "", $alt) . "', 'image/jpeg', 'attachment', 'inherit', '{$post_parent}', now(), now(), now(), now(), '', '', '', '', '{$url}', 'fifu-category-{$post_parent}')";
+        $alt = str_replace("'", "", $alt);
+        return "({$this->author}, '', '{$alt}', '{$alt}', 'image/jpeg', 'attachment', 'inherit', '{$post_parent}', now(), now(), now(), now(), '', '', '', '{$url}', 'fifu-category-{$post_parent}')";
     }
 
     /* dimensions: clean all */
@@ -1112,7 +1114,7 @@ class FifuDb {
             if ($has_fifu_attachment) {
                 update_post_meta($att_id, '_wp_attached_file', $url);
                 $alt ? update_post_meta($att_id, '_wp_attachment_image_alt', $alt) : delete_post_meta($att_id, '_wp_attachment_image_alt');
-                $this->wpdb->update($this->posts, $set = array('post_title' => $alt, 'post_content_filtered' => $url), $where = array('id' => $att_id), null, null);
+                $this->wpdb->update($this->posts, $set = array('post_title' => $alt, 'post_excerpt' => $alt, 'post_content_filtered' => $url), $where = array('id' => $att_id), null, null);
             }
             // insert
             else {
@@ -1152,7 +1154,7 @@ class FifuDb {
             if ($has_fifu_attachment) {
                 update_post_meta($att_id, '_wp_attached_file', $url);
                 $alt ? update_post_meta($att_id, '_wp_attachment_image_alt', $alt) : delete_post_meta($att_id, '_wp_attachment_image_alt');
-                $this->wpdb->update($this->posts, $set = array('post_content_filtered' => $url, 'post_title' => $alt), $where = array('id' => $att_id), null, null);
+                $this->wpdb->update($this->posts, $set = array('post_content_filtered' => $url, 'post_title' => $alt, 'post_excerpt' => $alt), $where = array('id' => $att_id), null, null);
             }
             // insert
             else {
@@ -1696,7 +1698,7 @@ class FifuDb {
 
         try {
             $this->wpdb->query("
-                INSERT INTO {$this->posts} (post_author, guid, post_title, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, post_excerpt, to_ping, pinged, post_content_filtered) 
+                INSERT INTO {$this->posts} (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered) 
                 VALUES " . str_replace('\\', '', $value));
 
             $this->wpdb->query("
@@ -1826,7 +1828,7 @@ class FifuDb {
 
         try {
             $this->wpdb->query("
-                INSERT INTO {$this->posts} (post_author, guid, post_title, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, post_excerpt, to_ping, pinged, post_content_filtered, post_name) 
+                INSERT INTO {$this->posts} (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered, post_name) 
                 VALUES " . str_replace('\\', '', $value));
 
             $this->wpdb->query("

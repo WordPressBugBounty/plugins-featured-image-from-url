@@ -233,8 +233,10 @@ function listAllSu(page, type, keyword) {
                     id: 'cloud-del'
                 },
                 action: function () {
-                    jQuery("#su-dialog-remove").dialog("open");
-                    update = true;
+                    if (table.rows({selected: true}).count() > 0) {
+                        jQuery("#su-dialog-remove").dialog("open");
+                        update = true;
+                    }
                 }
             },
             {

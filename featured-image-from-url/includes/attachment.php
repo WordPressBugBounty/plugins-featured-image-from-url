@@ -197,6 +197,8 @@ function fifu_callback($buffer) {
 
     /* img */
 
+    $buffer = fifu_filter_og_images($buffer);
+
     $srcType = "src";
     $imgList = array();
     preg_match_all('/<img[^>]*>/', $buffer, $imgList);
@@ -405,4 +407,50 @@ function custom_get_attachment_intercept() {
 }
 
 add_action('wp_ajax_get-attachment', 'custom_get_attachment_intercept', 0);
+
+function fifu_filter_og_images($buffer) {
+    // Regex to match FIFU blocks
+    $pattern_blocks = '/<!--\s*FIFU:meta:begin:[a-z]+\s*-->.*?<!--\s*FIFU:meta:end:[a-z]+\s*-->/is';
+
+    // Extract all FIFU blocks
+    $blocks = [];
+    if (preg_match_all($pattern_blocks, $buffer, $matches, PREG_OFFSET_CAPTURE)) {
+        foreach ($matches[0] as $match) {
+            $blocks[] = $match[0];
+        }
+    }
+
+    // Check if there is at least one og:image inside any FIFU block
+    $has_fifu_ogimage = false;
+    foreach ($blocks as $block) {
+        if (preg_match('/<meta\s+[^>]*property=["\']og:image[^"\']*["\']/i', $block)) {
+            $has_fifu_ogimage = true;
+            break;
+        }
+    }
+
+    // If no og:image was found inside FIFU blocks, return original buffer
+    if (!$has_fifu_ogimage) {
+        return $buffer;
+    }
+
+    // Otherwise, protect blocks and remove unwanted tags outside them
+    $buffer_preserve = $buffer;
+    foreach ($blocks as $i => $block) {
+        $buffer_preserve = str_replace($block, "___FIFU_BLOCK_" . ($i + 1) . "___", $buffer_preserve);
+    }
+
+    // Remove ALL <meta property="og:image..."> tags outside FIFU blocks
+    $buffer_preserve = preg_replace('/<meta\s+[^>]*property=["\']og:image[^"\']*["\'][^>]*>\s*/i', '', $buffer_preserve);
+
+    // Remove ALL <meta name="twitter:image..."> tags outside FIFU blocks
+    $buffer_preserve = preg_replace('/<meta\s+[^>]*name=["\']twitter:image[^"\']*["\'][^>]*>\s*/i', '', $buffer_preserve);
+
+    // Restore preserved FIFU blocks in their original positions
+    foreach ($blocks as $i => $block) {
+        $buffer_preserve = str_replace("___FIFU_BLOCK_" . ($i + 1) . "___", $block, $buffer_preserve);
+    }
+
+    return $buffer_preserve;
+}
 

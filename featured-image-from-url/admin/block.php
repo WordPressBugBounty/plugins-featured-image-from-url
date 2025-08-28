@@ -1,6 +1,11 @@
 <?php
 
 function fifu_register_blocks() {
+    // Prevent block registration in Customizer
+    if (is_admin() && isset($GLOBALS['wp_customize']) && $GLOBALS['wp_customize'] instanceof WP_Customize_Manager) {
+        return;
+    }
+
     $block_strings = fifu_get_strings_block();
     register_block_type(
             FIFU_PLUGIN_DIR . 'blocks/fifu-image',

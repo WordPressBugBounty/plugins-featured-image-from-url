@@ -90,6 +90,28 @@ function fifu_add_social_tags() {
     $title = str_replace("'", "&#39;", strip_tags(get_the_title($post_id)));
     $description = str_replace("'", "&#39;", wp_strip_all_tags(get_post_field('post_excerpt', $post_id)));
 
+    $arr = array($url);
+
+    // https://search.google.com/test/rich-results
+    // Add JSON-LD for WordPress posts and products
+    $type = get_post_type($post_id);
+    if (is_singular($type)) {
+        wp_enqueue_script('fifu-json-ld', plugins_url('/html/js/json-ld.js', __FILE__), array(), fifu_version_number_enq());
+        $json_ld = [
+            "@context" => "https://schema.org",
+            "url" => get_permalink($post_id),
+            "image" => $arr,
+        ];
+        if ($type === 'product') {
+            $json_ld["@type"] = "Product";
+            $json_ld["name"] = get_the_title($post_id);
+        } else {
+            $json_ld["@type"] = "BlogPosting";
+            $json_ld["headline"] = get_the_title($post_id);
+        }
+        wp_localize_script('fifu-json-ld', 'fifuJsonLd', $json_ld);
+    }
+
     if ($url) {
         if (fifu_is_from_speedup($url))
             $url = fifu_speedup_get_signed_url($url, 1280, 672, null, null, false);
@@ -97,11 +119,6 @@ function fifu_add_social_tags() {
             $url = fifu_jetpack_photon_url($url, null, get_post_thumbnail_id($post_id));
         }
         include 'html/og-image.html';
-
-        wp_enqueue_script('fifu-json-ld', plugins_url('/html/js/json-ld.js', __FILE__), array(), fifu_version_number_enq());
-        wp_localize_script('fifu-json-ld', 'fifuJsonLd', [
-            'url' => $url,
-        ]);
     }
 
     if ($url) {

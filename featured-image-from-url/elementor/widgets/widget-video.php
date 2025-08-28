@@ -19,7 +19,7 @@ class Elementor_FIFU_Video_Widget extends \Elementor\Widget_Base {
         return ['basic'];
     }
 
-    protected function _register_controls() {
+    protected function register_controls() {
         $strings = fifu_get_strings_elementor();
 
         $this->start_controls_section(
@@ -47,6 +47,5 @@ class Elementor_FIFU_Video_Widget extends \Elementor\Widget_Base {
     protected function render() {
         
     }
-
 }
 
