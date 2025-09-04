@@ -6,6 +6,11 @@ function fifu_register_blocks() {
         return;
     }
 
+    // Prevent block registration on the widgets screen
+    if (is_admin() && basename($_SERVER['PHP_SELF']) === 'widgets.php') {
+        return;
+    }
+
     $block_strings = fifu_get_strings_block();
     register_block_type(
             FIFU_PLUGIN_DIR . 'blocks/fifu-image',
@@ -65,3 +70,4 @@ function fifu_register_meta() {
 }
 
 add_action('init', 'fifu_register_meta');
+

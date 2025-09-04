@@ -1,5 +1,8 @@
 <?php
 
+// Ensure WordPress plugin functions are available for helper checks
+require_once(ABSPATH . '/wp-admin/includes/plugin.php');
+
 function fifu_get_attribute($attribute, $html) {
     $attribute = $attribute . '=';
     if (strpos($html, $attribute) === false)
@@ -324,6 +327,21 @@ function fifu_is_ol_scrapes_active() {
 
 function fifu_is_rank_math_seo_active() {
     return is_plugin_active('seo-by-rank-math/rank-math.php');
+}
+
+// SEO plugins helpers used across the plugin
+function fifu_is_yoast_seo_active() {
+    return is_plugin_active('wordpress-seo/wp-seo.php');
+}
+
+function fifu_is_aioseo_active() {
+    // Support free and pro identifiers
+    return is_plugin_active('all-in-one-seo-pack/all_in_one_seo_pack.php') ||
+            is_plugin_active('all-in-one-seo-pack-pro/all_in_one_seo_pack.php');
+}
+
+function fifu_is_any_seo_plugin_active() {
+    return fifu_is_yoast_seo_active() || fifu_is_rank_math_seo_active() || fifu_is_aioseo_active();
 }
 
 function fifu_is_gravity_forms_active() {

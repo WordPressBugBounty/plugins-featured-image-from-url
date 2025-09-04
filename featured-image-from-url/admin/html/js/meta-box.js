@@ -727,3 +727,93 @@ function showImageFallback() {
         }, 250);
     });
 })(jQuery);
+
+// Auto-refresh FIFU fields after successful post save (Gutenberg)
+(function () {
+    try {
+        if (typeof wp === 'undefined' || !wp.data || !wp.data.select || !wp.data.subscribe)
+            return;
+
+        let wasSaving = false;
+
+        function fetchAndApplyFifuUrl(postId) {
+            if (!postId)
+                return;
+
+            // Use the plugin REST endpoint that returns the current main URL
+            const base = ((typeof restUrl !== 'undefined' && restUrl) || (window.wpApiSettings && window.wpApiSettings.root) || '/wp-json/');
+            const url = (base.endsWith('/') ? base : base + '/') + 'featured-image-from-url/v1/url/' + postId + '?_ts=' + Date.now();
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-WP-Nonce': (window.wpApiSettings && window.wpApiSettings.nonce) || (typeof fifuScriptVars !== 'undefined' ? fifuScriptVars.nonce : '')
+                },
+                credentials: 'same-origin'
+            }).then(function (res) {
+                // Only proceed on 2xx
+                if (!res || !res.ok)
+                    return null;
+                // Endpoint returns a JSON-encoded string (the URL)
+                if (res.headers.get('content-type') && res.headers.get('content-type').indexOf('application/json') !== -1)
+                    return res.json();
+                return res.text();
+            }).then(function (value) {
+                if (value == null)
+                    return;
+                var newUrl = '';
+                if (typeof value === 'string') {
+                    newUrl = value;
+                } else if (value && typeof value === 'object') {
+                    // In case the server wraps it differently in some environments
+                    newUrl = value.url || '';
+                }
+
+                if (!newUrl)
+                    return;
+
+                // Only update if different from current input
+                var $input = jQuery('#fifu_input_url');
+                if (!$input.length)
+                    return;
+
+                const current = ($input.val() || '').trim();
+                if (current === newUrl)
+                    return;
+
+                $input.val(newUrl)
+                        .trigger('input')
+                        .trigger('change');
+                // Recompute preview and controls
+                if (typeof fifu_get_sizes === 'function')
+                    fifu_get_sizes();
+            }).catch(function () {
+                // Ignore network/rest errors silently
+            });
+        }
+
+        wp.data.subscribe(function () {
+            try {
+                const sel = wp.data.select('core/editor');
+                // Some WP versions may not expose didPostSaveRequestSucceed
+                if (!sel || !sel.isSavingPost)
+                    return;
+
+                const isSaving = !!sel.isSavingPost();
+                const isAutosaving = !!(sel.isAutosavingPost && sel.isAutosavingPost());
+                const didSucceed = sel.didPostSaveRequestSucceed ? !!sel.didPostSaveRequestSucceed() : true;
+
+                // Detect transition: saving -> not saving, success, and not autosave
+                if (wasSaving && !isSaving && didSucceed && !isAutosaving) {
+                    const postId = (sel.getCurrentPostId && sel.getCurrentPostId()) || (fifuMetaBoxVars && fifuMetaBoxVars.get_the_ID) || null;
+                    fetchAndApplyFifuUrl(postId);
+                }
+
+                wasSaving = isSaving;
+            } catch (e) {
+                // no-op
+            }
+        });
+    } catch (e) {
+        // Guard for non-Gutenberg screens
+    }
+})();

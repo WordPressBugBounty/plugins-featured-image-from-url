@@ -728,10 +728,23 @@ function listAllMediaLibrary(page, type, keyword) {
             "keyword": keyword,
         },
         async: true,
+        // Ensure we expect JSON and gracefully handle empty responses
+        dataType: 'json',
+        dataFilter: function (raw, type) {
+            if (type === 'json') {
+                if (!raw || (typeof raw === 'string' && raw.trim() === ''))
+                    return '[]';
+            }
+            return raw;
+        },
         beforeSend: function (xhr) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
         },
         success: function (data) {
+            // Normalize unexpected values to an empty array
+            if (!Array.isArray(data))
+                data = [];
+
             for (var i = 0; i < data.length; i++) {
                 imgTag = '<img loading="lazy" id="' + data[i]['meta_id'] + '" src="' + data[i]['url'] + '" style="border-radius:5%; height:56px; width:56px; object-fit:cover; text-align:center">';
                 table.row.add([

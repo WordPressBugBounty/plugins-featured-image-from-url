@@ -19,6 +19,11 @@ function fifu_remote_post($endpoint, $array) {
     return fifu_is_local() ? wp_remote_post($endpoint, $array) : wp_safe_remote_post($endpoint, $array);
 }
 
+function fifu_api_image_url(WP_REST_Request $request) {
+    $param = $request['post_id'] ?? null;
+    return fifu_main_image_url($param, true);
+}
+
 function fifu_api_sign_up(WP_REST_Request $request) {
     $email = $request['email'] ?? '';
     $site = fifu_get_home_url();
@@ -651,6 +656,16 @@ function fifu_api_list_all_su(WP_REST_Request $request) {
             $is_video = strpos($post->meta_key ?? '', 'video') !== false;
             $url = 'https://cdn.fifu.app/' . ($json->bucket_id ?? '') . '/' . ($post->storage_id ?? '');
             $post->proxy_url = fifu_speedup_get_signed_url($url, 128, 128, $json->bucket_id ?? '', $post->storage_id ?? '', $is_video);
+
+            // sanitize fields
+            $post->storage_id = sanitize_text_field($post->storage_id ?? '');
+            $post->title = sanitize_text_field($post->title ?? '');
+            $post->date = sanitize_text_field($post->date ?? '');
+            $post->meta_key = sanitize_text_field($post->meta_key ?? '');
+            $post->proxy_url = esc_url_raw($post->proxy_url ?? '');
+            $post->meta_id = intval($post->meta_id ?? 0);
+            $post->post_id = intval($post->post_id ?? 0);
+            $post->is_category = isset($post->is_category) ? (bool) $post->is_category : false;
         }
     }
     return $json;
@@ -846,6 +861,25 @@ function fifu_api_list_all_fifu(WP_REST_Request $request) {
     $type = $request['type'] ?? null;
     $keyword = $request['keyword'] ?? null;
     $urls = fifu_db_get_all_urls($page, $type, $keyword);
+
+    // sanitize output
+    if (is_array($urls)) {
+        foreach ($urls as $u) {
+            if (!is_object($u))
+                continue;
+            $u->url = esc_url_raw($u->url ?? '');
+            $u->video_url = isset($u->video_url) && $u->video_url ? esc_url_raw($u->video_url) : null;
+            $u->post_title = sanitize_text_field($u->post_title ?? '');
+            $u->post_name = sanitize_text_field($u->post_name ?? '');
+            $u->post_date = sanitize_text_field($u->post_date ?? '');
+            $u->meta_key = sanitize_text_field($u->meta_key ?? '');
+            $u->meta_id = intval($u->meta_id ?? 0);
+            $u->post_id = intval($u->post_id ?? 0);
+            // ensure boolean-ish as int (0/1)
+            $u->category = isset($u->category) ? (int) (!!$u->category) : 0;
+        }
+    }
+
     return $urls;
 }
 
@@ -856,7 +890,25 @@ function fifu_api_list_all_media_library(WP_REST_Request $request) {
     $page = (int) ($request['page'] ?? 0);
     $type = $request['type'] ?? null;
     $keyword = $request['keyword'] ?? null;
-    return fifu_db_get_posts_with_internal_featured_image($page, $type, $keyword);
+    $results = fifu_db_get_posts_with_internal_featured_image($page, $type, $keyword);
+
+    // sanitize output
+    if (is_array($results)) {
+        foreach ($results as $r) {
+            if (!is_object($r))
+                continue;
+            $r->url = esc_url_raw($r->url ?? '');
+            $r->post_title = sanitize_text_field($r->post_title ?? '');
+            $r->post_name = sanitize_text_field($r->post_name ?? '');
+            $r->post_date = sanitize_text_field($r->post_date ?? '');
+            $r->gallery_ids = isset($r->gallery_ids) ? sanitize_text_field($r->gallery_ids) : null;
+            $r->post_id = intval($r->post_id ?? 0);
+            $r->thumbnail_id = intval($r->thumbnail_id ?? 0);
+            $r->category = isset($r->category) ? (int) (!!$r->category) : 0;
+        }
+    }
+
+    return $results;
 }
 
 function fifu_metadata_counter_api(WP_REST_Request $request) {
@@ -1194,6 +1246,12 @@ add_action('rest_api_init', function () {
         ),
     ));
 
+    register_rest_route('featured-image-from-url/v1', '/url/(?P<post_id>\d+)', array(
+        'methods' => 'GET',
+        'callback' => 'fifu_api_image_url',
+        'permission_callback' => 'fifu_get_private_data_permissions_check',
+    ));
+
     register_rest_route('featured-image-from-url/v2', '/create_thumbnails_list/', array(
         'methods' => 'POST',
         'callback' => 'fifu_api_create_thumbnails_list',
@@ -1276,3 +1334,4 @@ function fifu_get_private_data_permissions_check() {
 function fifu_public_permission() {
     return true;
 }
+

@@ -4,17 +4,17 @@ define('FIFU_PLACEHOLDER', 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BA
 
 add_filter('wp_head', 'fifu_add_js');
 
-if (!function_exists('is_plugin_active'))
-    require_once(ABSPATH . '/wp-admin/includes/plugin.php');
-
 global $pagenow;
 if (!isset($pagenow) || !in_array($pagenow, array('post.php', 'post-new.php', 'admin-ajax.php', 'wp-cron.php'))) {
-    if (is_plugin_active('wordpress-seo/wp-seo.php')) {
+    if (fifu_is_yoast_seo_active()) {
         add_action('wpseo_opengraph_image', 'fifu_add_social_tag_yoast');
         add_action('wpseo_twitter_image', 'fifu_add_social_tag_yoast');
         add_action('wpseo_add_opengraph_images', 'fifu_add_social_tag_yoast_list');
     } else
         add_filter('wp_head', 'fifu_add_social_tags');
+
+    // Always handle FIFU structured data (image-only when SEO plugin is active)
+    add_action('wp_head', 'fifu_add_structured_data', 99);
 }
 
 add_action('wp_head', 'fifu_home_add_social_tags', 9999);
@@ -76,6 +76,32 @@ function fifu_add_social_tag_yoast_list($object) {
     $object->add_image(fifu_main_image_url(get_the_ID(), true));
 }
 
+// General ld+json output: when an SEO plugin is active we emit only ImageObject
+// Otherwise we emit minimal BlogPosting/Product with images
+function fifu_add_structured_data() {
+    // Keep behavior consistent with other meta handling
+    if (is_front_page() || is_home() || is_tax())
+        return;
+
+    $post_id = get_the_ID();
+    if (!$post_id)
+        return;
+
+    global $wpdb;
+    $arr = $wpdb->get_col($wpdb->prepare(
+                    "SELECT meta_value FROM $wpdb->postmeta WHERE post_id = %d AND meta_key LIKE %s",
+                    $post_id,
+                    'fifu_%image_url%'
+            ));
+
+    if (empty($arr))
+        return;
+
+    $type = get_post_type($post_id);
+    if (!empty($arr) && is_singular($type))
+        fifu_render_structured_data($post_id, $arr);
+}
+
 function fifu_add_social_tags() {
     if (is_front_page() || is_home() || is_tax())
         return;
@@ -89,28 +115,6 @@ function fifu_add_social_tags() {
     // $url = $url ? $url : get_the_post_thumbnail_url($post_id, 'large');
     $title = str_replace("'", "&#39;", strip_tags(get_the_title($post_id)));
     $description = str_replace("'", "&#39;", wp_strip_all_tags(get_post_field('post_excerpt', $post_id)));
-
-    $arr = array($url);
-
-    // https://search.google.com/test/rich-results
-    // Add JSON-LD for WordPress posts and products
-    $type = get_post_type($post_id);
-    if (is_singular($type)) {
-        wp_enqueue_script('fifu-json-ld', plugins_url('/html/js/json-ld.js', __FILE__), array(), fifu_version_number_enq());
-        $json_ld = [
-            "@context" => "https://schema.org",
-            "url" => get_permalink($post_id),
-            "image" => $arr,
-        ];
-        if ($type === 'product') {
-            $json_ld["@type"] = "Product";
-            $json_ld["name"] = get_the_title($post_id);
-        } else {
-            $json_ld["@type"] = "BlogPosting";
-            $json_ld["headline"] = get_the_title($post_id);
-        }
-        wp_localize_script('fifu-json-ld', 'fifuJsonLd', $json_ld);
-    }
 
     if ($url) {
         if (fifu_is_from_speedup($url))
@@ -215,14 +219,14 @@ function fifu_replace($html, $post_id, $post_thumbnail_id, $size, $attr = null) 
     $delimiter = fifu_get_delimiter('src', $html);
     $alt = get_post_meta($post_id, 'fifu_image_alt', true);
     if (!$alt) {
-        $alt = strip_tags(get_the_title($post_id));
-        $title = $title ? $title : $alt;
+        $alt = esc_attr(strip_tags(get_the_title($post_id)));
+        $title = esc_attr($title ? $title : $alt);
         $custom_alt = 'alt=' . $delimiter . $alt . $delimiter . ' title=' . $delimiter . $title . $delimiter;
         $html = preg_replace('/alt=[\'\"][^[\'\"]*[\'\"]/', $custom_alt, $html);
         $html = fifu_check_alt_attribute($html, $custom_alt);
     } else {
         $alt = strip_tags($alt);
-        $title = $title ? $title : $alt;
+        $title = esc_attr($title ? $title : $alt);
         if ($url && $alt) {
             $html = preg_replace('/alt=[\'\"][^[\'\"]*[\'\"]/', 'alt=' . $delimiter . $alt . $delimiter . ' title=' . $delimiter . $title . $delimiter, $html);
         }
@@ -261,7 +265,25 @@ function fifu_get_html($url, $alt, $width, $height) {
         $css = 'display:none';
     }
 
-    return sprintf('<img src="%s" alt="%s" title="%s" style="%s" data-large_image="%s" data-large_image_width="%s" data-large_image_height="%s" onerror="%s" width="%s" height="%s">', $url, $alt, $alt, $css, $url, "800", "600", "jQuery(this).hide();", $width, $height);
+    $safe_url = esc_url($url);
+    $safe_alt = esc_attr($alt);
+    $safe_css = esc_attr($css);
+    $safe_width = esc_attr($width);
+    $safe_height = esc_attr($height);
+
+    return sprintf(
+            '<img src="%s" alt="%s" title="%s" style="%s" data-large_image="%s" data-large_image_width="%s" data-large_image_height="%s" onerror="%s" width="%s" height="%s">',
+            $safe_url,
+            $safe_alt,
+            $safe_alt,
+            $safe_css,
+            $safe_url,
+            "800",
+            "600",
+            "jQuery(this).hide();",
+            $safe_width,
+            $safe_height
+    );
 }
 
 add_filter('the_content', 'fifu_remove_content_image');
@@ -290,7 +312,9 @@ function fifu_remove_content_image($content) {
         if (!empty($matches[1] ?? [])) {
             foreach ($matches[1] as $match) {
                 $content_img_url = html_entity_decode($match);
-                if ($content_img_url == $att_url) {
+                // Simple: exact or content URL is a substring of the attachment URL
+                $should_replace = ($content_img_url == $att_url) || ($content_img_url !== '' && strpos($att_url, $content_img_url) !== false);
+                if ($should_replace) {
                     $content = preg_replace('/<img[^>]+src=[\'"]' . preg_quote($match, '/') . '[\'"][^>]*>/i', '', $content, 1);
                     return $content;
                 }

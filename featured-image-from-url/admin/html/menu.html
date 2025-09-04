@@ -5725,7 +5725,7 @@
                             <br>
                             <div style="font-style:italic;font-size:13px;color:white;padding-left:40px"><?php $fifu['start']['post']['new']() ?></div>
                             <br>
-                            <div style="font-style:italic;font-size:13px;color:white;padding-left:40px"><?php $fifu['start']['post']['box']() ?> <span class="dashicons dashicons-camera" style="font-size:18px;padding-right:3px"></span><b><?php $fifu['start']['post']['featured']() ?></b>;</div>
+                            <div style="font-style:italic;font-size:13px;color:white;padding-left:40px"><?php $fifu['start']['post']['box']() ?> <span class="dashicons dashicons-camera" style="font-size:18px;padding-right:3px"></span><b><?php $fifu['start']['post']['featured']() ?></b></div>
                             <br>
                             <div style="font-style:italic;font-size:13px;color:white;padding-left:40px"><?php $fifu['start']['post']['address']() ?></div>
                             <br>
@@ -5827,21 +5827,3 @@
         </ul>
     </div>
 </div>
-
-<script>
-    jQuery(document).ready(function () {
-        removeNotices();
-    });
-
-    // remove notices from other plugins
-    setTimeout(function () {
-        removeNotices();
-    }, 250);
-
-    function removeNotices() {
-        jQuery('div.header-box > div').remove();
-        jQuery('.notice').remove();
-        jQuery('[id^=wp-admin-bar-_]').remove();
-        jQuery('.pms-cross-promo').remove();
-    }
-</script>

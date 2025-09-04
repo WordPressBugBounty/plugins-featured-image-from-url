@@ -329,6 +329,9 @@ function fifu_get_strings_settings() {
     $fifu['title']['tags'] = function () {
         _e("Auto set featured image from Unsplash using tags", FIFU_SLUG);
     };
+    $fifu['title']['share'] = function () {
+        _e("Auto-share to social media", FIFU_SLUG);
+    };
     $fifu['title']['block'] = function () {
         _e("Disable right-click", FIFU_SLUG);
     };
@@ -1633,7 +1636,7 @@ function fifu_get_strings_settings() {
 
     // pro
     $fifu['unlock'] = function () {
-        _e("Unlock all PRO features for €29.90", FIFU_SLUG);
+        _e("Upgrade to PRO", FIFU_SLUG);
     };
 
     return $fifu;
@@ -2008,7 +2011,7 @@ function fifu_get_strings_quick_edit() {
 
     // pro
     $fifu['unlock'] = function () {
-        return __("Unlock all PRO features for €29.90", FIFU_SLUG);
+        return __("Upgrade to PRO", FIFU_SLUG);
     };
 
     return $fifu;
@@ -2046,7 +2049,7 @@ function fifu_get_strings_help() {
         return __("FIFU can auto set images based on post title, tags, remote web page address, and more. Check FIFU Settings → Automatic.", FIFU_SLUG);
     };
     $fifu['unsplash']['unlock'] = function () {
-        return __("Unlock all PRO features for €29.90", FIFU_SLUG);
+        return __("Upgrade to PRO", FIFU_SLUG);
     };
     $fifu['unsplash']['more'] = function () {
         return __("Loading more...", FIFU_SLUG);
@@ -2333,7 +2336,7 @@ function fifu_get_strings_cloud() {
 
     // pro
     $fifu['unlock'] = function () {
-        _e("Unlock all PRO features for €29.90", FIFU_SLUG);
+        _e("Upgrade to PRO", FIFU_SLUG);
     };
 
     // reset
@@ -2490,13 +2493,36 @@ function fifu_get_strings_plugins() {
         return __("Technical support", FIFU_SLUG);
     };
     $fifu['upgrade'] = function () {
-        return __("Upgrade to <b>PRO</b> for €29.90", FIFU_SLUG);
+        return __("Upgrade to <b>PRO</b>", FIFU_SLUG);
     };
     $fifu['star'] = function () {
         return __("Are you enjoying FIFU? Please give it a 5-star rating!", FIFU_SLUG);
     };
     $fifu['settings'] = function () {
         return __("Settings", FIFU_SLUG);
+    };
+
+    // Plugins screen and review notice
+    $fifu['rate'] = function () {
+        return __("Rate ★★★★★", FIFU_SLUG);
+    };
+    $fifu['review']['title'] = function () {
+        return __("Enjoying FIFU?", FIFU_SLUG);
+    };
+    $fifu['review']['message'] = function () {
+        return __("If the Featured Image from URL plugin helps you, please consider leaving a 5-star review. It means a lot!", FIFU_SLUG);
+    };
+    $fifu['review']['leave'] = function () {
+        return __("Leave a review", FIFU_SLUG);
+    };
+    $fifu['review']['later'] = function () {
+        return __("Not now", FIFU_SLUG);
+    };
+    $fifu['review']['done'] = function () {
+        return __("I already did", FIFU_SLUG);
+    };
+    $fifu['review']['help'] = function () {
+        return __("Need help?", FIFU_SLUG);
     };
 
     return $fifu;

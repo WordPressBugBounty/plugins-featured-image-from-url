@@ -4,11 +4,11 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.8.2
-Stable tag: 5.2.6
+Stable tag: 5.2.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Use a remote image/video/audio as featured image of a post or WooCommerce product.
+Use remote media as the featured image and beyond.
 
 == Description ==
 
@@ -140,7 +140,7 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 #### Links
 
-* **<a href="https://fifu.app/">FIFU PRO (€29.90)</a>**
+* **<a href="https://fifu.app/">FIFU PRO</a>**
 * **<a href="https://tastewp.com/new?pre-installed-plugin-slug=featured-image-from-url&redirect=admin.php%3Fpage%3Dfeatured-image-from-url&ni=true">Dummy site for testing</a>**
 * **<a href="https://chrome.google.com/webstore/detail/fifu-scraper/pccimcccbkdeeadhejdmnffmllpicola">Extension for Google Chrome</a>**
 * **<a href="https://plugintests.com/plugins/wporg/featured-image-from-url/latest">Smoke Test</a>**
@@ -246,6 +246,9 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.2.7 =
+* New: Notice to rate the plugin; Enhancement: Auto set featured media from post content (now supports local relative URLs); Fix: Incomplete product data generated for Rich Results.
+
 = 5.2.6 =
 * Enhancement: improved integration with Rich Results from Google; Enhancement: alternative text can now be displayed as captions at the bottom of the image; Fix: images defined by other plugins were being displayed on social media instead of the remote featured image; Fix: Elementor widget not working with newer Elementor versions.
 
@@ -279,5 +282,5 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Upgrade Notice ==
 
-= 5.2.6 =
-* Enhancement: improved integration with Rich Results from Google; Enhancement: alternative text can now be displayed as captions at the bottom of the image; Fix: images defined by other plugins were being displayed on social media instead of the remote featured image; Fix: Elementor widget not working with newer Elementor versions.
+= 5.2.7 =
+* New: Notice to rate the plugin; Enhancement: Auto set featured media from post content (now supports local relative URLs); Fix: Incomplete product data generated for Rich Results.
