@@ -34,9 +34,110 @@ class FifuDb {
         $this->types = $this->get_types();
     }
 
-    function get_types() {
-        $post_types = fifu_get_post_types();
-        return join("','", $post_types);
+    function get_types(): string {
+        $raw = (array) fifu_get_post_types();
+
+        // Sanitize and validate against registered post types
+        $registered = get_post_types([], 'names'); // array of valid names
+        $safe = [];
+        foreach ($raw as $pt) {
+            $pt = sanitize_key($pt);
+            if ($pt !== '' && isset($registered[$pt])) {
+                $safe[] = $pt;
+            }
+        }
+        // Deduplicate while preserving order
+        $safe = array_values(array_unique($safe));
+        return implode("','", $safe);
+    }
+
+    function sanitize_ids_csv($ids, bool $allow_zero = false): string {
+        // Normalize $ids to an array
+        if (is_string($ids)) {
+            $ids = explode(',', $ids);
+        } elseif (is_int($ids)) {
+            $ids = [$ids];
+        } elseif (!is_array($ids)) {
+            $ids = [];
+        }
+
+        $set = [];
+        foreach ($ids as $id) {
+            if (is_int($id)) {
+                $n = $id;
+            } elseif (is_string($id)) {
+                $id = trim($id);
+                if ($id === '' || !ctype_digit($id)) { // digits only
+                    continue;
+                }
+                $n = (int) $id; // safe after ctype_digit
+            } else {
+                continue;
+            }
+
+            if ($n > 0 || ($allow_zero && $n === 0)) {
+                $set[$n] = true; // dedupe
+            }
+        }
+
+        if (!$set) {
+            return '0'; // ensures valid "IN (0)" => no matches
+        }
+
+        return implode(',', array_keys($set));
+    }
+
+    // Sanitize a list of post types (array or CSV string) for safe IN (...) usage
+    function sanitize_post_types_list($post_types) {
+        // Normalize input to array
+        if (is_string($post_types)) {
+            $post_types = explode(',', str_replace(['"', "'"], '', $post_types));
+        } elseif (!is_array($post_types)) {
+            $post_types = [];
+        }
+
+        // Whitelist of registered post types
+        $registered = array_flip(get_post_types([], 'names'));
+
+        // Sanitize + dedupe
+        $set = [];
+        foreach ($post_types as $pt) {
+            $pt = sanitize_key(trim((string) $pt)); // [a-z0-9_-], lowercased
+            if ($pt === '' || !isset($registered[$pt])) {
+                continue;
+            }
+            $set[$pt] = true;
+        }
+
+        if (!$set) {
+            // If used in a class context that defines $this->types, keep compatibility
+            if (isset($this) && isset($this->types) && is_string($this->types) && $this->types !== '') {
+                return $this->types;
+            }
+            // Safe default: match nothing
+            return "''";
+        }
+
+        $items = array_keys($set);
+        // sanitize_key already guarantees safe charset; quoting is enough for IN (...)
+        return "'" . implode("','", $items) . "'";
+    }
+
+    function build_in_from_option_csv(string $base_key, string $option_name): array {
+        $field = (string) get_option($option_name);
+
+        $keys = [$base_key];
+        if ($field !== '') {
+            foreach (explode(',', $field) as $k) {
+                $k = trim($k);
+                if ($k !== '')
+                    $keys[] = $k;
+            }
+        }
+        $keys = array_values(array_unique($keys));
+
+        $in = implode(',', array_fill(0, count($keys), '%s')); // e.g. ['fifu_isbn','custom1'] -> IN ('fifu_isbn','custom1')
+        return [$in, $keys];
     }
 
     /* attachment metadata */
@@ -44,15 +145,17 @@ class FifuDb {
     // delete 1 _wp_attached_file or _wp_attachment_image_alt for each attachment
     function delete_attachment_meta($ids, $is_ctgr) {
         $ctgr_sql = $is_ctgr ? "AND p.post_name LIKE 'fifu-category%'" : "";
-
-        $this->wpdb->query("
+        $ids_csv = $this->sanitize_ids_csv($ids);
+        $author = $this->author;
+        $sql = "
             DELETE pm
             FROM {$this->postmeta} pm JOIN {$this->posts} p ON pm.post_id = p.id
             WHERE pm.meta_key IN ('_wp_attached_file', '_wp_attachment_image_alt', '_wp_attachment_metadata')
-            AND p.post_parent IN ({$ids})
-            AND p.post_author = {$this->author} 
+            AND p.post_parent IN ({$ids_csv})
+            AND p.post_author = %d 
             {$ctgr_sql}
-        ");
+        ";
+        $this->wpdb->query($this->wpdb->prepare($sql, $author));
     }
 
     function insert_thumbnail_id_ctgr($ids, $is_ctgr) {
@@ -72,32 +175,35 @@ class FifuDb {
 
     // has attachment created by FIFU
     function is_fifu_attachment($att_id) {
-        return $this->wpdb->get_row("
-            SELECT 1 
-            FROM {$this->posts} 
-            WHERE id = {$att_id} 
-            AND post_author = {$this->author}"
-                ) != null;
+        $sql = $this->wpdb->prepare(
+                "SELECT 1 FROM {$this->posts} WHERE id = %d AND post_author = %d",
+                (int) $att_id,
+                $this->author
+        );
+        return $this->wpdb->get_row($sql) != null;
     }
 
     // get att_id by post and url
     function get_att_id($post_parent, $url, $is_ctgr) {
         $ctgr_sql = $is_ctgr ? "AND p.post_name LIKE 'fifu-category%'" : "";
-        $result = $this->wpdb->get_results("
-            SELECT pm.post_id
-            FROM {$this->postmeta} pm
-            WHERE pm.meta_key = '_wp_attached_file'
-            AND pm.meta_value = '{$url}'
-            AND pm.post_id IN (
-                SELECT p.id
-                FROM {$this->posts} p 
-                WHERE p.post_parent = {$post_parent}
-                AND post_author = {$this->author}
-                {$ctgr_sql} 
-            )
-            LIMIT 1
-        ");
-        return $result ? $result[0]->post_id : null;
+        $sql = $this->wpdb->prepare(
+                "SELECT pm.post_id
+             FROM {$this->postmeta} pm
+             WHERE pm.meta_key = '_wp_attached_file'
+               AND pm.meta_value = %s
+               AND pm.post_id IN (
+                   SELECT p.id
+                   FROM {$this->posts} p 
+                   WHERE p.post_parent = %d
+                     AND post_author = %d {$ctgr_sql}
+               )
+             LIMIT 1",
+                $url,
+                (int) $post_parent,
+                $this->author
+        );
+        $row = $this->wpdb->get_row($sql);
+        return $row ? (int) $row->post_id : null;
     }
 
     function get_count_wp_postmeta() {
@@ -115,25 +221,25 @@ class FifuDb {
     }
 
     function get_count_wp_posts_fifu() {
-        return $this->wpdb->get_results("
-            SELECT COUNT(1) AS amount
-            FROM {$this->posts}
-            WHERE post_author = {$this->author}
-        ");
+        $sql = $this->wpdb->prepare(
+                "SELECT COUNT(1) AS amount FROM {$this->posts} WHERE post_author = %d",
+                $this->author
+        );
+        return $this->wpdb->get_results($sql);
     }
 
     function get_count_wp_postmeta_fifu() {
-        return $this->wpdb->get_results("
-            SELECT COUNT(1) AS amount
-            FROM {$this->postmeta}
-            WHERE meta_key = '_wp_attached_file'
-            AND EXISTS (
-                SELECT 1
-                FROM {$this->posts}
-                WHERE id = post_id
-                AND post_author = {$this->author}
-            )
-        ");
+        $sql = $this->wpdb->prepare(
+                "SELECT COUNT(1) AS amount
+             FROM {$this->postmeta}
+             WHERE meta_key = '_wp_attached_file'
+               AND EXISTS (
+                   SELECT 1 FROM {$this->posts}
+                   WHERE id = post_id AND post_author = %d
+               )",
+                $this->author
+        );
+        return $this->wpdb->get_results($sql);
     }
 
     function tables_created() {
@@ -141,19 +247,29 @@ class FifuDb {
     }
 
     function debug_slug($slug) {
-        $sql = $this->wpdb->prepare("SELECT ID, post_author, post_content, post_title, post_status, post_parent, post_content_filtered, guid, post_type FROM {$this->posts} WHERE post_name = %s", $slug);
+        $sql = $this->wpdb->prepare(
+                "SELECT ID, post_author, post_content, post_title, post_status, post_parent, post_content_filtered, guid, post_type 
+             FROM {$this->posts} 
+             WHERE post_name = %s
+               AND post_status <> 'private'
+               AND (post_password = '' OR post_password IS NULL)",
+                $slug
+        );
         return $this->wpdb->get_results($sql);
     }
 
     function debug_postmeta($post_id) {
         $sql = $this->wpdb->prepare("
-            SELECT meta_key, meta_value
-            FROM {$this->postmeta} 
-            WHERE post_id = %d 
-            AND (
-                meta_key LIKE 'fifu%'
-                OR meta_key IN ('_thumbnail_id', '_wp_attached_file', '_wp_attachment_image_alt', '_product_image_gallery', '_wc_additional_variation_images')
-            )"
+            SELECT pm.meta_key, pm.meta_value
+            FROM {$this->postmeta} pm
+            INNER JOIN {$this->posts} p ON p.ID = pm.post_id
+            WHERE pm.post_id = %d 
+              AND p.post_status <> 'private'
+              AND (p.post_password = '' OR p.post_password IS NULL)
+              AND (
+                  pm.meta_key LIKE 'fifu%'
+                  OR pm.meta_key IN ('_thumbnail_id', '_wp_attached_file', '_wp_attachment_image_alt', '_product_image_gallery', '_wc_additional_variation_images')
+              )"
                 , $post_id);
         return $this->wpdb->get_results($sql);
     }
@@ -162,24 +278,27 @@ class FifuDb {
         $sql = $this->wpdb->prepare("
             SELECT post_author, post_content, post_title, post_status, post_parent, post_content_filtered, guid, post_type
             FROM {$this->posts} 
-            WHERE id = %d"
+            WHERE id = %d
+            AND post_status <> 'private'
+            AND (post_password = '' OR post_password IS NULL)"
                 , $id);
         return $this->wpdb->get_results($sql);
     }
 
     function debug_metain() {
-        $sql = $this->wpdb->prepare("SELECT * FROM {$this->fifu_meta_in}");
-        return $this->wpdb->get_results($sql);
+        // No placeholders here; do not call prepare()
+        return $this->wpdb->get_results("SELECT * FROM {$this->fifu_meta_in}");
     }
 
     function debug_metaout() {
-        $sql = $this->wpdb->prepare("SELECT * FROM {$this->fifu_meta_out}");
-        return $this->wpdb->get_results($sql);
+        // No placeholders here; do not call prepare()
+        return $this->wpdb->get_results("SELECT * FROM {$this->fifu_meta_out}");
     }
 
     // count images without dimensions
     function get_count_posts_without_dimensions() {
-        return $this->wpdb->get_results("
+        $author = $this->author;
+        $sql = $this->wpdb->prepare("
             SELECT COUNT(1) AS amount
             FROM {$this->posts} p
             WHERE NOT EXISTS (
@@ -187,36 +306,41 @@ class FifuDb {
                 FROM {$this->postmeta} b
                 WHERE p.id = b.post_id AND meta_key = '_wp_attachment_metadata'
             )
-            AND p.post_author = {$this->author}
-        ");
+            AND p.post_author = %d
+        ", $author);
+        return $this->wpdb->get_results($sql);
     }
 
     // count urls with metadata
     function get_count_urls_with_metadata() {
-        return $this->wpdb->get_results("
+        $author = $this->author;
+        $sql = $this->wpdb->prepare("
             SELECT COUNT(1) AS amount
             FROM {$this->posts} p
-            WHERE p.post_author = {$this->author}
-        ");
+            WHERE p.post_author = %d
+        ", $author);
+        return $this->wpdb->get_results($sql);
     }
 
-    // count urls
+    // Count URLs across postmeta and termmeta (no UNION; no meta_value filters; no tm '%list%' filter)
     function get_count_urls() {
-        return $this->wpdb->get_results("
-            SELECT SUM(id) AS amount
-            FROM (
-                SELECT count(post_id) AS id
-                FROM {$this->postmeta} pm
-                WHERE pm.meta_key LIKE 'fifu_%'
-                AND pm.meta_key LIKE '%url%'
-                AND pm.meta_key NOT LIKE '%list%'
-                UNION 
-                SELECT count(term_id) AS id
-                FROM {$this->termmeta} tm
-                WHERE tm.meta_key LIKE 'fifu_%'
-                AND tm.meta_key LIKE '%url%'
-            ) x
-        ");
+        $sql = "
+            SELECT
+                (
+                    SELECT COUNT(*)
+                    FROM {$this->postmeta} AS pm
+                    WHERE pm.meta_key LIKE 'fifu!_%' ESCAPE '!'
+                    AND pm.meta_key LIKE '%url%'
+                    AND pm.meta_key NOT LIKE '%list%'
+                ) +
+                (
+                    SELECT COUNT(*)
+                    FROM {$this->termmeta} AS tm
+                    WHERE tm.meta_key LIKE 'fifu!_%' ESCAPE '!'
+                    AND tm.meta_key LIKE '%url%'
+                ) AS amount
+        ";
+        return (int) $this->wpdb->get_var($sql);
     }
 
     function get_count_metadata_operations() {
@@ -249,14 +373,16 @@ class FifuDb {
 
     // get last (images/videos/sliders)
     function get_last($meta_key) {
-        return $this->wpdb->get_results("
-            SELECT p.id, pm.meta_value
+        $sql = $this->wpdb->prepare(
+                "SELECT p.id, pm.meta_value
             FROM {$this->posts} p
             INNER JOIN {$this->postmeta} pm ON p.id = pm.post_id
-            WHERE pm.meta_key = '{$meta_key}'
+            WHERE pm.meta_key = %s
             ORDER BY p.post_date DESC
-            LIMIT 3
-        ");
+            LIMIT 3",
+                $meta_key
+        );
+        return $this->wpdb->get_results($sql);
     }
 
     function get_last_image() {
@@ -269,50 +395,60 @@ class FifuDb {
         ");
     }
 
-    // get attachments without post
+    // get child posts (excluding the featured image) for a given post
     function get_attachments_without_post($post_id) {
-        $result = $this->wpdb->get_results("
-            SELECT GROUP_CONCAT(id) AS ids 
-            FROM {$this->posts} 
-            WHERE post_parent = {$post_id} 
-            AND post_author = {$this->author}
-            AND post_name NOT LIKE 'fifu-category%' 
+        $sql = $this->wpdb->prepare(
+                "SELECT GROUP_CONCAT(p.ID) AS ids
+            FROM {$this->posts} p
+            WHERE p.post_parent = %d
+            AND p.post_author = %d
+            AND p.post_name NOT LIKE %s
             AND NOT EXISTS (
-	            SELECT 1
-                FROM {$this->postmeta}
-                WHERE post_id = post_parent
-                AND meta_key = '_thumbnail_id'
-                AND meta_value = id
-            )
-            GROUP BY post_parent
-        ");
-        return $result ? $result[0]->ids : null;
+                SELECT 1
+                FROM {$this->postmeta} pm2
+                WHERE pm2.post_id = p.post_parent
+                    AND pm2.meta_key = '_thumbnail_id'
+                    AND pm2.meta_value = p.ID
+            )",
+                (int) $post_id,
+                (int) $this->author,
+                'fifu-category%' // no need for %% since it's a %s value
+        );
+
+        // One row expected; return CSV string or null
+        $ids_csv = $this->wpdb->get_var($sql);
+        return $ids_csv ?: null;
     }
 
     function get_ctgr_attachments_without_post($term_id) {
-        $result = $this->wpdb->get_results("
-            SELECT GROUP_CONCAT(id) AS ids 
-            FROM {$this->posts} 
-            WHERE post_parent = {$term_id} 
-            AND post_author = {$this->author} 
-            AND post_name LIKE 'fifu-category%' 
+        $sql = $this->wpdb->prepare(
+                "SELECT GROUP_CONCAT(p.ID) AS ids
+            FROM {$this->posts} p
+            WHERE p.post_parent = %d
+            AND p.post_author = %d
+            AND p.post_name LIKE %s
             AND NOT EXISTS (
-	            SELECT 1
-                FROM {$this->termmeta}
-                WHERE term_id = post_parent
-                AND meta_key = 'thumbnail_id'
-                AND meta_value = id
-            )
-            GROUP BY post_parent
-        ");
-        return $result ? $result[0]->ids : null;
+                SELECT 1
+                FROM {$this->termmeta} tm
+                WHERE tm.term_id = p.post_parent
+                    AND tm.meta_key = 'thumbnail_id'
+                    AND tm.meta_value = p.ID
+            )",
+                (int) $term_id,
+                (int) $this->author,
+                'fifu-category%' // pass pattern as a value; no %% needed
+        );
+
+        $ids_csv = $this->wpdb->get_var($sql);
+        return $ids_csv ?: null;
     }
 
     function get_posts_without_featured_image($post_types) {
+        $safe = $this->sanitize_post_types_list($post_types);
         return $this->wpdb->get_results("
             SELECT id, post_title
             FROM {$this->posts} 
-            WHERE post_type IN ('$post_types')
+            WHERE post_type IN ($safe)
             AND post_status = 'publish'
             AND NOT EXISTS (
                 SELECT 1
@@ -334,12 +470,14 @@ class FifuDb {
     }
 
     function get_featured_and_gallery_ids($post_id) {
-        return $this->wpdb->get_results("
-            SELECT GROUP_CONCAT(meta_value SEPARATOR ',') as 'ids'
+        $sql = $this->wpdb->prepare(
+                "SELECT GROUP_CONCAT(meta_value SEPARATOR ',') as 'ids'
             FROM {$this->postmeta}
-            WHERE post_id = {$post_id}
-            AND meta_key IN ('_thumbnail_id')
-        ");
+            WHERE post_id = %d
+              AND meta_key IN ('_thumbnail_id')",
+                (int) $post_id
+        );
+        return $this->wpdb->get_results($sql);
     }
 
     function insert_default_thumbnail_id($value) {
@@ -352,25 +490,24 @@ class FifuDb {
     // clean metadata
 
     function delete_attachments($ids) {
-        $this->wpdb->query("
-            DELETE FROM {$this->posts} 
-            WHERE id IN ({$ids})
-            AND post_author = {$this->author}
-        ");
+        $ids_csv = $this->sanitize_ids_csv($ids);
+        $sql = $this->wpdb->prepare(
+                "DELETE FROM {$this->posts} WHERE id IN ({$ids_csv}) AND post_author = %d",
+                $this->author
+        );
+        $this->wpdb->query($sql);
     }
 
     function delete_attachment_meta_url_and_alt($ids) {
-        $this->wpdb->query("
-            DELETE FROM {$this->postmeta} 
+        $ids_csv = $this->sanitize_ids_csv($ids);
+        $sql = $this->wpdb->prepare(
+                "DELETE FROM {$this->postmeta}
             WHERE meta_key IN ('_wp_attached_file', '_wp_attachment_image_alt', '_wp_attachment_metadata')
-            AND post_id IN ({$ids})
-            AND EXISTS (
-                SELECT 1 
-                FROM {$this->posts} 
-                WHERE id = post_id 
-                AND post_author = {$this->author}
-            )
-        ");
+              AND post_id IN ({$ids_csv})
+              AND EXISTS (SELECT 1 FROM {$this->posts} WHERE id = post_id AND post_author = %d)",
+                $this->author
+        );
+        $this->wpdb->query($sql);
     }
 
     function delete_empty_urls_category() {
@@ -398,40 +535,62 @@ class FifuDb {
     /* wp_options */
 
     function select_option_prefix($prefix) {
-        return $this->wpdb->get_results("
-            SELECT option_name, option_value
+        if ($prefix === '')
+            return []; // avoid SELECT all
+        $like = $this->wpdb->esc_like($prefix) . '%'; // escape LIKE wildcards safely
+        $sql = $this->wpdb->prepare(
+                "SELECT option_name, option_value
             FROM {$this->options}
-            WHERE option_name LIKE '{$prefix}%'
-            ORDER BY option_name
-        ");
+            WHERE option_name LIKE %s
+            ORDER BY option_name",
+                $like
+        );
+        return $this->wpdb->get_results($sql);
     }
 
     function delete_option_prefix($prefix) {
-        $this->wpdb->query("
-            DELETE
-            FROM {$this->options}
-            WHERE option_name LIKE '{$prefix}%'
-        ");
+        if ($prefix === '') {
+            return 0; // safety: avoid deleting everything
+        }
+        $like = $this->wpdb->esc_like($prefix) . '%'; // escape % and _
+        $sql_select = $this->wpdb->prepare(
+                "SELECT option_name FROM {$this->options} WHERE option_name LIKE %s",
+                $like
+        );
+        $options_to_delete = $this->wpdb->get_col($sql_select);
+        $sql_delete = $this->wpdb->prepare(
+                "DELETE FROM {$this->options} WHERE option_name LIKE %s",
+                $like
+        );
+        $deleted_count = (int) $this->wpdb->query($sql_delete);
+        // Clear cache for deleted options
+        foreach ($options_to_delete as $option_name) {
+            wp_cache_delete($option_name, 'options');
+        }
+        return $deleted_count;
     }
 
     /* speed up */
 
     function get_all_urls($page, $type, $keyword) {
+        $page = max(0, (int) $page); // Ensure page is non-negative
         $start = $page * 1000;
 
-        $filter = "";
+        // Posts filter
+        $filter_posts = '';
         if ($keyword) {
+            $like = '%' . $this->wpdb->esc_like($keyword) . '%';
             if ($type == 'title')
-                $filter = "AND p.post_title LIKE '%{$keyword}%'";
+                $filter_posts = $this->wpdb->prepare('AND p.post_title LIKE %s', $like);
             elseif ($type == 'url')
-                $filter = "AND pm.meta_value LIKE '%{$keyword}%'";
+                $filter_posts = $this->wpdb->prepare('AND pm.meta_value LIKE %s', $like);
         }
 
         $sql = "
             (
                 SELECT pm.meta_id, pm.post_id, pm.meta_value AS url, pm.meta_key, p.post_name, p.post_title, p.post_date, false AS category, null AS video_url
                 FROM {$this->postmeta} pm
-                INNER JOIN {$this->posts} p ON pm.post_id = p.id {$filter}
+                INNER JOIN {$this->posts} p ON pm.post_id = p.id {$filter_posts}
                 WHERE pm.meta_key = 'fifu_image_url'
                 AND pm.meta_value NOT LIKE '%https://cdn.fifu.app/%'
                 AND pm.meta_value NOT LIKE 'http://localhost/%'
@@ -439,19 +598,21 @@ class FifuDb {
             )
         ";
         if (class_exists('WooCommerce')) {
-            $filter = "";
+            // Terms filter
+            $filter_terms = '';
             if ($keyword) {
+                $like = '%' . $this->wpdb->esc_like($keyword) . '%';
                 if ($type == 'title')
-                    $filter = "AND t.name LIKE '%{$keyword}%'";
+                    $filter_terms = $this->wpdb->prepare('AND t.name LIKE %s', $like);
                 elseif ($type == 'url')
-                    $filter = "AND tm.meta_value LIKE '%{$keyword}%'";
+                    $filter_terms = $this->wpdb->prepare('AND tm.meta_value LIKE %s', $like);
             }
             $sql .= " 
                 UNION
                 (
                     SELECT tm.meta_id, tm.term_id AS post_id, tm.meta_value AS url, tm.meta_key, null AS post_name, t.name AS post_title, null AS post_date, true AS category, null AS video_url
                     FROM {$this->termmeta} tm
-                    INNER JOIN {$this->terms} t ON tm.term_id = t.term_id {$filter}
+                    INNER JOIN {$this->terms} t ON tm.term_id = t.term_id {$filter_terms}
                     WHERE tm.meta_key IN ('fifu_image_url')
                     AND tm.meta_value NOT LIKE '%https://cdn.fifu.app/%'
                     AND tm.meta_value NOT LIKE 'http://localhost/%'
@@ -494,15 +655,21 @@ class FifuDb {
     }
 
     function get_posts_with_internal_featured_image($page, $type, $keyword) {
-        $start = $page * 1000;
+        $start = max(0, (int) $page) * 1000;
 
         $filter = "";
         if ($keyword) {
-            if ($type == 'title')
-                $filter = "AND p.post_title LIKE '%{$keyword}%'";
-            elseif ($type == 'postid')
-                $filter = "AND pm.post_id = {$keyword}";
+            if ($type == 'title') {
+                $like = '%' . $this->wpdb->esc_like($keyword) . '%';
+                $filter = $this->wpdb->prepare('AND p.post_title LIKE %s', $like);
+            } elseif ($type == 'postid') {
+                $filter = $this->wpdb->prepare('AND pm.post_id = %d', (int) $keyword);
+            }
         }
+
+        // Prepare author filter fragments once to avoid preparing the whole query later
+        $author_clause_posts = $this->wpdb->prepare('AND att.post_author <> %d', $this->author);
+        $author_clause_terms = $author_clause_posts;
 
         $sql = "
             (
@@ -520,7 +687,7 @@ class FifuDb {
                 INNER JOIN {$this->posts} att ON (
                     pm.meta_key = '_thumbnail_id'
                     AND pm.meta_value = att.id
-                    AND att.post_author <> {$this->author}
+                    {$author_clause_posts}
                 )
                 WHERE NOT EXISTS (
                     SELECT 1
@@ -540,10 +707,12 @@ class FifuDb {
         if (class_exists('WooCommerce')) {
             $filter = "";
             if ($keyword) {
-                if ($type == 'title')
-                    $filter = "AND t.name LIKE '%{$keyword}%'";
-                elseif ($type == 'postid')
-                    $filter = "AND tm.term_id = {$keyword}";
+                if ($type == 'title') {
+                    $like = '%' . $this->wpdb->esc_like($keyword) . '%';
+                    $filter = $this->wpdb->prepare('AND t.name LIKE %s', $like);
+                } elseif ($type == 'postid') {
+                    $filter = $this->wpdb->prepare('AND tm.term_id = %d', (int) $keyword);
+                }
             }
             $sql .= " 
                 UNION 
@@ -562,7 +731,7 @@ class FifuDb {
                     INNER JOIN {$this->posts} att ON (
                         tm.meta_key = 'thumbnail_id'
                         AND tm.meta_value = att.id
-                        AND att.post_author <> {$this->author}
+                        {$author_clause_terms}
                     )
                     WHERE NOT EXISTS (
                         SELECT 1
@@ -581,12 +750,23 @@ class FifuDb {
     }
 
     function get_posts_su($storage_ids) {
-        if ($storage_ids) {
-            $storage_ids = '"' . implode('","', $storage_ids) . '"';
-            $filter_post_image = "AND SUBSTRING_INDEX(SUBSTRING_INDEX(pm.meta_value, '/', 5), '/', -1) IN ({$storage_ids})";
-            $filter_term_image = "AND SUBSTRING_INDEX(SUBSTRING_INDEX(tm.meta_value, '/', 5), '/', -1) IN ({$storage_ids})";
-        } else
+        if (!empty($storage_ids)) {
+            // normalize and drop empties
+            $ids = array_values(array_filter(array_map('strval', (array) $storage_ids), static fn($v) => $v !== ''));
+            if ($ids) {
+                $in = implode(',', array_fill(0, count($ids), '%s'));
+                $filter_post_image = $this->wpdb->prepare(
+                        "AND SUBSTRING_INDEX(SUBSTRING_INDEX(pm.meta_value, '/', 5), '/', -1) IN ($in)", $ids
+                );
+                $filter_term_image = $this->wpdb->prepare(
+                        "AND SUBSTRING_INDEX(SUBSTRING_INDEX(tm.meta_value, '/', 5), '/', -1) IN ($in)", $ids
+                );
+            } else {
+                $filter_post_image = $filter_term_image = "";
+            }
+        } else {
             $filter_post_image = $filter_term_image = "";
+        }
 
         $sql = "
             (
@@ -600,17 +780,17 @@ class FifuDb {
                 FROM {$this->postmeta} pm
                 INNER JOIN {$this->posts} p ON pm.post_id = p.id
                 WHERE pm.meta_key LIKE 'fifu_%image_url%'
-                AND pm.meta_value LIKE 'https://cdn.fifu.app/%'" .
-                $filter_post_image . "
+                AND pm.meta_value LIKE 'https://cdn.fifu.app/%'
+                {$filter_post_image}
             )
         ";
         if (class_exists('WooCommerce')) {
-            $sql .= "            
+            $sql .= "
                 UNION
                 (
                     SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(tm.meta_value, '/', 5), '/', -1) AS storage_id, 
                         t.name AS post_title, 
-                        null AS post_date, 
+                        NULL AS post_date, 
                         tm.meta_id, 
                         tm.term_id AS post_id, 
                         tm.meta_key, 
@@ -618,11 +798,12 @@ class FifuDb {
                     FROM {$this->termmeta} tm
                     INNER JOIN {$this->terms} t ON tm.term_id = t.term_id
                     WHERE tm.meta_key = 'fifu_image_url'
-                    AND tm.meta_value LIKE 'https://cdn.fifu.app/%'" .
-                    $filter_term_image . "
+                    AND tm.meta_value LIKE 'https://cdn.fifu.app/%'
+                    {$filter_term_image}
                 )
             ";
         }
+
         return $this->wpdb->get_results($sql);
     }
 
@@ -678,26 +859,35 @@ class FifuDb {
     function speed_up_custom_fields($bucket_id, $thumbnails, $is_ctgr) {
         $table = $is_ctgr ? $this->termmeta : $this->postmeta;
 
-        $query = "
-            INSERT INTO {$table} (meta_id, meta_value) VALUES ";
-        $count = 0;
+        $values = [];
+        $args = [];
+
         foreach ($thumbnails as $thumbnail) {
             $su_url = $this->get_su_url($bucket_id, $thumbnail->storage_id);
 
-            if ($count++ != 0)
-                $query .= ", ";
-            $query .= "({$thumbnail->meta_id},'{$su_url}') ";
+            $values[] = '(%d,%s)';
+            $args[] = (int) $thumbnail->meta_id;
+            $args[] = $su_url;
         }
-        $query .= "ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)";
-        return $this->wpdb->get_results($query);
+
+        if (!$values)
+            return 0;
+
+        $query = "
+            INSERT INTO {$table} (meta_id, meta_value)
+            VALUES " . implode(', ', $values) . "
+            ON DUPLICATE KEY UPDATE meta_value = VALUES(meta_value)
+        ";
+
+        return $this->wpdb->query($this->wpdb->prepare($query, $args));
     }
 
     function get_thumbnail_ids($thumbnails, $is_ctgr) {
-        // join post_ids
-        $i = 0;
-        $ids = null;
+        // join post_ids (sanitized)
+        $ids_list = array();
         foreach ($thumbnails as $thumbnail)
-            $ids = ($i++ == 0) ? $thumbnail->post_id : ($ids . "," . $thumbnail->post_id);
+            $ids_list[] = (int) $thumbnail->post_id;
+        $ids = $this->sanitize_ids_csv($ids_list);
 
         // get featured ids
         if ($is_ctgr) {
@@ -745,45 +935,57 @@ class FifuDb {
 
             if ($count++ != 0)
                 $query .= ", ";
-            $query .= "(" . $att_ids_map[$thumbnail->meta_id] . ",'{$su_url}') ";
+            $query .= $this->wpdb->prepare("(%d, %s)", $att_ids_map[$thumbnail->meta_id], $su_url) . " ";
         }
         $query .= "ON DUPLICATE KEY UPDATE post_content_filtered=VALUES(post_content_filtered)";
         return $this->wpdb->get_results($query);
     }
 
     function get_thumbnail_meta_ids($thumbnails, $att_ids_map) {
-        // join post_ids
-        $i = 0;
-        $ids = null;
+        // Collect distinct numeric attachment post_ids
+        $ids_arr = array();
         foreach ($thumbnails as $thumbnail) {
             if (!isset($att_ids_map[$thumbnail->meta_id])) // no metadata, only custom field
                 continue;
-            $ids = ($i++ == 0) ? $att_ids_map[$thumbnail->meta_id] : ($ids . "," . $att_ids_map[$thumbnail->meta_id]);
+            $ids_arr[] = (int) $att_ids_map[$thumbnail->meta_id];
+        }
+        $ids_arr = array_values(array_unique(array_filter($ids_arr, function ($v) {
+                            return $v > 0;
+                        })));
+
+        // No IDs -> nothing to query
+        if (empty($ids_arr)) {
+            return array();
         }
 
-        // get meta ids
-        $result = $this->wpdb->get_results("
+        // Build prepared IN(...) and run the safe query
+        $placeholders = implode(',', array_fill(0, count($ids_arr), '%d'));
+        $sql = "
             SELECT meta_id, post_id
-            FROM {$this->postmeta} 
-            WHERE post_id IN ({$ids}) 
-            AND meta_key = '_wp_attached_file'
-        ");
+            FROM {$this->postmeta}
+            WHERE post_id IN ($placeholders)
+            AND meta_key = %s
+        ";
+        $params = array_merge($ids_arr, array('_wp_attached_file'));
+        $result = $this->wpdb->get_results($this->wpdb->prepare($sql, $params));
 
         // map att_id -> meta_id
         $attid_metaid_map = array();
-        foreach ($result as $res)
+        foreach ($result as $res) {
             $attid_metaid_map[$res->post_id] = $res->meta_id;
+        }
 
-        // map meta_id (fifu metadata) -> meta_id (atachment metadata)
+        // map meta_id (fifu metadata) -> meta_id (attachment metadata)
         $map = array();
         foreach ($thumbnails as $thumbnail) {
             if (!isset($att_ids_map[$thumbnail->meta_id])) // no metadata, only custom field
                 continue;
-            if (!isset($attid_metaid_map[$att_ids_map[$thumbnail->meta_id]])) // no metadata, only custom field
+            $att_id = (int) $att_ids_map[$thumbnail->meta_id];
+            if (!isset($attid_metaid_map[$att_id])) // no attachment metadata
                 continue;
-            $att_meta_id = $attid_metaid_map[$att_ids_map[$thumbnail->meta_id]];
-            $map[$thumbnail->meta_id] = $att_meta_id;
+            $map[$thumbnail->meta_id] = $attid_metaid_map[$att_id];
         }
+
         return $map;
     }
 
@@ -791,6 +993,7 @@ class FifuDb {
         $count = 0;
         $query = "
             INSERT INTO {$this->postmeta} (meta_id, meta_value) VALUES ";
+
         foreach ($thumbnails as $thumbnail) {
             if (!isset($meta_ids_map[$thumbnail->meta_id])) // no metadata, only custom field
                 continue;
@@ -799,8 +1002,11 @@ class FifuDb {
 
             if ($count++ != 0)
                 $query .= ", ";
-            $query .= "(" . $meta_ids_map[$thumbnail->meta_id] . ",'{$su_url}') ";
+
+            // Minimal change: use prepare to safely build each VALUES tuple
+            $query .= $this->wpdb->prepare("(%d, %s)", $meta_ids_map[$thumbnail->meta_id], $su_url) . " ";
         }
+
         $query .= "ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)";
         return $this->wpdb->get_results($query);
     }
@@ -907,30 +1113,61 @@ class FifuDb {
     function revert_custom_fields($thumbnails, $urls, $video_urls, $is_ctgr) {
         $table = $is_ctgr ? $this->termmeta : $this->postmeta;
 
+        // Return early if no thumbnails to process
+        if (empty($thumbnails)) {
+            return null;
+        }
+
         $query = "
             INSERT INTO {$table} (meta_id, meta_value) VALUES ";
         $count = 0;
+
         foreach ($thumbnails as $thumbnail) {
-            if ($count++ != 0)
+            if ($count++ != 0) {
                 $query .= ", ";
-            $url = $urls[$thumbnail->storage_id];
-            $query .= "({$thumbnail->meta_id},'{$url}')";
+            }
+
+            $url = (isset($urls[$thumbnail->storage_id]) ? $urls[$thumbnail->storage_id] : '');
+
+            // Minimal change: build each VALUES tuple with prepare to avoid SQL injection
+            $query .= $this->wpdb->prepare("(%d, %s)", (int) $thumbnail->meta_id, $url);
         }
-        $query .= "ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)";
+
+        $query .= " ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)";
         return $this->wpdb->get_results($query);
     }
 
     function revert_attachments($urls, $thumbnails, $att_ids_map) {
+        // Handle null or invalid parameters
+        if ($urls === null || !is_array($urls))
+            $urls = [];
+        if ($thumbnails === null || !is_array($thumbnails))
+            $thumbnails = [];
+        if ($att_ids_map === null || !is_array($att_ids_map))
+            $att_ids_map = [];
+
         $count = 0;
         $query = "
             INSERT INTO {$this->posts} (id, post_content_filtered) VALUES ";
+
         foreach ($thumbnails as $thumbnail) {
             if (!isset($att_ids_map[$thumbnail->meta_id])) // no metadata, only custom field
                 continue;
+
             if ($count++ != 0)
                 $query .= ", ";
-            $query .= "(" . $att_ids_map[$thumbnail->meta_id] . ",'" . $urls[$thumbnail->storage_id] . "')";
+
+            $url = isset($urls[$thumbnail->storage_id]) ? $urls[$thumbnail->storage_id] : '';
+
+            // Minimal change: use prepare to safely build each VALUES tuple
+            $query .= $this->wpdb->prepare("(%d, %s)", (int) $att_ids_map[$thumbnail->meta_id], $url);
         }
+
+        // If no thumbnails were processed, return early
+        if ($count == 0) {
+            return array(); // Return empty array instead of running invalid query
+        }
+
         $query .= "ON DUPLICATE KEY UPDATE post_content_filtered=VALUES(post_content_filtered)";
         return $this->wpdb->get_results($query);
     }
@@ -939,15 +1176,28 @@ class FifuDb {
         $count = 0;
         $query = "
             INSERT INTO {$this->postmeta} (meta_id, meta_value) VALUES ";
+
         foreach ($thumbnails as $thumbnail) {
             if (!isset($meta_ids_map[$thumbnail->meta_id])) // no metadata, only custom field
                 continue;
+
             if ($count++ != 0)
                 $query .= ", ";
-            $query .= "(" . $meta_ids_map[$thumbnail->meta_id] . ",'" . $urls[$thumbnail->storage_id] . "')";
+
+            $url = isset($urls[$thumbnail->storage_id]) ? $urls[$thumbnail->storage_id] : '';
+
+            // Minimal change: safely build each VALUES tuple
+            $query .= $this->wpdb->prepare("(%d, %s)", (int) $meta_ids_map[$thumbnail->meta_id], $url);
         }
-        $query .= "ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)";
-        return $this->wpdb->get_results($query);
+
+        // Only execute query if there are valid operations to perform
+        if ($count > 0) {
+            $query .= "ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)";
+            return $this->wpdb->get_results($query);
+        }
+
+        // Return empty array if no valid operations were found
+        return array();
     }
 
     // speed up (db)
@@ -965,43 +1215,57 @@ class FifuDb {
     }
 
     function insert_invalid_media_su($url) {
+        if ($url === null || $url === '')
+            return;
         if ($this->get_attempts_invalid_media_su($url)) {
             $this->update_invalid_media_su($url);
             return;
         }
 
         $md5 = md5($url);
-        $this->wpdb->query("
-            INSERT INTO {$this->fifu_invalid_media_su} (md5, attempts) 
-            VALUES ('{$md5}', 1)
-        ");
+        $this->wpdb->query(
+                $this->wpdb->prepare(
+                        "INSERT INTO {$this->fifu_invalid_media_su} (md5, attempts) VALUES (%s, 1)",
+                        $md5
+                )
+        );
     }
 
     function update_invalid_media_su($url) {
+        if ($url === null || $url === '')
+            return;
         $md5 = md5($url);
-        $this->wpdb->query("
-            UPDATE {$this->fifu_invalid_media_su} 
-            SET attempts = attempts + 1
-            WHERE md5 = '{$md5}'
-        ");
+        $this->wpdb->query(
+                $this->wpdb->prepare(
+                        "UPDATE {$this->fifu_invalid_media_su} SET attempts = attempts + 1 WHERE md5 = %s",
+                        $md5
+                )
+        );
     }
 
     function get_attempts_invalid_media_su($url) {
+        if ($url === null || $url === '')
+            return 0;
         $md5 = md5($url);
-        $result = $this->wpdb->get_row("
-            SELECT attempts
-            FROM {$this->fifu_invalid_media_su} 
-            WHERE md5 = '{$md5}'
-        ");
+        $result = $this->wpdb->get_row(
+                $this->wpdb->prepare(
+                        "SELECT attempts FROM {$this->fifu_invalid_media_su} WHERE md5 = %s",
+                        $md5
+                )
+        );
         return $result ? (int) $result->attempts : 0;
     }
 
     function delete_invalid_media_su($url) {
+        if ($url === null || $url === '')
+            return;
         $md5 = md5($url);
-        $this->wpdb->query("
-            DELETE FROM {$this->fifu_invalid_media_su} 
-            WHERE md5 = '{$md5}'
-        ");
+        $this->wpdb->query(
+                $this->wpdb->prepare(
+                        "DELETE FROM {$this->fifu_invalid_media_su} WHERE md5 = %s",
+                        $md5
+                )
+        );
     }
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -1041,42 +1305,94 @@ class FifuDb {
     /* insert attachment */
 
     function insert_attachment_by($value) {
-        $this->wpdb->query("
-            INSERT INTO {$this->posts} (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered) 
-            VALUES " . str_replace('\\', '', $value));
+        // $value should be a list of PREPARED tuples (e.g., from get_formatted_value), joined by ', '
+        $values_sql = is_array($value) ? implode(', ', $value) : (string) $value;
+
+        $sql = "
+            INSERT INTO {$this->posts}
+                (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent,
+                post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered)
+            VALUES {$values_sql}";
+        return $this->wpdb->query($sql);
     }
 
     function insert_ctgr_attachment_by($value) {
-        $this->wpdb->query("
-            INSERT INTO {$this->posts} (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered, post_name) 
-            VALUES " . str_replace('\\', '', $value));
+        // $value should be a list of PREPARED tuples (e.g., from get_ctgr_formatted_value), joined by ', '
+        $values_sql = is_array($value) ? implode(', ', $value) : (string) $value;
+
+        $sql = "
+            INSERT INTO {$this->posts}
+                (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent,
+                post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered, post_name)
+            VALUES {$values_sql}";
+        return $this->wpdb->query($sql);
     }
 
     function get_formatted_value($url, $alt, $post_parent) {
         $alt = $alt ?? '';
-        $alt = str_replace("'", "", $alt);
-        return "({$this->author}, '', '{$alt}', '{$alt}', 'image/jpeg', 'attachment', 'inherit', '{$post_parent}', now(), now(), now(), now(), '', '', '', '{$url}')";
+        // Return a PREPARED tuple; caller concatenates multiple with ", "
+        return $this->wpdb->prepare(
+                        "(%d, %s, %s, %s, %s, %s, %s, %d, NOW(), NOW(), NOW(), NOW(), %s, %s, %s, %s)",
+                        (int) $this->author, // post_author
+                        '', // guid
+                        $alt, // post_title
+                        $alt, // post_excerpt
+                        'image/jpeg', // post_mime_type
+                        'attachment', // post_type
+                        'inherit', // post_status
+                        (int) $post_parent, // post_parent
+                        '', // post_content
+                        '', // to_ping
+                        '', // pinged
+                        $url                           // post_content_filtered
+                );
     }
 
     function get_ctgr_formatted_value($url, $alt, $post_parent) {
         $alt = $alt ?? '';
-        $alt = str_replace("'", "", $alt);
-        return "({$this->author}, '', '{$alt}', '{$alt}', 'image/jpeg', 'attachment', 'inherit', '{$post_parent}', now(), now(), now(), now(), '', '', '', '{$url}', 'fifu-category-{$post_parent}')";
+        // Return a PREPARED tuple; caller concatenates multiple with ", "
+        return $this->wpdb->prepare(
+                        "(%d, %s, %s, %s, %s, %s, %s, %d, NOW(), NOW(), NOW(), NOW(), %s, %s, %s, %s, %s)",
+                        (int) $this->author, // post_author
+                        '', // guid
+                        $alt, // post_title
+                        $alt, // post_excerpt
+                        'image/jpeg', // post_mime_type
+                        'attachment', // post_type
+                        'inherit', // post_status
+                        (int) $post_parent, // post_parent
+                        '', // post_content
+                        '', // to_ping
+                        '', // pinged
+                        $url, // post_content_filtered
+                        'fifu-category-' . (int) $post_parent// post_name
+                );
     }
 
     /* dimensions: clean all */
 
     function clean_dimensions_all() {
-        $this->wpdb->query("
-            DELETE FROM {$this->postmeta} pm            
-            WHERE pm.meta_key = '_wp_attachment_metadata'
+        // Ensure author ID is numeric
+        $author_id = (int) $this->author;
+
+        // Build a prepared statement with placeholders
+        $query = $this->wpdb->prepare(
+                "
+            DELETE FROM {$this->postmeta} pm
+            WHERE pm.meta_key = %s
             AND EXISTS (
-                SELECT 1 
-                FROM {$this->posts} p 
+                SELECT 1
+                FROM {$this->posts} p
                 WHERE p.id = pm.post_id
-                AND p.post_author = {$this->author} 
+                AND p.post_author = %d
             )
-        ");
+            ",
+                '_wp_attachment_metadata', // %s placeholder for meta_key
+                $author_id                    // %d placeholder for author
+        );
+
+        // Execute the prepared query
+        $this->wpdb->query($query);
     }
 
     /* save 1 post */
@@ -1182,24 +1498,26 @@ class FifuDb {
     }
 
     function set_default_url() {
-        $att_id = get_option('fifu_default_attach_id');
+        $att_id = (int) get_option('fifu_default_attach_id');
         if (!$att_id)
             return;
-        $post_types = join("','", explode(',', str_replace(' ', '', get_option('fifu_default_cpt'))));
-        $post_types ? $post_types : $this->types;
-        $value = null;
-        foreach ($this->get_posts_without_featured_image($post_types) as $res) {
-            $aux = "({$res->id}, '_thumbnail_id', {$att_id})";
-            $value = $value ? $value . ',' . $aux : $aux;
+
+        $post_types_csv = $this->sanitize_post_types_list((string) get_option('fifu_default_cpt'));
+
+        $tuples = [];
+        foreach ($this->get_posts_without_featured_image($post_types_csv) as $res) {
+            // (%d, %s, %d) -> (post_id, meta_key, meta_value)
+            $tuples[] = $this->wpdb->prepare("(%d, %s, %d)", (int) $res->id, '_thumbnail_id', $att_id);
         }
-        if ($value) {
-            $this->insert_default_thumbnail_id($value);
-            update_post_meta($att_id, '_wp_attached_file', get_option('fifu_default_url'));
+
+        if ($tuples) {
+            $this->insert_default_thumbnail_id(implode(',', $tuples));
+            update_post_meta($att_id, '_wp_attached_file', (string) get_option('fifu_default_url'));
         }
     }
 
     function update_default_url($url) {
-        $att_id = get_option('fifu_default_attach_id');
+        $att_id = (int) get_option('fifu_default_attach_id');
         if ($url != wp_get_attachment_url($att_id)) {
             $this->wpdb->update($this->posts, $set = array('post_content_filtered' => $url), $where = array('id' => $att_id), null, null);
             update_post_meta($att_id, '_wp_attached_file', $url);
@@ -1207,7 +1525,7 @@ class FifuDb {
     }
 
     function delete_default_url() {
-        $att_id = get_option('fifu_default_attach_id');
+        $att_id = (int) get_option('fifu_default_attach_id');
         wp_delete_attachment($att_id);
         delete_option('fifu_default_attach_id');
         $this->wpdb->delete($this->postmeta, array('meta_key' => '_thumbnail_id', 'meta_value' => $att_id));
@@ -1217,7 +1535,7 @@ class FifuDb {
 
     function before_delete_post($post_id) {
         $default_url_enabled = fifu_is_on('fifu_enable_default_url');
-        $default_att_id = $default_url_enabled ? get_option('fifu_default_attach_id') : null;
+        $default_att_id = $default_url_enabled ? (int) get_option('fifu_default_attach_id') : null;
         $result = $this->get_featured_and_gallery_ids($post_id);
         if ($result) {
             $aux = $result[0]->ids;
@@ -1387,13 +1705,14 @@ class FifuDb {
     function prepare_meta_out() {
         $this->wpdb->query("SET SESSION group_concat_max_len = 1048576;"); // because GROUP_CONCAT is limited to 1024 characters
 
-        $this->wpdb->query("
+        $sql = "
             INSERT INTO {$this->fifu_meta_out} (post_ids, type)
             SELECT GROUP_CONCAT(DISTINCT id ORDER BY id SEPARATOR ','), 'att'
             FROM {$this->posts} 
-            WHERE post_author = {$this->author}
+            WHERE post_author = %d
             GROUP BY FLOOR(id / 5000)
-        ");
+        ";
+        $this->wpdb->query($this->wpdb->prepare($sql, $this->author));
 
         $last_insert_id = $this->wpdb->insert_id;
         if ($last_insert_id) {
@@ -1481,11 +1800,12 @@ class FifuDb {
     }
 
     function log_prepare($last_insert_id, $table) {
-        $inserted_records = $this->wpdb->get_results("
-            SELECT id, post_ids, type
-            FROM {$table}
-            WHERE id = {$last_insert_id}
-        ");
+        $inserted_records = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                        "SELECT id, post_ids, type FROM {$table} WHERE id = %d",
+                        (int) $last_insert_id
+                )
+        );
 
         foreach ($inserted_records as $record) {
             fifu_plugin_log([$table => [
@@ -1507,16 +1827,19 @@ class FifuDb {
     }
 
     function insert_postmeta($id) {
-        $result = $this->wpdb->get_results("
-            SELECT post_ids
-            FROM {$this->fifu_meta_in}
-            WHERE id = {$id}
-        ");
+        $result = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                        "SELECT post_ids FROM {$this->fifu_meta_in} WHERE id = %d",
+                        (int) $id
+                )
+        );
 
-        $this->wpdb->query("
-            DELETE FROM {$this->fifu_meta_in}
-            WHERE id = {$id}
-        ");
+        $this->wpdb->query(
+                $this->wpdb->prepare(
+                        "DELETE FROM {$this->fifu_meta_in} WHERE id = %d",
+                        (int) $id
+                )
+        );
 
         if (count($result) == 0)
             return false;
@@ -1541,16 +1864,19 @@ class FifuDb {
     }
 
     function delete_attmeta($id) {
-        $result = $this->wpdb->get_results("
-            SELECT post_ids
-            FROM {$this->fifu_meta_out}
-            WHERE id = {$id}
-        ");
+        $result = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                        "SELECT post_ids FROM {$this->fifu_meta_out} WHERE id = %d",
+                        (int) $id
+                )
+        );
 
-        $this->wpdb->query("
-            DELETE FROM {$this->fifu_meta_out}
-            WHERE id = {$id}
-        ");
+        $this->wpdb->query(
+                $this->wpdb->prepare(
+                        "DELETE FROM {$this->fifu_meta_out} WHERE id = %d",
+                        (int) $id
+                )
+        );
 
         if (count($result) == 0)
             return false;
@@ -1568,13 +1894,14 @@ class FifuDb {
     function delete_garbage() {
         wp_cache_flush();
 
+        // Cast option-derived IDs to integers to avoid SQL injection
+        $fake_attach_id = (int) get_option('fifu_fake_attach_id');
+        $default_attach_id = (int) get_option('fifu_default_attach_id');
+
         $this->wpdb->query('START TRANSACTION');
 
         try {
-            $fake_attach_id = get_option('fifu_fake_attach_id');
             $fake_attach_sql = $fake_attach_id ? "OR meta_value = {$fake_attach_id}" : "";
-
-            $default_attach_id = get_option('fifu_default_attach_id');
             $default_attach_sql = $default_attach_id ? "OR meta_value = {$default_attach_id}" : "";
 
             // default
@@ -1669,16 +1996,19 @@ class FifuDb {
     }
 
     function delete_termmeta($id) {
-        $result = $this->wpdb->get_results("
-            SELECT post_ids
-            FROM {$this->fifu_meta_out}
-            WHERE id = {$id}
-        ");
+        $result = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                        "SELECT post_ids FROM {$this->fifu_meta_out} WHERE id = %d",
+                        (int) $id
+                )
+        );
 
-        $this->wpdb->query("
-            DELETE FROM {$this->fifu_meta_out}
-            WHERE id = {$id}
-        ");
+        $this->wpdb->query(
+                $this->wpdb->prepare(
+                        "DELETE FROM {$this->fifu_meta_out} WHERE id = %d",
+                        (int) $id
+                )
+        );
 
         if (count($result) == 0)
             return false;
@@ -1695,40 +2025,46 @@ class FifuDb {
 
     function insert_postmeta2($value, $ids) {
         $this->wpdb->query('START TRANSACTION');
+        $ids_csv = $this->sanitize_ids_csv($ids);
 
         try {
-            $this->wpdb->query("
-                INSERT INTO {$this->posts} (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered) 
-                VALUES " . str_replace('\\', '', $value));
+            $this->wpdb->query(
+                    "INSERT INTO {$this->posts} (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered) 
+                VALUES " . $value
+            );
 
-            $this->wpdb->query("
+            $author = $this->author;
+            $sql_thumb = $this->wpdb->prepare("
                 INSERT INTO {$this->postmeta} (post_id, meta_key, meta_value) (
                     SELECT p.post_parent, '_thumbnail_id', p.id 
                     FROM {$this->posts} p
-                    WHERE p.post_parent IN ({$ids}) 
-                    AND p.post_author = {$this->author} 
+                    WHERE p.post_parent IN ({$ids_csv}) 
+                    AND p.post_author = %d 
                 )
-            ");
+            ", $author);
+            $this->wpdb->query($sql_thumb);
 
-            $this->wpdb->query("
+            $sql_file = $this->wpdb->prepare("
                 INSERT INTO {$this->postmeta} (post_id, meta_key, meta_value) (
                     SELECT p.id, '_wp_attached_file', p.post_content_filtered
                     FROM {$this->posts} p 
-                    WHERE p.post_parent IN ({$ids}) 
-                    AND p.post_author = {$this->author} 
+                    WHERE p.post_parent IN ({$ids_csv}) 
+                    AND p.post_author = %d 
                 )
-            ");
+            ", $author);
+            $this->wpdb->query($sql_file);
 
-            $this->wpdb->query("
+            $sql_alt = $this->wpdb->prepare("
                 INSERT INTO {$this->postmeta} (post_id, meta_key, meta_value) (
                     SELECT p.id, '_wp_attachment_image_alt', p.post_title 
                     FROM {$this->posts} p
-                    WHERE p.post_parent IN ({$ids}) 
-                    AND p.post_author = {$this->author} 
+                    WHERE p.post_parent IN ({$ids_csv}) 
+                    AND p.post_author = %d 
                     AND p.post_title IS NOT NULL 
                     AND p.post_title != ''
                 )
-            ");
+            ", $author);
+            $this->wpdb->query($sql_alt);
 
             $this->wpdb->query('COMMIT');
         } catch (Exception $e) {
@@ -1738,24 +2074,27 @@ class FifuDb {
 
     function delete_attmeta2($ids) {
         $this->wpdb->query('START TRANSACTION');
+        $ids_csv = $this->sanitize_ids_csv($ids);
 
         try {
             $this->wpdb->query("
                 DELETE FROM {$this->postmeta} 
                 WHERE meta_key = '_thumbnail_id' 
-                AND meta_value IN (0, {$ids})
+                AND meta_value IN (0, {$ids_csv})
             ");
 
-            $this->wpdb->query("
+            $author = $this->author;
+            $sql_del_posts = $this->wpdb->prepare("
                 DELETE FROM {$this->posts} 
-                WHERE id IN ({$ids})
-                AND post_author = {$this->author}
-            ");
+                WHERE id IN ({$ids_csv})
+                AND post_author = %d
+            ", $author);
+            $this->wpdb->query($sql_del_posts);
 
             $this->wpdb->query("
                 DELETE FROM {$this->postmeta} 
                 WHERE meta_key IN ('_wp_attached_file', '_wp_attachment_image_alt', '_wp_attachment_metadata') 
-                AND post_id IN ({$ids})
+                AND post_id IN ({$ids_csv})
             ");
 
             $this->wpdb->query('COMMIT');
@@ -1766,22 +2105,25 @@ class FifuDb {
 
     function delete_termmeta2($ids) {
         $this->wpdb->query('START TRANSACTION');
+        $ids_csv = $this->sanitize_ids_csv($ids);
 
         try {
             $this->wpdb->query("
                 DELETE FROM {$this->termmeta} 
                 WHERE meta_key = 'thumbnail_id' 
-                AND term_id IN ({$ids})
+                AND term_id IN ({$ids_csv})
             ");
 
-            $this->wpdb->query("
+            $author = $this->author;
+            $sql_del_pm = $this->wpdb->prepare("
                 DELETE pm
                 FROM {$this->postmeta} pm JOIN {$this->posts} p ON pm.post_id = p.id
                 WHERE pm.meta_key IN ('_wp_attached_file', '_wp_attachment_image_alt', '_wp_attachment_metadata')
-                AND p.post_parent IN ({$ids})
-                AND p.post_author = {$this->author} 
+                AND p.post_parent IN ({$ids_csv})
+                AND p.post_author = %d 
                 AND p.post_name LIKE 'fifu-category%'
-            ");
+            ", $author);
+            $this->wpdb->query($sql_del_pm);
 
             $this->wpdb->query('COMMIT');
         } catch (Exception $e) {
@@ -1790,16 +2132,19 @@ class FifuDb {
     }
 
     function insert_termmeta($id) {
-        $result = $this->wpdb->get_results("
-            SELECT post_ids
-            FROM {$this->fifu_meta_in}
-            WHERE id = {$id}
-        ");
+        $result = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                        "SELECT post_ids FROM {$this->fifu_meta_in} WHERE id = %d",
+                        (int) $id
+                )
+        );
 
-        $this->wpdb->query("
-            DELETE FROM {$this->fifu_meta_in}
-            WHERE id = {$id}
-        ");
+        $this->wpdb->query(
+                $this->wpdb->prepare(
+                        "DELETE FROM {$this->fifu_meta_in} WHERE id = %d",
+                        (int) $id
+                )
+        );
 
         if (count($result) == 0)
             return false;
@@ -1825,43 +2170,49 @@ class FifuDb {
 
     function insert_termmeta2($value, $ids) {
         $this->wpdb->query('START TRANSACTION');
+        $ids_csv = $this->sanitize_ids_csv($ids);
 
         try {
-            $this->wpdb->query("
-                INSERT INTO {$this->posts} (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered, post_name) 
-                VALUES " . str_replace('\\', '', $value));
+            $this->wpdb->query(
+                    "INSERT INTO {$this->posts} (post_author, guid, post_title, post_excerpt, post_mime_type, post_type, post_status, post_parent, post_date, post_date_gmt, post_modified, post_modified_gmt, post_content, to_ping, pinged, post_content_filtered, post_name) 
+                VALUES " . $value
+            );
 
-            $this->wpdb->query("
+            $author = $this->author;
+            $sql_term_thumbnail = $this->wpdb->prepare("
                 INSERT INTO {$this->termmeta} (term_id, meta_key, meta_value) (
                     SELECT p.post_parent, 'thumbnail_id', p.id 
                     FROM {$this->posts} p
-                    WHERE p.post_parent IN ({$ids}) 
-                    AND p.post_author = {$this->author} 
+                    WHERE p.post_parent IN ({$ids_csv}) 
+                    AND p.post_author = %d 
                     AND p.post_name LIKE 'fifu-category%'
                 )
-            ");
+            ", $author);
+            $this->wpdb->query($sql_term_thumbnail);
 
-            $this->wpdb->query("
+            $sql_term_file = $this->wpdb->prepare("
                 INSERT INTO {$this->postmeta} (post_id, meta_key, meta_value) (
                     SELECT p.id, '_wp_attached_file', p.post_content_filtered
                     FROM {$this->posts} p 
-                    WHERE p.post_parent IN ({$ids}) 
-                    AND p.post_author = {$this->author} 
+                    WHERE p.post_parent IN ({$ids_csv}) 
+                    AND p.post_author = %d 
                     AND p.post_name LIKE 'fifu-category%'
                 )
-            ");
+            ", $author);
+            $this->wpdb->query($sql_term_file);
 
-            $this->wpdb->query("
+            $sql_term_alt = $this->wpdb->prepare("
                 INSERT INTO {$this->postmeta} (post_id, meta_key, meta_value) (
                     SELECT p.id, '_wp_attachment_image_alt', p.post_title 
                     FROM {$this->posts} p
-                    WHERE p.post_parent IN ({$ids}) 
-                    AND p.post_author = {$this->author} 
+                    WHERE p.post_parent IN ({$ids_csv}) 
+                    AND p.post_author = %d 
                     AND p.post_title IS NOT NULL 
                     AND p.post_title != ''
                     AND p.post_name LIKE 'fifu-category%'
                 )
-            ");
+            ", $author);
+            $this->wpdb->query($sql_term_alt);
 
             $this->wpdb->query('COMMIT');
         } catch (Exception $e) {
@@ -1870,10 +2221,11 @@ class FifuDb {
     }
 
     function get_fifu_fields($ids) {
+        $ids_csv = $this->sanitize_ids_csv($ids);
         $results = $this->wpdb->get_results("
             SELECT post_id, meta_key, meta_value
             FROM {$this->postmeta}
-            WHERE post_id IN ({$ids})
+            WHERE post_id IN ({$ids_csv})
             AND meta_key IN ('fifu_image_url', 'fifu_image_alt')
         ");
 
@@ -1947,8 +2299,8 @@ function fifu_db_count_metadata_operations() {
 
 function fifu_db_count_urls() {
     $db = new FifuDb();
-    $aux = $db->get_count_urls()[0];
-    return $aux ? $aux->amount : 0;
+    $aux = $db->get_count_urls();
+    return $aux ? $aux : 0;
 }
 
 function fifu_db_get_count_wp_posts() {

@@ -1,8 +1,8 @@
 <div
     class="fifu-quick"
-    post-id="<?php echo $post_id ?>"
-    is-ctgr="<?php echo $is_ctgr ?>"
-    image-url="<?php echo $image_url ?>"
-    is-variable="<?php echo $is_variable ?>"
-    style="height: <?php echo $height ?>px; width: <?php echo $width ?>px; background:url('<?php echo $url ?>') no-repeat center center; background-size:cover; <?php echo $border ?>; cursor:pointer; border-radius: 8px;">
+    post-id="<?php echo esc_attr($post_id) ?>"
+    is-ctgr="<?php echo esc_attr($is_ctgr) ?>"
+    image-url="<?php echo esc_url($image_url) ?>"
+    is-variable="<?php echo esc_attr($is_variable) ?>"
+    style="height: <?php echo esc_attr($height) ?>px; width: <?php echo esc_attr($width) ?>px; background:url('<?php echo esc_url($url) ?>') no-repeat center center; background-size:cover; <?php echo esc_attr($border) ?>; cursor:pointer; border-radius: 8px;">
 </div>

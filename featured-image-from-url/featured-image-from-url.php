@@ -4,7 +4,7 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use remote media as the featured image and beyond.
- * Version: 5.2.7
+ * Version: 5.2.8
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0
@@ -20,8 +20,11 @@ define('FIFU_ADMIN_DIR', FIFU_PLUGIN_DIR . 'admin');
 define('FIFU_ELEMENTOR_DIR', FIFU_PLUGIN_DIR . 'elementor');
 define('FIFU_GRAVITY_DIR', FIFU_PLUGIN_DIR . 'gravity-forms');
 define('FIFU_LANGUAGES_DIR', WP_CONTENT_DIR . '/uploads/fifu/languages/');
-define('FIFU_DELETE_ALL_URLS', false);
 define('FIFU_CLOUD_DEBUG', false);
+
+if (!defined('FIFU_DELETE_ALL_URLS')) {
+    define('FIFU_DELETE_ALL_URLS', false);
+}
 
 $FIFU_SESSION = array();
 

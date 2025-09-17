@@ -12,6 +12,7 @@ WordPress:<?php bloginfo('version') ?>;
 Site:<?php echo get_home_url() ?>;
 Theme:<?php echo wp_get_theme() ?><?php echo fifu_woo_theme() ? ' (WooCommerce)' : '' ?>;
 PHP:<?php echo phpversion() ?>;
+PHP_INT_SIZE:<?php echo PHP_INT_SIZE ?>;
 WooCommerce:<?php echo class_exists('WooCommerce') ? WC()->version : '' ?>;
 Pages:<?php echo wp_count_posts('page')->publish ?>;
 Posts:<?php echo wp_count_posts('post')->publish ?>;

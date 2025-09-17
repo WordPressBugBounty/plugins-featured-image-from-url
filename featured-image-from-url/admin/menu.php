@@ -161,6 +161,9 @@ function fifu_support_data() {
     wp_enqueue_style('fifu-base-ui-css', plugins_url('/html/css/base-ui.css', __FILE__), array(), fifu_version_number_enq());
     wp_enqueue_style('fifu-menu-css', plugins_url('/html/css/menu.css', __FILE__), array(), fifu_version_number_enq());
 
+    // page-specific JS to hide admin notices, matching other FIFU pages
+    wp_enqueue_script('fifu-support-data-js', plugins_url('/html/js/support-data.js', __FILE__), array('jquery', 'jquery-ui'), fifu_version_number_enq());
+
     $skip = esc_attr(get_option('fifu_skip'));
     $html_cpt = esc_attr(get_option('fifu_html_cpt'));
     $square_mobile = esc_attr(get_option('fifu_square_mobile'));

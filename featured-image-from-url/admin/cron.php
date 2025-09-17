@@ -65,17 +65,6 @@ function fifu_stop_job($option_name) {
     update_option($field, true, 'no');
 }
 
-function fifu_should_stop_job($option_name) {
-    $field = $option_name . '_stop';
-
-    global $wpdb;
-    if ($wpdb->get_col("SELECT 1 FROM " . $wpdb->options . " WHERE option_name = '" . $field . "'")) {
-        delete_option($field);
-        return true;
-    }
-    return false;
-}
-
 function fifu_run_cron_now() {
     wp_remote_request(site_url('wp-cron.php'));
 }

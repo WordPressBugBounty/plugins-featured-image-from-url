@@ -189,9 +189,11 @@ function fifu_speedup_get_sizes($url) {
 function fifu_speedup_fix_size($width, $height) {
     $sizes = unserialize(FIFU_SPEEDUP_SIZES);
 
-    // Check if the width is present in the available sizes
+    // Preserve original width for aspect ratio calculation
+    $original_width = $width;
+
+    // Snap width to the next allowed size if needed
     if (!in_array($width, $sizes)) {
-        // Look for the next higher value
         foreach ($sizes as $size) {
             if ($size >= $width) {
                 $width = $size;
@@ -199,18 +201,18 @@ function fifu_speedup_fix_size($width, $height) {
             }
         }
 
-        // If the next higher value is bigger than 1920, use 1920
+        // Hard cap at 1920
         if ($width > 1920) {
             $width = 1920;
         }
     }
 
-    // Calculate the new height to maintain the aspect ratio
+    // Recalculate height to preserve original aspect ratio
     if ($height) {
-        $aspect_ratio = $height / $width;
-        $new_height = $width * $aspect_ratio;
+        $aspect_ratio = $height / max(1, $original_width);
+        $new_height = (int) round($width * $aspect_ratio);
     } else {
-        $new_height = $height;
+        $new_height = $height; // keep as is (0 or null)
     }
 
     return array($width, $new_height);

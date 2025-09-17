@@ -288,6 +288,10 @@ function fifu_base64($url) {
     return rtrim(strtr(base64_encode($url), '+/', '-_'), '=');
 }
 
+function fifu_unit_test() {
+    return 'Hello, World!';
+}
+
 // developers
 
 function fifu_dev_set_image($post_id, $image_url) {

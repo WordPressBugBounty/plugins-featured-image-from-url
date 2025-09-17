@@ -63,14 +63,14 @@ add_filter('posts_where', 'fifu_query_attachments');
 function fifu_query_attachments($where) {
     global $wpdb;
     if (fifu_is_web_story() || (($_POST['action'] ?? '') == 'query-attachments' || ($_POST['action'] ?? '') == 'get-attachment'))
-        $where .= ' AND ' . $wpdb->prefix . 'posts.post_author <> ' . FIFU_AUTHOR . ' ';
+        $where .= $wpdb->prepare(" AND {$wpdb->posts}.post_author <> %d ", FIFU_AUTHOR);
     return $where;
 }
 
 add_filter('posts_where', function ($where, \WP_Query $q) {
     global $wpdb;
     if (fifu_is_web_story() || (is_admin() && $q->is_main_query() && strpos($where, 'attachment') !== false))
-        $where .= ' AND ' . $wpdb->prefix . 'posts.post_author <> ' . FIFU_AUTHOR . ' ';
+        $where .= $wpdb->prepare(" AND {$wpdb->posts}.post_author <> %d ", FIFU_AUTHOR);
     return $where;
 }, 10, 2);
 

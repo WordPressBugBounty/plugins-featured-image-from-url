@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
 Tested up to: 6.8.2
-Stable tag: 5.2.7
+Stable tag: 5.2.8
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -246,6 +246,9 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.2.8 =
+* Fixes: vulnerabilities reported by the Wordfence Security team.
+
 = 5.2.7 =
 * New: Notice to rate the plugin; Enhancement: Auto set featured media from post content (now supports local relative URLs); Fix: Incomplete product data generated for Rich Results.
 
@@ -273,14 +276,11 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 = 5.1.9 =
 * Notice: the plugin collects the theme name anonymously (the goal is to identify the most common themes and ensure FIFU works correctly with all of them).
 
-= 5.1.8 =
-* Fix: Optimized Images (performance issue when serving full image size and possible conflicts with images from Cloudinary); Fix: images in the WooCommerce product gallery (not displayed when Optimized Images was disabled).
-
 = others =
 * [more](https://fifu.app/changelog)
 
 
 == Upgrade Notice ==
 
-= 5.2.7 =
-* New: Notice to rate the plugin; Enhancement: Auto set featured media from post content (now supports local relative URLs); Fix: Incomplete product data generated for Rich Results.
+= 5.2.8 =
+* Fixes: vulnerabilities reported by the Wordfence Security team.
