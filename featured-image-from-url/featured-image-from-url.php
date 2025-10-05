@@ -4,11 +4,11 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use remote media as the featured image and beyond.
- * Version: 5.2.8
+ * Version: 5.2.9
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0
- * WC tested up to: 10.1.2
+ * WC tested up to: 10.2.2
  * Text Domain: featured-image-from-url
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -67,6 +67,7 @@ $required_admin = [
     FIFU_ADMIN_DIR . '/sheet-editor.php',
     FIFU_ADMIN_DIR . '/transient.php',
     FIFU_ADMIN_DIR . '/widgets.php',
+    FIFU_ADMIN_DIR . '/wpml.php'
 ];
 
 foreach ($required_admin as $file) {

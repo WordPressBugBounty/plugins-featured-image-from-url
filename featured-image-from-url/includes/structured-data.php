@@ -21,6 +21,8 @@ function fifu_render_structured_data($post_id, $image_urls) {
     $page_url = get_permalink($post_id);
     $name = get_the_title($post_id);
 
+    $image_urls = fifu_sd_maybe_photonize($image_urls, $post_id);
+
     // Build base payload
     $json_ld = [
         '@context' => 'https://schema.org',
@@ -248,6 +250,26 @@ function fifu_render_structured_data($post_id, $image_urls) {
     echo "\n<!-- FIFU:jsonld:begin -->\n";
     echo "<script type=\"application/ld+json\">" . wp_json_encode($payload, JSON_UNESCAPED_SLASHES) . "</script>\n";
     echo "<!-- FIFU:jsonld:end -->\n";
+}
+
+function fifu_sd_maybe_photonize($image_urls, $post_id) {
+    if (fifu_is_off('fifu_photon'))
+        return $image_urls;
+
+    $thumb_id = $post_id ? get_post_thumbnail_id($post_id) : null;
+    if (is_array($image_urls)) {
+        foreach ($image_urls as $idx => $url) {
+            if (empty($url))
+                continue;
+            $image_urls[$idx] = fifu_jetpack_photon_url($url, null, $thumb_id);
+        }
+        return $image_urls;
+    }
+
+    if (!empty($image_urls))
+        return fifu_jetpack_photon_url($image_urls, null, $thumb_id);
+
+    return $image_urls;
 }
 
 function fifu_sd_build_image_objects($images, $page_url) {

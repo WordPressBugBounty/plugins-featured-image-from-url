@@ -751,8 +751,14 @@ class FifuDb {
 
     function get_posts_su($storage_ids) {
         if (!empty($storage_ids)) {
-            // normalize and drop empties
-            $ids = array_values(array_filter(array_map('strval', (array) $storage_ids), static fn($v) => $v !== ''));
+            $ids = array_values(
+                    array_filter(
+                            array_map('strval', (array) $storage_ids),
+                            static function ($v) {
+                                return $v !== '';
+                            }
+                    )
+            );
             if ($ids) {
                 $in = implode(',', array_fill(0, count($ids), '%s'));
                 $filter_post_image = $this->wpdb->prepare(

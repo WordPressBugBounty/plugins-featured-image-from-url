@@ -128,6 +128,9 @@ function fifu_add_social_tags() {
     if ($url) {
         if (fifu_is_from_speedup($url))
             $url = fifu_speedup_get_signed_url($url, 1280, 672, null, null, false);
+        elseif (fifu_is_on('fifu_photon')) {
+            $url = fifu_jetpack_photon_url($url, null, get_post_thumbnail_id($post_id));
+        }
         include 'html/twitter-image.html';
     }
 }

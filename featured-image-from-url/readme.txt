@@ -3,8 +3,8 @@ Contributors: marceljm
 Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, video, woocommerce
 Requires at least: 5.6
-Tested up to: 6.8.2
-Stable tag: 5.2.8
+Tested up to: 6.8.3
+Stable tag: 5.2.9
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -246,6 +246,9 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 
 == Changelog ==
 
+= 5.2.9 =
+* New: multisite network menu; Enhancement: integration with the WPML Multilingual CMS plugin (when a post or product is duplicated, FIFU now duplicates its image data); Fix: Optimized Images (URLs not being included in structured data); Fix: possible syntax error on sites with very old PHP versions.
+
 = 5.2.8 =
 * Fixes: vulnerabilities reported by the Wordfence Security team.
 
@@ -273,14 +276,11 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 = 5.2.0 =
 * Enhancement: Image Not Found message displayed in the post editor when the image URL is invalid; Fix: vulnerability reported by Wordfence (improved validation of values added in FIFU fields via post editor for better security); Fix: potential undefined index notices.
 
-= 5.1.9 =
-* Notice: the plugin collects the theme name anonymously (the goal is to identify the most common themes and ensure FIFU works correctly with all of them).
-
 = others =
 * [more](https://fifu.app/changelog)
 
 
 == Upgrade Notice ==
 
-= 5.2.8 =
-* Fixes: vulnerabilities reported by the Wordfence Security team.
+= 5.2.9 =
+* New: multisite network menu; Enhancement: integration with the WPML Multilingual CMS plugin (when a post or product is duplicated, FIFU now duplicates its image data); Fix: Optimized Images (URLs not being included in structured data); Fix: possible syntax error on sites with very old PHP versions.

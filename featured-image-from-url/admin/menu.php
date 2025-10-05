@@ -7,8 +7,46 @@ define('FIFU_ACTION_CLOUD', '/wp-admin/admin.php?page=fifu-cloud');
 define('FIFU_SLUG', 'featured-image-from-url');
 
 add_action('admin_menu', 'fifu_insert_menu');
+if (is_multisite()) {
+    add_action('network_admin_menu', 'fifu_insert_network_menu');
+}
+
+function fifu_with_main_site($callback) {
+    $switched = false;
+
+    if (is_multisite()) {
+        $main_site_id = function_exists('get_main_site_id') ? get_main_site_id() : 0;
+        if ($main_site_id) {
+            $current_blog_id = get_current_blog_id();
+            if ($current_blog_id !== $main_site_id) {
+                switch_to_blog($main_site_id);
+                $switched = true;
+            }
+        }
+    }
+
+    $callback();
+
+    if ($switched) {
+        restore_current_blog();
+    }
+}
 
 function fifu_insert_menu() {
+    fifu_insert_menu_common('manage_options', false);
+}
+
+function fifu_insert_network_menu() {
+    if (!is_multisite()) {
+        return;
+    }
+
+    fifu_with_main_site(function () {
+        fifu_insert_menu_common('manage_network_options', true);
+    });
+}
+
+function fifu_insert_menu_common($capability, $is_network) {
     $fifu = fifu_get_strings_settings();
 
     if (isset($_SERVER['REQUEST_URI']) && (strpos($_SERVER['REQUEST_URI'], FIFU_SLUG) !== false || strpos($_SERVER['REQUEST_URI'], 'fifu') !== false)) {
@@ -38,24 +76,50 @@ function fifu_insert_menu() {
             'restUrl' => esc_url_raw(rest_url()),
             'homeUrl' => esc_url_raw(home_url()),
             'nonce' => wp_create_nonce('wp_rest'),
+            'networkAdmin' => is_network_admin(),
         ]);
     }
 
-    add_menu_page('Featured Image from URL', 'FIFU', 'manage_options', FIFU_SLUG, 'fifu_get_menu_html', 'dashicons-camera', 57);
-    add_submenu_page(FIFU_SLUG, 'FIFU Settings', $fifu['options']['settings'](), 'manage_options', FIFU_SLUG);
-    add_submenu_page(FIFU_SLUG, 'FIFU Cloud', $fifu['options']['cloud'](), 'manage_options', 'fifu-cloud', 'fifu_cloud');
-    add_submenu_page(FIFU_SLUG, 'FIFU Troubleshooting', $fifu['options']['troubleshooting'](), 'manage_options', 'fifu-troubleshooting', 'fifu_troubleshooting');
-    add_submenu_page(FIFU_SLUG, 'FIFU Status', $fifu['options']['status'](), 'manage_options', 'fifu-support-data', 'fifu_support_data');
-    add_submenu_page(
-            FIFU_SLUG,
-            'FIFU Pro',
-            '<a href="https://fifu.app/" target="_blank"><div style="padding:5px;color:#111;background-color:#d4af37">' . $fifu['options']['upgrade']() . '</div></a>',
-            'manage_options',
-            '#',
-            null
-    );
+    $menu_callback = $is_network ? 'fifu_get_network_menu_html' : 'fifu_get_menu_html';
+    $is_network_admin = $is_network;
+    $cloud_callback = $is_network ? 'fifu_network_cloud' : 'fifu_cloud';
+    $troubleshooting_callback = $is_network ? 'fifu_network_troubleshooting' : 'fifu_troubleshooting';
+    $status_callback = $is_network ? 'fifu_network_support_data' : 'fifu_support_data';
+
+    add_menu_page('Featured Image from URL', 'FIFU', $capability, FIFU_SLUG, $menu_callback, 'dashicons-camera', 57);
+    add_submenu_page(FIFU_SLUG, 'FIFU Settings', $fifu['options']['settings'](), $capability, FIFU_SLUG, $menu_callback);
+
+    if (!$is_network_admin) {
+        add_submenu_page(FIFU_SLUG, 'FIFU Cloud', $fifu['options']['cloud'](), $capability, 'fifu-cloud', $cloud_callback);
+        add_submenu_page(FIFU_SLUG, 'FIFU Troubleshooting', $fifu['options']['troubleshooting'](), $capability, 'fifu-troubleshooting', $troubleshooting_callback);
+        add_submenu_page(FIFU_SLUG, 'FIFU Status', $fifu['options']['status'](), $capability, 'fifu-support-data', $status_callback);
+        add_submenu_page(
+                FIFU_SLUG,
+                'FIFU Pro',
+                '<a href="https://fifu.app/" target="_blank"><div style="padding:5px;color:#111;background-color:#d4af37">' . $fifu['options']['upgrade']() . '</div></a>',
+                'manage_options',
+                '#',
+                null
+        );
+    }
 
     add_action('admin_init', 'fifu_get_menu_settings');
+}
+
+function fifu_get_network_menu_html() {
+    fifu_with_main_site('fifu_get_menu_html');
+}
+
+function fifu_network_cloud() {
+    fifu_with_main_site('fifu_cloud');
+}
+
+function fifu_network_troubleshooting() {
+    fifu_with_main_site('fifu_troubleshooting');
+}
+
+function fifu_network_support_data() {
+    fifu_with_main_site('fifu_support_data');
 }
 
 function fifu_cloud() {
@@ -219,6 +283,7 @@ function fifu_get_menu_html() {
         'reset' => $fifu['word']['reset'](),
         'save' => $fifu['word']['save'](),
         'pluginUrl' => plugins_url() . '/' . FIFU_SLUG,
+        'networkAdmin' => is_network_admin(),
     ]);
 
     $skip = esc_attr(get_option('fifu_skip'));
