@@ -43,6 +43,8 @@ jQuery(function () {
     jQuery("#tabsFifuShortcode").tabs();
     jQuery("#tabsAutoSet").tabs();
     jQuery("#tabsAutoSetSub").tabs();
+    jQuery("#tabsAutoShare").tabs();
+    jQuery("#tabsAutoShareSub").tabs();
     jQuery("#tabsTags").tabs();
     jQuery("#tabsScreenshot").tabs();
     jQuery("#tabsIsbn").tabs();

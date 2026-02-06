@@ -335,6 +335,147 @@
 
                 <div class="fifubox">
                     <div class="fifu-pro"><a class="fifu-pro-link" href="https://fifu.app/" target="_blank" title="<?php $fifu['unlock']() ?>"><span class="dashicons dashicons-lock fifu-pro-icon"></span></a></div>
+                    <h2><i class="fa-solid fa-share-nodes"></i> <?php $fifu['title']['share']() ?> <span id="fifu-auto-share-info" class="dashicons dashicons-info" style="font-size: 20px; cursor: pointer; color: #9ba2a6;"></span></h2>
+
+                    <div class="greybox">
+
+                        <?php $fifu['share']['desc']() ?>
+
+                    </div>
+
+                    <br>
+
+                    <div id="tabsAutoShare">
+                        <ul>
+                            <li><a href="#tabsAutoShare-a"><?php $fifu['share']['tab']['auto']() ?></a></li>
+                            <li><a href="#tabsAutoShare-b"><?php $fifu['share']['tab']['social']() ?></a></li>
+                            <li><a href="#tabsAutoShare-c"><?php $fifu['share']['tab']['test']() ?></a></li>
+                            <br>
+                            <br>
+                            <div id="tabsAutoShare-a">
+                                <table style="text-align:left">
+                                    <tr>
+                                        <th>
+                                            <input
+                                                type="submit"
+                                                href="javascript:void(0)"
+                                                id="fifu_toggle_auto_share"
+                                                onclick="javascript:void(0)"
+                                                name="fifu_toggle_auto_share"
+                                                class="toggleoff"
+                                                value=""
+                                                style="display:block;border:none">
+                                        </th>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id="tabsAutoShare-b">
+                                <div id="tabsAutoShareSub">
+                                    <ul>
+                                        <li><a href="#tabsAutoShareSub-b">Facebook</i></a></li>
+                                        <li><a href="#tabsAutoShareSub-c">Instagram</a></li>
+                                        <li><a href="#tabsAutoShareSub-g">X</a></li>
+                                        <br>
+                                        <br>
+                                        <div id="tabsAutoShareSub-b">
+                                            <table>
+                                                <tr style="text-align:left">
+                                                    <th>
+                                                        <input
+                                                            type="submit"
+                                                            href="javascript:void(0)"
+                                                            id="fifu_toggle_auto_share_facebook"
+                                                            onclick="javascript:void(0)"
+                                                            name="fifu_toggle_auto_share_facebook"
+                                                            class="toggleoff"
+                                                            value=""
+                                                            style="display:block;border:none">
+                                                    </th>
+                                                    <th>
+                                                    </th>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div id="tabsAutoShareSub-c">
+                                            <table>
+                                                <tr style="text-align:left">
+                                                    <th>
+                                                        <input
+                                                            type="submit"
+                                                            href="javascript:void(0)"
+                                                            id="fifu_toggle_auto_share_instagram"
+                                                            onclick="javascript:void(0)"
+                                                            name="fifu_toggle_auto_share_instagram"
+                                                            class="toggleoff"
+                                                            value=""
+                                                            style="display:block;border:none">
+                                                    </th>
+                                                    <th>
+                                                    </th>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div id="tabsAutoShareSub-g">
+                                            <table>
+                                                <tr style="text-align:left">
+
+                                                </tr>
+                                            </table>
+
+                                            <table>
+                                                <tr style="text-align:left">
+                                                    <th>
+                                                        <input id="fifu_input_auto_share_x_clientid"
+                                                               type="text"
+                                                               name="fifu_input_auto_share_x_clientid"
+                                                               style="width:320px"
+                                                               value=""
+                                                               placeholder="<?php $fifu['share']['label']['client']() ?>">
+                                                    </th>
+                                                    <th>
+                                                        <input
+                                                            type="submit"
+                                                            href="javascript:void(0)"
+                                                            id="fifu_toggle_auto_share_x"
+                                                            onclick="javascript:void(0)"
+                                                            name="fifu_toggle_auto_share_x"
+                                                            class="toggleoff"
+                                                            value=""
+                                                            style="display:block;border:none">
+                                                    </th>
+                                                    <th>
+                                                    </th>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div id="tabsAutoShare-c">
+                                <table style="text-align:left">
+                                    <tr>
+                                        <th>
+                                            <input id="fifu_input_auto_share_postid"
+                                                   type="text"
+                                                   name="fifu_input_auto_share_postid"
+                                                   style="width:100px"
+                                                   value=""
+                                                   placeholder="<?php $fifu['share']['label']['postid']() ?>">
+                                            <input type="submit"
+                                                   value="<?php $fifu['share']['button']['now']() ?>">
+                                            <i class="fa-brands fa-square-facebook fifu-share-icon" data-provider="facebook" aria-hidden="true"></i>
+                                            <i class="fa-brands fa-square-instagram fifu-share-icon" data-provider="instagram" aria-hidden="true"></i>
+                                            <i class="fa-brands fa-square-x-twitter fifu-share-icon" data-provider="x" aria-hidden="true"></i>
+                                        </th>
+                                    </tr>
+                                </table>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="fifubox">
+                    <div class="fifu-pro"><a class="fifu-pro-link" href="https://fifu.app/" target="_blank" title="<?php $fifu['unlock']() ?>"><span class="dashicons dashicons-lock fifu-pro-icon"></span></a></div>
                     <h2><span class="dashicons dashicons-welcome-widgets-menus"></span> <?php $fifu['title']['finder']() ?> </h2>
                     <div class="greybox" id="grad2">
                         <?php $fifu['finder']['desc']() ?>

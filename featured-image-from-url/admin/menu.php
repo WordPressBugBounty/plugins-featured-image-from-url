@@ -62,6 +62,9 @@ function fifu_insert_menu_common($capability, $is_network) {
         wp_enqueue_script('jquery-ui', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js');
         wp_enqueue_script('jquery-block-ui', 'https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js');
 
+        wp_enqueue_style('fancy-box-css', 'https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.css');
+        wp_enqueue_script('fancy-box-js', 'https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js');
+
         wp_enqueue_style('datatable-css', '//cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css');
         wp_enqueue_style('datatable-select-css', '//cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css');
         wp_enqueue_style('datatable-buttons-css', '//cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css');
@@ -270,6 +273,8 @@ function fifu_get_menu_html() {
     wp_enqueue_style('fifu-base-ui-css', plugins_url('/html/css/base-ui.css', __FILE__), array(), fifu_version_number_enq());
     wp_enqueue_style('fifu-menu-css', plugins_url('/html/css/menu.css', __FILE__), array(), fifu_version_number_enq());
     wp_enqueue_script('fifu-menu-js', plugins_url('/html/js/menu.js', __FILE__), array('jquery', 'jquery-ui'), fifu_version_number_enq());
+    wp_enqueue_style('fifu-auto-share-css', plugins_url('/html/css/auto-share.css', __FILE__), array(), fifu_version_number_enq());
+    wp_enqueue_script('fifu-auto-share-js', plugins_url('/html/js/auto-share.js', __FILE__), array('jquery', 'fifu-menu-js'), fifu_version_number_enq());
 
     // register custom variables for the AJAX script
     wp_localize_script('fifu-menu-js', 'fifuScriptVars', [
@@ -282,6 +287,25 @@ function fifu_get_menu_html() {
         'error' => $fifu['word']['error'](),
         'reset' => $fifu['word']['reset'](),
         'save' => $fifu['word']['save'](),
+        'connect' => $fifu['share']['window']['connect'](),
+        'shareInfo' => [
+            'title' => $fifu['share']['info']['requirements'](),
+            'facebook' => [
+                'page' => $fifu['share']['info']['facebook']['page'](),
+                'published' => $fifu['share']['info']['facebook']['published'](),
+            ],
+            'instagram' => [
+                'professional' => $fifu['share']['info']['instagram']['professional'](),
+                'public' => $fifu['share']['info']['instagram']['public'](),
+            ],
+            'x' => [
+                'developer' => $fifu['share']['info']['x']['developer'](),
+                'permissions' => $fifu['share']['info']['x']['permissions'](),
+                'type' => $fifu['share']['info']['x']['type'](),
+                'callback' => $fifu['share']['info']['x']['callback'](),
+                'client' => $fifu['share']['info']['x']['client'](),
+            ],
+        ],
         'pluginUrl' => plugins_url() . '/' . FIFU_SLUG,
         'networkAdmin' => is_network_admin(),
     ]);

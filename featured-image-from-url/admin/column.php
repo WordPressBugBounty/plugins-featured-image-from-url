@@ -8,6 +8,14 @@ add_action('admin_footer', 'fifu_footer');
 
 function fifu_column() {
     if (is_user_logged_in() && current_user_can('publish_posts')) {
+        $first_activation = get_option('fifu_first_activation', false);
+        if ($first_activation) {
+            $url_count = (int) fifu_db_count_urls();
+            if ($url_count === 0) {
+                return;
+            }
+            update_option('fifu_first_activation', false);
+        }
         add_filter('manage_posts_columns', 'fifu_column_head');
         add_filter('manage_pages_columns', 'fifu_column_head');
         add_filter('manage_edit-product_cat_columns', 'fifu_column_head');

@@ -18,7 +18,10 @@ function fifu_log($entry, $file, $mode = 'a') {
     }
 
     if (is_array($entry)) {
-        $entry = json_encode([current_time('mysql') => $entry], JSON_UNESCAPED_SLASHES);
+        $entry = json_encode(
+                [current_time('mysql') => $entry],
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR
+        );
     }
 
     // Ensure file exists before adjusting permissions

@@ -4,11 +4,11 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use remote media as the featured image and beyond.
- * Version: 5.2.9
+ * Version: 5.3.3
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * WC requires at least: 4.0
- * WC tested up to: 10.2.2
+ * WC tested up to: 10.4.3
  * Text Domain: featured-image-from-url
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -102,6 +102,7 @@ function fifu_activate($network_wide) {
             switch_to_blog($blog_id);
             fifu_activate_actions();
             fifu_set_author();
+            fifu_flag_first_activation();
             // record installed time per site for review timing
             if (!get_option('fifu_installed_time'))
                 update_option('fifu_installed_time', time());
@@ -113,6 +114,7 @@ function fifu_activate($network_wide) {
     } else {
         fifu_activate_actions();
         fifu_set_author();
+        fifu_flag_first_activation();
         // Set redirect transient only for non-multisite
         set_transient('fifu_redirect_to_settings', true, 30);
         // record installed time for review timing
@@ -136,6 +138,12 @@ function fifu_activate_actions() {
     fifu_db_create_table_invalid_media_su();
     fifu_db_maybe_create_table_meta_in();
     fifu_db_maybe_create_table_meta_out();
+}
+
+function fifu_flag_first_activation() {
+    if (false === get_option('fifu_first_activation', false)) {
+        add_option('fifu_first_activation', true, '', 'no');
+    }
 }
 
 register_deactivation_hook(__FILE__, 'fifu_deactivation');

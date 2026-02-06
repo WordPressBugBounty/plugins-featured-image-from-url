@@ -308,7 +308,11 @@ function fifu_dev_set_image($post_id, $image_url) {
 // active plugins
 
 function fifu_is_elementor_active() {
-    return is_plugin_active('elementor/elementor.php') || is_plugin_active('elementor-pro/elementor-pro.php');
+    return is_plugin_active('elementor/elementor.php') || fifu_is_elementor_pro_active();
+}
+
+function fifu_is_elementor_pro_active() {
+    return is_plugin_active('elementor-pro/elementor-pro.php');
 }
 
 function fifu_is_elementor_editor() {

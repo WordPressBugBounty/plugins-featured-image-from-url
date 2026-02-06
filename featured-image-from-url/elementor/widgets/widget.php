@@ -88,6 +88,15 @@ function fifu_walk_elements_and_apply($elements, $post_id) {
                     $image_url = $settings['fifu_input_url'];
                     if ($image_url && filter_var($image_url, FILTER_VALIDATE_URL) === false)
                         $image_url = '';
+
+                    if ($image_url) {
+                        $validated_url = wp_http_validate_url($image_url);
+                        if ($validated_url === false) {
+                            continue;
+                        }
+                        $image_url = $validated_url;
+                    }
+
                     fifu_dev_set_image($post_id, $image_url);
                     $att_id = get_post_thumbnail_id($post_id);
                     if ($att_id && $image_url) {

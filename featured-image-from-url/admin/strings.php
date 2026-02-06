@@ -330,7 +330,7 @@ function fifu_get_strings_settings() {
         _e("Auto set featured image from Unsplash using tags", FIFU_SLUG);
     };
     $fifu['title']['share'] = function () {
-        _e("Auto-share to social media", FIFU_SLUG);
+        _e("Auto-share on social media", FIFU_SLUG);
     };
     $fifu['title']['block'] = function () {
         _e("Disable right-click", FIFU_SLUG);
@@ -733,6 +733,62 @@ function fifu_get_strings_settings() {
     $fifu['auto']['credits']['desc'] = function () {
         _e("When FIFU imports an image URL from the search engine, it also retrieves the address of the remote post that owns the image. By enabling 'Settings → Image → Page Redirection', FIFU adds a link to the image when it’s displayed on singular posts of your site. Then, by clicking on the image, the visitor is redirected to the remote post. This is FIFU’s way of giving credit to the author, since the search engine may include copyrighted images in the results.
 ", FIFU_SLUG);
+    };
+
+    // auto share
+    $fifu['share']['desc'] = function () {
+        _e("Automatically share new posts published on WordPress to social media. The rate limit is 16 posts per day for each connected social media platform.", FIFU_SLUG);
+    };
+    $fifu['share']['tab']['auto'] = function () {
+        _e("Auto share", FIFU_SLUG);
+    };
+    $fifu['share']['tab']['social'] = function () {
+        _e("Social media", FIFU_SLUG);
+    };
+    $fifu['share']['tab']['test'] = function () {
+        _e("Test", FIFU_SLUG);
+    };
+    $fifu['share']['window']['connect'] = function () {
+        return __("Connecting", FIFU_SLUG);
+    };
+    $fifu['share']['label']['client'] = function () {
+        _e("OAuth 2.0 Client ID", FIFU_SLUG);
+    };
+    $fifu['share']['label']['postid'] = function () {
+        _e("Post ID", FIFU_SLUG);
+    };
+    $fifu['share']['button']['now'] = function () {
+        _e("Share now", FIFU_SLUG);
+    };
+    $fifu['share']['info']['requirements'] = function () {
+        return __("Requirements", FIFU_SLUG);
+    };
+    $fifu['share']['info']['facebook']['page'] = function () {
+        return __("You need a Facebook Page; sharing to personal profiles is not supported.", FIFU_SLUG);
+    };
+    $fifu['share']['info']['facebook']['published'] = function () {
+        return __("The Page must be Published and visible to everyone.", FIFU_SLUG);
+    };
+    $fifu['share']['info']['instagram']['professional'] = function () {
+        return __("Use an Instagram Professional account (Business or Creator); personal accounts won’t work.", FIFU_SLUG);
+    };
+    $fifu['share']['info']['instagram']['public'] = function () {
+        return __("The Instagram account must be Public (not private).", FIFU_SLUG);
+    };
+    $fifu['share']['info']['x']['developer'] = function () {
+        return __("Create an app in the Developer Portal", FIFU_SLUG);
+    };
+    $fifu['share']['info']['x']['permissions'] = function () {
+        return __("Set permissions to \"Read and write\".", FIFU_SLUG);
+    };
+    $fifu['share']['info']['x']['type'] = function () {
+        return __("Choose the type of app: \"Native App\".", FIFU_SLUG);
+    };
+    $fifu['share']['info']['x']['callback'] = function () {
+        return __("Add the callback URI", FIFU_SLUG);
+    };
+    $fifu['share']['info']['x']['client'] = function () {
+        return __("Copy the \"Client ID\" from the \"Keys and tokens\" section.", FIFU_SLUG);
     };
 
     // isbn
@@ -1326,7 +1382,7 @@ function fifu_get_strings_settings() {
 
     // bbpress
     $fifu['bbpress']['desc'] = function () {
-        _e("Enable the addition of featured images to forums, topics, and replies.", FIFU_SLUG);
+        _e("Enable the addition of remote images to forums, topics, replies, and activities.", FIFU_SLUG);
     };
 
     // taxonomy

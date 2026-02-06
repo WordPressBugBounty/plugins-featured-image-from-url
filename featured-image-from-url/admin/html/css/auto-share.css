@@ -1,0 +1,103 @@
+.fifu-share-icon {
+    color: #94a3b8;
+    margin-left: 8px;
+    font-size: 20px;
+    vertical-align: middle;
+    transition: color 0.2s ease-in-out;
+}
+
+.fifu-share-icon[data-share-state="pending"] {
+    color: #ff8c00;
+}
+
+.fifu-share-icon[data-share-state="success"] {
+    color: #2e7d32;
+}
+
+.fifu-share-icon[data-share-state="error"] {
+    color: #c62828;
+}
+
+.fifu-auto-share-modal {
+    font-family: inherit;
+    line-height: 1.5;
+    color: #0f172a;
+    max-width: 900px;
+    width: min(900px, 92vw);
+    user-select: text;
+    cursor: text;
+}
+
+.fancybox-slide--html .fancybox-content {
+    cursor: text !important;
+    user-select: text;
+}
+
+.fifu-auto-share-modal h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.fifu-auto-share-section {
+    margin-top: 1.5rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1rem 1.25rem 1.1rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.fifu-auto-share-section:first-of-type {
+    margin-top: 1rem;
+}
+
+.fifu-auto-share-section__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.fifu-auto-share-section__label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: #0f172a;
+    color: #ffffff;
+    padding: 0.35rem 0.75rem;
+    border-radius: 5px;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    width: 100%;
+}
+
+.fifu-auto-share-section ul {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.fifu-auto-share-section li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 0.45rem;
+    color: #324057;
+    font-size: 0.97rem;
+}
+
+.fifu-auto-share-section li:last-child {
+    margin-bottom: 0;
+}
+
+.fifu-auto-share-section li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55rem;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #94a3b8;
+    opacity: 0.8;
+}

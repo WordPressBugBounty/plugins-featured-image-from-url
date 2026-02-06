@@ -33,3 +33,25 @@ add_action('icl_make_duplicate', function ($source_id, $lang, $post_array, $dupl
     fifu_wpml_copy_prefixed_post_meta($source_id, $duplicate_id);
 }, 10, 4);
 
+add_action('wpml_after_copy_custom_field', function ($from_id, $to_id, $meta_key) {
+
+    if ($meta_key !== 'fifu_image_url') {
+        return;
+    }
+
+    if (!function_exists('fifu_dev_set_image')) {
+        return;
+    }
+
+    $url = get_post_meta($to_id, 'fifu_image_url', true);
+    if (is_array($url)) {
+        $url = reset($url);
+    }
+    $url = is_string($url) ? trim($url) : '';
+
+    if ($url === '') {
+        return;
+    }
+
+    fifu_dev_set_image((int) $to_id, $url);
+}, PHP_INT_MAX, 3);
