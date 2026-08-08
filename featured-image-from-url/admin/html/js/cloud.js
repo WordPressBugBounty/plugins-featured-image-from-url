@@ -20,8 +20,6 @@ jQuery(document).ready(function () {
     } else {
         fifu_show_login();
     }
-
-    jQuery("#availableImages").append(fifuScriptCloudVars.availableImages);
 });
 
 jQuery(function () {

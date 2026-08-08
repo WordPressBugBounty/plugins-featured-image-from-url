@@ -1,10 +1,36 @@
+var restUrl = fifuScriptVars.restUrl;
 var FIFU_IMAGE_NOT_FOUND_URL = 'https://storage.googleapis.com/featuredimagefromurl/image-not-found-a.jpg';
+
+function fifu_get_native_preview_state() {
+    var $box = jQuery('#fifu_meta_box');
+    return {
+        isNativePreviewOnly: ($box.attr('data-native-preview-only') || '0') === '1',
+        url: ($box.attr('data-native-preview-url') || '').trim(),
+        alt: ($box.attr('data-native-preview-alt') || '').trim()
+    };
+}
+
+function fifu_clear_native_preview_submission_if_unchanged() {
+    var preview = fifu_get_native_preview_state();
+    if (!preview.isNativePreviewOnly || !preview.url) {
+        return;
+    }
+
+    var currentUrl = (jQuery('#fifu_input_url').val() || '').trim();
+    if (currentUrl === preview.url) {
+        jQuery('#fifu_input_url').val('');
+        if ((jQuery('#fifu_input_alt').val() || '').trim() === preview.alt) {
+            jQuery('#fifu_input_alt').val('');
+        }
+    }
+}
+
 function removeImage(fromUploadButton = false) {
     jQuery("#fifu_table_alt").hide();
     jQuery("#fifu_image").hide();
     jQuery("#fifu_link").hide();
 
-    // Hide fallback image after removal
+    // Hide fallback image after upload or removal
     jQuery("#fifu_image_fallback").hide();
 
     jQuery("#fifu_input_alt").val("");
@@ -17,7 +43,7 @@ function removeImage(fromUploadButton = false) {
     if (fifuMetaBoxVars.is_sirv_active)
         jQuery("#fifu_sirv_button").show();
 
-    fifu_show_wp_featured_image_section();
+    fifu_set_native_featured_image_visibility(true);
 
     // Only show WooCommerce placeholder if NOT triggered by upload button
     if (!fromUploadButton) {
@@ -68,6 +94,7 @@ function runPreview($url) {
     jQuery("#fifu_lightbox").attr('href', $url);
 
     if ($url) {
+
         // Hide controls before validation, but DO NOT hide preview button
         jQuery("#fifu_table_alt").hide();
         jQuery("#fifu_link").hide();
@@ -79,12 +106,11 @@ function runPreview($url) {
         fifu_get_sizes();
 
         jQuery("#fifu_help").hide();
-        jQuery("#fifu_premium").hide();
 
         if (fifuMetaBoxVars.is_sirv_active)
             jQuery("#fifu_sirv_button").hide();
 
-        fifu_hide_wp_featured_image_section();
+        fifu_set_native_featured_image_visibility(false);
     }
 }
 
@@ -101,13 +127,6 @@ jQuery(document).ready(function () {
     // input
     fifu_type_url();
 
-    jQuery('.fifu-hover').on('mouseover', function (evt) {
-        jQuery(this).css('color', '#23282e');
-    });
-    jQuery('.fifu-hover').on('mouseout', function (evt) {
-        jQuery(this).css('color', 'white');
-    });
-
     // title
     let text = jQuery("div#imageUrlMetaBox").find('h2').text();
     jQuery("div#imageUrlMetaBox").find('h2.hndle').text('');
@@ -123,11 +142,11 @@ jQuery(document).ready(function () {
 
     // Add click handler for preview button to open lightbox
     jQuery("#fifu_button").on('click', function () {
-        var $url = fifu_convert(jQuery("#fifu_input_url").val());
-        if (!$url.startsWith("http") && !$url.startsWith("//")) {
-            if ($url && $url != ' ') {
-                fifu_start_lightbox($url, true, null, null, 'meta-box');
-            }
+        const input = fifu_convert(jQuery("#fifu_input_url").val()).trim();
+        const isDirectUrl = input.startsWith("http") || input.startsWith("//");
+
+        if (!isDirectUrl && input) {
+            fifu_start_lightbox(input, 'meta-box');
         }
     });
 
@@ -138,16 +157,21 @@ jQuery(document).ready(function () {
         var $toggleBtn = $postImageDiv.find('.handlediv');
 
         if (url && url.trim()) {
-            fifu_hide_wp_featured_image_section();
+            fifu_set_native_featured_image_visibility(false);
 
-            // Force closed and disable toggle
-            $postImageDiv.addClass('closed');
-            $toggleBtn.attr('aria-expanded', 'false').prop('disabled', true);
+            if ($postImageDiv.length) {
+                $postImageDiv.addClass('closed');
+            }
+
+            if ($toggleBtn.length) {
+                $toggleBtn.attr('aria-expanded', 'false').prop('disabled', true);
+            }
         } else {
-            fifu_show_wp_featured_image_section();
+            fifu_set_native_featured_image_visibility(true);
 
-            // Enable toggle and allow opening
-            $toggleBtn.prop('disabled', false);
+            if ($toggleBtn.length) {
+                $toggleBtn.prop('disabled', false);
+            }
         }
     }
 
@@ -182,6 +206,11 @@ jQuery(document).ready(function () {
             }
         }
     });
+
+    jQuery('form#post').on('submit', function () {
+        fifu_clear_native_preview_submission_if_unchanged();
+    });
+
 
     jQuery('#fifu_input_alt').on('click', function () {
         var currentAlt = jQuery(this).val();
@@ -333,146 +362,23 @@ jQuery(document).ready(function () {
     });
 });
 
-// Block editor: auto-remove featured image if displayed URL is external (not this site's domain)
-(function () {
-    if (typeof wp === 'undefined' || !wp.data || !wp.data.select || !wp.data.dispatch) {
-        return;
-    }
-
-    // Guard against multiple registrations
-    if (window.__fifuAuthorRemoveInit) {
-        return;
-    }
-    window.__fifuAuthorRemoveInit = true;
-
-    let scheduled = false;
-    let lastCheckedMediaId = -1; // skip repeated same IDs within a bounce
-    const processedIds = new Set(); // permanently skip IDs already checked this session
-    let tickScheduled = false; // debounce wp.data churn
-
-    const MAX_URL_RESOLVE_RETRIES = 10;
-    const URL_RETRY_DELAY_MS = 200;
-
-    function isInternalUrl(url) {
-        if (!url || typeof url !== 'string')
-            return false;
-        try {
-            const u = new URL(url, window.location.href);
-            return u.origin === window.location.origin;
-        } catch (e) {
-            return false;
-        }
-    }
-
-    function getDisplayedFeaturedImageUrl() {
-        // Try common Gutenberg selectors
-        const selectors = [
-            '.editor-post-featured-image img',
-            '.editor-post-featured-image .components-responsive-wrapper__content',
-            '.editor-post-featured-image__container img',
-            '.components-panel__body .editor-post-featured-image img'
-        ];
-        for (const s of selectors) {
-            const img = document.querySelector(s);
-            if (img && (img.currentSrc || img.src)) {
-                return img.currentSrc || img.src;
-            }
-        }
-        return null;
-    }
-
-    async function resolveDisplayedUrlWithRetry() {
-        for (let i = 0; i < MAX_URL_RESOLVE_RETRIES; i++) {
-            const url = getDisplayedFeaturedImageUrl();
-            if (url)
-                return url;
-            await new Promise((r) => setTimeout(r, URL_RETRY_DELAY_MS));
-        }
-        return null;
-    }
-
-    function clickWpRemoveButton() {
-        const btns = document.querySelectorAll(
-                '.editor-post-featured-image__actions button.editor-post-featured-image__action, button.components-button.editor-post-featured-image__action'
-                );
-        const removeBtn = btns[btns.length - 1];
-        if (removeBtn) {
-            removeBtn.click();
-            return true;
-        }
-        return false;
-    }
-
-    wp.data.subscribe(function () {
-        if (tickScheduled)
-            return;
-        tickScheduled = true;
-        setTimeout(function () {
-            tickScheduled = false;
-            try {
-                const sel = wp.data.select('core/editor');
-                if (!sel || !sel.getEditedPostAttribute)
-                    return;
-
-                const mediaId = sel.getEditedPostAttribute('featured_media') || 0;
-
-                // Skip if same ID already processed in last tick
-                if (mediaId === lastCheckedMediaId)
-                    return;
-
-                // Track 0 as well to avoid repeated work when removed
-                if (!mediaId) {
-                    lastCheckedMediaId = 0;
-                    return;
-                }
-
-                // Hard skip IDs already checked this session (prevents loops after save)
-                if (processedIds.has(mediaId)) {
-                    lastCheckedMediaId = mediaId;
-                    return;
-                }
-
-                // From here we will process this new ID exactly once for this session
-                lastCheckedMediaId = mediaId;
-
-                if (scheduled)
-                    return;
-                scheduled = true;
-
-                resolveDisplayedUrlWithRetry().then(function (url) {
-                    // Mark as processed regardless of result to avoid repeated churn
-                    processedIds.add(mediaId);
-
-                    if (url && !isInternalUrl(url)) {
-                        setTimeout(function () {
-                            if (!clickWpRemoveButton()) {
-                                const dispatch = wp.data.dispatch('core/editor');
-                                if (dispatch && typeof dispatch.editPost === 'function') {
-                                    dispatch.editPost({featured_media: 0});
-                                }
-                            }
-                            scheduled = false;
-                        }, 10);
-                    } else {
-                        scheduled = false;
-                    }
-                }).catch(function (e) {
-                    console.log('[FIFU][domain-remove] error resolving displayed URL:', e);
-                    processedIds.add(mediaId); // guard anyway
-                    scheduled = false;
-                });
-            } catch (e) {
-                console.log('[FIFU][domain-remove] subscribe handler error:', e);
-                scheduled = false;
-            }
-        }, 100); // debounce
-    });
-})();
-
 function fifu_get_sizes() {
     var image_url = fifu_convert(jQuery("#fifu_input_url").val());
     image_url = fifu_cdn_adjust(image_url);
     if (!image_url || (!image_url.startsWith("http") && !image_url.startsWith("//"))) {
+        var preview = fifu_get_native_preview_state();
+        if (preview.isNativePreviewOnly && preview.url) {
+            let adjustedPreviewUrl = fifu_cdn_adjust(preview.url);
+            jQuery("#fifu_image").css('background-image', "url('" + adjustedPreviewUrl + "')");
+            jQuery("#fifu_table_alt").show();
+            jQuery("#fifu_link").hide();
+            jQuery("#fifu_image").show();
+            ensureImageFallback().hide();
+            jQuery("#fifu_button").hide();
+            jQuery("#fifu_help").hide();
+            return;
+        }
+
         // No image URL: reset to initial state, do NOT show fallback
         jQuery("#fifu_table_alt").hide();
         jQuery("#fifu_link").hide();
@@ -496,6 +402,7 @@ function fifu_get_image(url) {
 
         jQuery("#fifu_table_alt").show();
         jQuery("#fifu_link").show();
+        // Only show upload button if it was initially visible
         jQuery("#fifu_image").show();
         ensureImageFallback().hide();
         jQuery("#fifu_button").hide();
@@ -524,6 +431,9 @@ function fifu_open_lightbox() {
         }
 
         let url = fifu_convert(jQuery("#fifu_input_url").val());
+        if (!url) {
+            url = fifu_get_native_preview_state().url;
+        }
         let adjustedUrl = fifu_cdn_adjust(url);
         jQuery.fancybox.open('<img loading="lazy" src="' + adjustedUrl + '" style="max-width:900px;width:100%;max-height:600px">');
     });
@@ -532,6 +442,10 @@ function fifu_open_lightbox() {
 function fifu_type_url() {
     jQuery("#fifu_input_url").on('input', function (evt) {
         evt.stopImmediatePropagation();
+        var preview = fifu_get_native_preview_state();
+        if (preview.url && (jQuery(this).val() || '').trim() !== preview.url) {
+            jQuery('#fifu_meta_box').attr('data-native-preview-only', '0');
+        }
         fifu_get_sizes();
     });
 }
@@ -553,7 +467,6 @@ function fifu_register_help() {
                 <p style="background-color:#1e1e1e;color:white;padding:10px;border-radius:5px">sea,sun</p>
                 <p>${fifuMetaBoxVars.txt_desc_keywords}</p>
                 <h3>${fifuMetaBoxVars.txt_title_empty}</h3>
-                <div class="fifu-pro" style="position:relative;top:-45px;right:-15px;float:right;" title="${fifuMetaBoxVars.txt_unlock}"><span class="dashicons dashicons-lock fifu-pro-icon"></span></a></div>
                 <p style="background-color:#1e1e1e;color:white;padding:10px;border-radius:5px;height:40px"></p>
                 <p>${fifuMetaBoxVars.txt_desc_empty}</p>
                 <h1 style="background-color:whitesmoke;padding:20px;padding-left:0">${fifuMetaBoxVars.txt_title_more}</h1>
@@ -572,71 +485,29 @@ function fifu_register_help() {
     });
 }
 
-// Show/hide WP featured image section in block editor
+function fifu_set_native_featured_image_visibility(show) {
+    var $body = jQuery('body');
+    var $postImageDiv = jQuery('#postimagediv');
+    var isGutenberg = !!(fifuMetaBoxVars && fifuMetaBoxVars.is_gutenberg);
 
-function fifu_toggle_featured_image_panel(show) {
-    if (typeof wp !== 'undefined' && wp.data && wp.data.dispatch && wp.data.select) {
-        const EDIT_POST_STORE = wp.data.select('core/editor') ? 'core/editor' : 'core/edit-post';
-        const dispatchStore = wp.data.dispatch(EDIT_POST_STORE);
-        const selectStore = wp.data.select(EDIT_POST_STORE);
-
-        // Clear any pending timeouts
-        if (window.fifuFeaturedImageTimer) {
-            clearTimeout(window.fifuFeaturedImageTimer);
+    if (isGutenberg) {
+        if (show) {
+            $body.removeClass('fifu-hide-native-featured-image');
+        } else {
+            $body.addClass('fifu-hide-native-featured-image');
         }
-
-        // Single timeout with all operations
-        window.fifuFeaturedImageTimer = setTimeout(function () {
-            // Get panel selectors
-            const panelSelectors = [
-                '[aria-label="Featured image"]',
-                '[data-panel="featured-image"]',
-                '.editor-post-featured-image',
-                '.components-panel__body[data-title="Featured image"]'
-            ];
-            let panelSelectorFound = '';
-            let panelExists = false;
-
-            for (const sel of panelSelectors) {
-                if (document.querySelector(sel)) {
-                    panelExists = true;
-                    panelSelectorFound = sel;
-                    break;
-                }
-            }
-
-            // Try WordPress API first
-            const toggleEditorPanelEnabled = dispatchStore && dispatchStore.toggleEditorPanelEnabled;
-            const isEditorPanelEnabled = selectStore && selectStore.isEditorPanelEnabled;
-
-            if (toggleEditorPanelEnabled && isEditorPanelEnabled) {
-                const enabled = isEditorPanelEnabled('featured-image') || false;
-
-                if ((show && !enabled) || (!show && enabled)) {
-                    toggleEditorPanelEnabled('featured-image');
-                }
-            }
-
-            // Fallback to direct DOM manipulation
-            if (panelSelectorFound) {
-                if (show) {
-                    jQuery(panelSelectorFound).show();
-                } else {
-                    jQuery(panelSelectorFound).hide();
-                }
-            }
-        }, 150);
+        return;
     }
-}
 
-// Hide WP featured image section in block editor
-function fifu_hide_wp_featured_image_section() {
-    fifu_toggle_featured_image_panel(false);
-}
-
-// Show WP featured image section in block editor
-function fifu_show_wp_featured_image_section() {
-    fifu_toggle_featured_image_panel(true);
+    if (show) {
+        if ($postImageDiv.length) {
+            $postImageDiv.show().removeClass('closed');
+        }
+    } else {
+        if ($postImageDiv.length) {
+            $postImageDiv.hide();
+        }
+    }
 }
 
 function areInputsEmpty(selector) {
@@ -676,7 +547,6 @@ function showImageFallback() {
     // Hide all controls except preview button and fallback image
     jQuery("#fifu_table_alt").hide();
     jQuery("#fifu_link").hide();
-    jQuery("#fifu_upload").hide();
     jQuery("#fifu_image").hide();
 
     // Show preview button only in fallback state
@@ -703,7 +573,7 @@ function showImageFallback() {
                 $('#product_cat_thumbnail_id').val('');
                 $('.remove_image_button').hide();
             }
-    }
+        }
     }
 
     $(document).ready(function () {
@@ -742,7 +612,8 @@ function showImageFallback() {
 
             // Use the plugin REST endpoint that returns the current main URL
             const base = ((typeof restUrl !== 'undefined' && restUrl) || (window.wpApiSettings && window.wpApiSettings.root) || '/wp-json/');
-            const url = (base.endsWith('/') ? base : base + '/') + 'featured-image-from-url/v1/url/' + postId + '?_ts=' + Date.now();
+            const namespace = (typeof fifuScriptVars !== 'undefined' && fifuScriptVars.restNamespaceV1) ? fifuScriptVars.restNamespaceV1 : 'featured-image-from-url/v1';
+            const url = (base.endsWith('/') ? base : base + '/') + namespace + '/url/' + postId + '?_ts=' + Date.now();
             fetch(url, {
                 method: 'GET',
                 headers: {
@@ -760,18 +631,18 @@ function showImageFallback() {
             }).then(function (value) {
                 if (value == null)
                     return;
+
                 var newUrl = '';
                 if (typeof value === 'string') {
                     newUrl = value;
                 } else if (value && typeof value === 'object') {
-                    // In case the server wraps it differently in some environments
                     newUrl = value.url || '';
                 }
 
                 if (!newUrl)
                     return;
 
-                // Only update if different from current input
+                // Original logic to update the image field
                 var $input = jQuery('#fifu_input_url');
                 if (!$input.length)
                     return;
@@ -783,7 +654,6 @@ function showImageFallback() {
                 $input.val(newUrl)
                         .trigger('input')
                         .trigger('change');
-                // Recompute preview and controls
                 if (typeof fifu_get_sizes === 'function')
                     fifu_get_sizes();
             }).catch(function () {

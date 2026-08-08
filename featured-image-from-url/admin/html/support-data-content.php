@@ -1,0 +1,57 @@
+<?php
+
+defined('ABSPATH') || exit;
+?>
+<?php echo Fifu_Plugin_Info::get_version_string(); ?>;
+WordPress:<?php bloginfo('version') ?>;
+Site:<?php echo get_home_url() ?>;
+Domain:<?php echo get_option('fifu_main_domain') ?>;
+Theme:<?php echo wp_get_theme() ?><?php echo Fifu_Woocommerce_Display_Configuration::theme_has_woocommerce_templates() ? ' (WooCommerce)' : '' ?>;
+PHP:<?php echo phpversion() ?>;
+PHP_INT_SIZE:<?php echo PHP_INT_SIZE ?>;
+WooCommerce:<?php echo $woo_version ?>;
+Pages:<?php echo wp_count_posts('page')->publish ?>;
+Posts:<?php echo wp_count_posts('post')->publish ?>;
+Products:<?php echo $product_count ?>;
+URLs with metadata:<?php echo $fifu_stats->count_urls_with_metadata() ?>;
+URLs (legacy):<?php echo fifu_db_count_urls() ?>;
+URLs:<?php echo $fifu_stats->count_urls_db2() ?>;
+wp_posts:<?php echo $fifu_stats->get_count_wp_posts_fifu() ?>/<?php echo $fifu_stats->get_count_wp_posts() ?>;
+wp_postmeta:<?php echo $fifu_stats->get_count_wp_postmeta_fifu() ?>/<?php echo $fifu_stats->get_count_wp_postmeta() ?>;
+Tables:<?php echo $fifu_stats->tables_created() ? 'yes' : 'no' ?>;
+Multisite:<?php echo is_multisite() ? 'yes' : 'no' ?>;
+upload_dir: <?php echo Fifu_Upload_Dir_Utils::get_upload_dir() ?>;
+Plugins:<?php echo Fifu_Plugin_Info::get_plugins_list(); ?>;
+Active plugins:<?php echo Fifu_Plugin_Info::get_active_plugins_list(); ?>;
+fifu_cdn_content:<?php echo $enable_cdn_content ?>;
+fifu_cloud_hotlink:<?php echo $enable_cloud_hotlink ?>;
+fifu_cloud_delete_auto:<?php echo $enable_cloud_delete_auto ?>;
+fifu_cloud_upload_auto:<?php echo $enable_cloud_upload_auto ?>;
+fifu_data_clean:<?php echo $enable_data_clean ?>;
+fifu_debug:<?php echo $enable_debug ?>;
+fifu_default_cpt:<?php echo $default_cpt ?>;
+fifu_default_url:<?php echo $default_url ?>;
+fifu_enable_default_url:<?php echo $enable_default_url ?>;
+fifu_fake:<?php echo $enable_fake ?>;
+fifu_get_first:<?php echo $enable_get_first ?>;
+fifu_hide:<?php echo $enable_hide ?>;
+fifu_hide_format:<?php echo $hide_format ?>;
+fifu_hide_type:<?php echo $hide_type ?>;
+fifu_html_cpt:<?php echo $html_cpt ?>;
+fifu_ovw_first:<?php echo $enable_ovw_first ?>;
+fifu_pcontent_add:<?php echo $enable_pcontent_add ?>;
+fifu_pcontent_remove:<?php echo $enable_pcontent_remove ?>;
+fifu_pcontent_types:<?php echo $pcontent_types ?>;
+fifu_photon:<?php echo $enable_photon ?>;
+fifu_reset:<?php echo $enable_reset ?>;
+fifu_run_delete_all:<?php echo $enable_run_delete_all ?>;
+fifu_run_delete_all_time:<?php echo $enable_run_delete_all_time ?>;
+fifu_skip:<?php echo $skip ?>;
+fifu_square_desktop:<?php echo $square_desktop ?>;
+fifu_square_mobile:<?php echo $square_mobile ?>;
+fifu_wc_lbox:<?php echo $enable_wc_lbox ?>;
+fifu_wc_zoom:<?php echo $enable_wc_zoom ?>;
+Image:<?php echo Fifu_Admin_Menu::get_last_meta_entries_summary('fifu_image_url') ?>;
+Sizes:<?php echo Fifu_Admin_Menu::get_registered_sizes_summary() ?>;
+REST routes:
+- <?php echo get_rest_url() ?>:PHP;

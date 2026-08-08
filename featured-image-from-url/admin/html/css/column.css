@@ -15,6 +15,31 @@
     cursor: pointer;
 }
 
+.fifu-copy-debug-data-button {
+    display: block;
+    width: 98%;
+    box-sizing: border-box;
+    margin: 8px 0;
+    background-color: #e7e7e7;
+    color: black;
+}
+
+.fifu-copy-debug-data-icon {
+    line-height: 1;
+    margin-right: 6px;
+    vertical-align: text-bottom;
+}
+
+.fifu-copy-debug-data-button--copied {
+    background-color: #00a32a;
+    color: white;
+}
+
+.fifu-copy-debug-data-button--failed {
+    background-color: #d63638;
+    color: white;
+}
+
 tr.color:nth-child(even) {
     background-color: #efefef !important;
 }

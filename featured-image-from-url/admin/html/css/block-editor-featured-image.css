@@ -1,0 +1,6 @@
+body.fifu-hide-native-featured-image [data-panel="featured-image"],
+body.fifu-hide-native-featured-image .editor-post-featured-image,
+body.fifu-hide-native-featured-image .components-panel__body[data-title="Featured image"],
+body.fifu-hide-native-featured-image [aria-label="Featured image"] {
+    display: none !important;
+}

@@ -12,6 +12,26 @@
                 <div class="fifubox">
                     <table>
                         <tr>
+                            <td style="border-bottom:none">2026-07-13</td>
+                            <td style="border-bottom:none"><h3> BuddyPress</h3></td>
+                            <td style="border-bottom:none">plugin</td>
+                        </tr>
+                    </table>
+                    <div class="greybox" style="position: relative; top: -10px;">
+                        Post with a remote featured image is not displayed on the Activity page:<br>
+                        1) Go to 'Settings → Reading → Search engine visibility' and make sure 'Discourage search engines from indexing this site' is unchecked.<br>
+                        2) Go to 'Settings → BuddyPress → Components' and enable 'Site Tracking'. Also make sure 'Activity Streams' is enabled.<br>
+                        3) Go to 'Posts → Add New'.<br>
+                        4) Add a post title and some words to the post content. The post content must not be empty.<br>
+                        5) Add a valid remote image URL to the FIFU featured image field.<br>
+                        6) Save the post as a draft first, so FIFU can create and assign the remote featured-image attachment.<br>
+                        7) Publish the post.<br>
+                        8) Open the '/activity' page.<br>
+                    </div>
+                </div>
+                <div class="fifubox">
+                    <table>
+                        <tr>
                             <td style="border-bottom:none">2025-09-26</td>
                             <td style="border-bottom:none"><h3> WPML Multilingual & Multicurrency for WooCommerce</h3></td>
                             <td style="border-bottom:none">plugin</td>
@@ -38,7 +58,7 @@
                         if (class_exists('FifuDb') && (!isset($first_featured[$data]) || !$first_featured[$data])) {
                             $full_image_url = isset($first_featured['full']) ? $first_featured['full'] : '';
                             if ($full_image_url) {
-                                $new_url = fifu_resize_with_photon($full_image_url, null, null, null, $propID, $data);
+                                $new_url = Fifu_Image_Cdn_Resize_Service::resize_with_cdn($full_image_url, 0, 0, null, $propID, $data);
                                 return $new_url ?: $full_image_url;
                             }
                         }
@@ -167,26 +187,6 @@
                         1) You should disable that plugin, as it will conflict with FIFU Product Gallery, which supports additional variation images as well.<br>
                     </div>
                 </div>
-                <div class="fifubox" style="display:none">
-                    <table>
-                        <tr>
-                            <td style="border-bottom:none">2024-05-09</td>
-                            <td style="border-bottom:none"><h3>WP All Import</h3></td>
-                            <td style="border-bottom:none">plugin</td>
-                        </tr>
-                    </table>
-                    <div class="greybox" style="position: relative; top: -10px">
-                        "PHP Fatal error:  Uncaught Exception: Serialization of 'Closure' is not allowed":<br>
-                        1) edit 'wp-all-import-pro/classes/session.php' and add<br>
-                        <textarea style="width:100%;height:25px;overflow:hidden" disabled>
-                            if ($value instanceof PMXI_Import_Record) return;  
-                        </textarea>
-                        immediately before<br>
-                        <textarea style="width:100%;height:25px;overflow:hidden" disabled>
-                            $this->_data[sanitize_key($key)] = maybe_serialize($value);
-                        </textarea>
-                    </div>
-                </div>
                 <div class="fifubox">
                     <table>
                         <tr>
@@ -203,7 +203,7 @@
                                 $thumbnail_id = get_woocommerce_term_meta($category->term_id, 'thumbnail_id', true);
                                 $image_attributes = wp_get_attachment_image_src($thumbnail_id, 'full');
                                 if ($image_attributes) {
-                                    $alt_text = get_term_meta($category->term_id, 'fifu_image_alt', true);
+                                    $alt_text = Fifu_Term_Image_Alt_Read_Service::get_image_alt((int) $category->term_id);
                                     if (!$alt_text) {
                                         $alt_text = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
                                         if (empty($alt_text)) {
@@ -321,10 +321,7 @@
                         <textarea style="width:100%;height:25px;overflow:hidden" disabled>
                             wc_get_template_part( 'content', 'main-gallery' );
                         </textarea>
-                        with<br>
-                        <textarea style="width:100%;height:25px;overflow:hidden" disabled>
-                            echo do_shortcode('[fifu_gallery]');
-                        </textarea>
+                        with the Pro gallery output from FIFU.
                     </div>
                 </div>
                 <div class="fifubox">
@@ -384,10 +381,7 @@
                         <textarea style="width:100%;height:25px;overflow:hidden" disabled>
                             zank_product_gallery_slider();
                         </textarea>
-                        with<br>
-                        <textarea style="width:100%;height:25px;overflow:hidden" disabled>
-                            echo do_shortcode('[fifu_gallery]');
-                        </textarea>
+                        with the Pro gallery output from FIFU.
                     </div>
                 </div>
                 <div class="fifubox">
@@ -445,7 +439,7 @@
                         Placeholder displayed instead of featured image:<br>
                         1) Edit 'WPQA/functions/functions.php', and add<br>
                         <textarea style="width:100%;height:45px;overflow:hidden" disabled>
-                            if ($thumb && class_exists('FifuDb') && !fifu_has_local_featured_image($thumb)) $last_image = wp_get_attachment_image_src($thumb,"full")[0]; else
+                            if ($thumb && class_exists('FifuDb') && !Fifu_Post_Meta_Utils::has_local_featured_image($thumb)) $last_image = wp_get_attachment_image_src($thumb,"full")[0]; else
                         </textarea>
                         immediately before<br>
                         <textarea style="width:100%;height:25px;overflow:hidden" disabled>
@@ -472,7 +466,7 @@
                         </textarea>
                         with<br>
                         <textarea style="width:100%;height:65px;overflow:hidden" disabled>
-                            $external_image = get_post_meta($post->ID, 'fifu_image_url', true);
+                            $external_image = Fifu_Post_Image_Url_Read_Service::get_image_url((int) $post->ID);
                             $json_post['image_url'] = $external_image ? $json_post['image_url'] = '<img src="' . $external_image . '" class="' . $image_class . ' wp-post-image" />' : '';
                         </textarea><br>
                     </div>
@@ -490,7 +484,7 @@
                         Placeholder displayed instead of featured image:<br>
                         1) Edit 'himer/admin/functions/main_functions.php', and add<br>
                         <textarea style="width:100%;height:25px;overflow:hidden" disabled>
-                            if ($thumb && class_exists('FifuDb') && !fifu_has_local_featured_image($thumb)) $last_image = $full_image[0]; else
+                            if ($thumb && class_exists('FifuDb') && !Fifu_Post_Meta_Utils::has_local_featured_image($thumb)) $last_image = $full_image[0]; else
                         </textarea>
                         immediately before<br>
                         <textarea style="width:100%;height:25px;overflow:hidden" disabled>
@@ -558,7 +552,7 @@
                         Images not displayed:<br>
                         1) edit "jetgridbuilder/includes/plugin.php" and add<br>
                         <textarea style="width:100%;height:190px;overflow:hidden" disabled>
-                            if ((is_plugin_active('fifu-premium/fifu-premium.php') || is_plugin_active('featured-image-from-url/featured-image-from-url.php'))) {
+                            if ((is_plugin_active('featured-image-from-url/featured-image-from-url.php'))) {
                                 $att_post = get_post($thumb_id);
                                 if ($att_post && $att_post->post_author == FIFU_AUTHOR) {
                                     return array(
@@ -649,7 +643,7 @@
                         </textarea>
                         with<br>
                         <textarea style="width:100%;height:100px;overflow:hidden" disabled>
-                            if (is_plugin_active('fifu-premium/fifu-premium.php') && fifu_is_on('fifu_gallery')) {}
+                            if (is_plugin_active('featured-image-from-url/featured-image-from-url.php') && Fifu_Options_Utils::is_on('fifu_gallery')) {}
                             else {
                                 remove_action( 'woocommerce_before_single_product_summary', 'woocommerce_show_product_images', 20 );
                                 add_action( 'woocommerce_before_single_product_summary', array( $this, 'woo_single_product_gallery_output' ), 20 );
@@ -727,7 +721,7 @@
                         1) open "dropshipping-woocommerce/includes/class-dropshipping-woocommerce-importer.php"<br>
                         2) add the code below immediately after the line "// Formatting Image Data":<br>
                         <textarea style="width:100%;height:135px;overflow:hidden" disabled>
-                            if (is_plugin_active('fifu-premium/fifu-premium.php') && isset($product->images) && !empty($product->images)) {
+                            if (is_plugin_active('featured-image-from-url/featured-image-from-url.php') && isset($product->images) && !empty($product->images)) {
                                 $images = $product->images;
                                 $new_product['meta_data'][] = array(
                                     'key'   => 'fifu_list_url',
@@ -789,7 +783,7 @@
                         </tr>
                     </table>
                     <div class="greybox" style="position: relative; top: -10px">
-                        Solving "Featured Video" CSS issues:<br>
+                        Solving "Featured Video" CSS issues:<br> (Available in Premium)
                         1) access "FIFU Settings → Video";<br>
                         2) set "0" for "Play Button → z-index";<br>
                         3) set "50" for "Minimum Width";<br>
@@ -874,7 +868,7 @@
                     </div>
                     <div class="greybox" style="position: relative; top: -10px">
                         Using a video from post content as featured video:<br>
-                        1) enable "FIFU Settings → Video → Featured Video"<br>
+                        1) enable "FIFU Settings → Video → Featured Video"<br> (Available in Premium)
                         2) enable "FIFU Settings → Automatic → Auto set featured media from post content → Auto set → auto set featured media from post content"<br>
                         3) select "FIFU Settings → Automatic → Auto set featured media from post content → Media type filter → Video"<br>
                         4) access the campaign and uncheck all options in "Images" box<br>

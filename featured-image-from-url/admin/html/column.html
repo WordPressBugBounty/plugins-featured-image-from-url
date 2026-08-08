@@ -1,6 +1,8 @@
 <div
     class="fifu-quick"
-    post-id="<?php echo esc_attr($post_id) ?>"
+    post-id="<?php echo esc_attr($post_id ?? '') ?>"
+    video-url="<?php echo esc_url($video_url ?? '') ?>"
+    video-src="<?php echo esc_url($video_src ?? '') ?>"
     is-ctgr="<?php echo esc_attr($is_ctgr) ?>"
     image-url="<?php echo esc_url($image_url ?? '') ?>"
     is-variable="<?php echo esc_attr($is_variable) ?>"

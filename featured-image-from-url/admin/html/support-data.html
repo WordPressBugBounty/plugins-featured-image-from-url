@@ -1,71 +1,107 @@
 <div class="wrap">
 
-    <div class="header-box">
-        <h1 style="color:white;padding-left:20px"><span class="dashicons dashicons-info" style="font-size:30px"></span><span style="padding-left:20px"><?php $fifu['word']['status']() ?></span></h1>
-        <button id="fifu-clipboard" style="position:relative;float:right;top:-30px"><?php $fifu['button']['clipboard']() ?></button>
+    <div class="header-box" style="position:relative;">
+        <style>
+            .fifu-status-header-actions {
+                position: absolute;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .fifu-status-header-actions .fifu-status-action {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
+                min-height: 30px;
+                padding: 0 12px;
+                border: 1px solid #8c8f94;
+                border-radius: 3px;
+                background: #f6f7f7;
+                color: #1d2327;
+                font-size: 13px;
+                line-height: 28px;
+                text-decoration: none;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+
+            .fifu-status-header-actions .fifu-status-action:hover,
+            .fifu-status-header-actions .fifu-status-action:focus {
+                border-color: #646970;
+                background: #f0f0f1;
+                color: #1d2327;
+                text-decoration: none;
+            }
+        </style>
+
+        <h1 style="color:white;padding-left:20px">
+            <span
+                class="dashicons dashicons-info"
+                style="font-size:30px"
+            ></span>
+
+            <span style="padding-left:20px">
+                <?php $fifu['word']['status']() ?>
+            </span>
+        </h1>
+
+        <div class="fifu-status-header-actions">
+            <?php if (
+                class_exists(
+                    'Fifu_Debug_Logs_Download_Controller'
+                )
+                && Fifu_Debug_Logs_Download_Controller::can_download()
+            ) : ?>
+                <a
+                    id="fifu-download-debug-logs"
+                    class="fifu-status-action"
+                    href="<?php echo esc_url(
+                        Fifu_Debug_Logs_Download_Controller::
+                            get_download_url()
+                    ); ?>"
+                ><?php
+                    esc_html_e(
+                        'Download debug logs',
+                        FIFU_SLUG
+                    );
+                ?></a>
+            <?php endif; ?>
+
+            <button
+                id="fifu-clipboard"
+                type="button"
+                class="fifu-status-action"
+            ><?php $fifu['button']['clipboard']() ?></button>
+        </div>
     </div>
 
     <div id="tabs-top" style="float:left">
-<textarea id="bar" style="width:1220px;height:800px;resize:none;background-color:white;" readonly>
-<?php echo fifu_version() ?>;
-WordPress:<?php bloginfo('version') ?>;
-Site:<?php echo get_home_url() ?>;
-Theme:<?php echo wp_get_theme() ?><?php echo fifu_woo_theme() ? ' (WooCommerce)' : '' ?>;
-PHP:<?php echo phpversion() ?>;
-PHP_INT_SIZE:<?php echo PHP_INT_SIZE ?>;
-WooCommerce:<?php echo class_exists('WooCommerce') ? WC()->version : '' ?>;
-Pages:<?php echo wp_count_posts('page')->publish ?>;
-Posts:<?php echo wp_count_posts('post')->publish ?>;
-Products:<?php echo class_exists('WooCommerce') ? wp_count_posts('product')->publish : null ?>;
-URLs with metadata:<?php echo fifu_db_count_urls_with_metadata() ?>;
-URLs:<?php echo fifu_db_count_urls() ?>;
-wp_posts:<?php echo fifu_db_get_count_wp_posts_fifu() ?>/<?php echo fifu_db_get_count_wp_posts() ?>;
-wp_postmeta:<?php echo fifu_db_get_count_wp_postmeta_fifu() ?>/<?php echo fifu_db_get_count_wp_postmeta() ?>;
-Tables:<?php echo fifu_db_tables_created() ? 'yes' : 'no' ?>;
-Plugins:<?php echo fifu_get_plugins_list() ?>;
-Active plugins:<?php echo fifu_get_active_plugins_list() ?>;
-fifu_cdn_content:<?php echo $enable_cdn_content ?>;
-fifu_cloud_hotlink:<?php echo $enable_cloud_hotlink ?>;
-fifu_cloud_delete_auto:<?php echo $enable_cloud_delete_auto ?>;
-fifu_cloud_upload_auto:<?php echo $enable_cloud_upload_auto ?>;
-fifu_data_clean:<?php echo $enable_data_clean ?>;
-fifu_debug:<?php echo $enable_debug ?>;
-fifu_default_cpt:<?php echo $default_cpt ?>;
-fifu_default_url:<?php echo $default_url ?>;
-fifu_enable_default_url:<?php echo $enable_default_url ?>;
-fifu_fake:<?php echo $enable_fake ?>;
-fifu_get_first:<?php echo $enable_get_first ?>;
-fifu_hide:<?php echo $enable_hide ?>;
-fifu_hide_format:<?php echo $hide_format ?>;
-fifu_hide_type:<?php echo $hide_type ?>;
-fifu_html_cpt:<?php echo $html_cpt ?>;
-fifu_ovw_first:<?php echo $enable_ovw_first ?>;
-fifu_pcontent_add:<?php echo $enable_pcontent_add ?>;
-fifu_pcontent_remove:<?php echo $enable_pcontent_remove?>;
-fifu_pcontent_types:<?php echo $pcontent_types ?>;
-fifu_photon:<?php echo $enable_photon ?>;
-fifu_reset:<?php echo $enable_reset ?>;
-fifu_run_delete_all:<?php echo $enable_run_delete_all ?>;
-fifu_run_delete_all_time:<?php echo $enable_run_delete_all_time ?>;
-fifu_skip:<?php echo $skip ?>;
-fifu_square_desktop:<?php echo $square_desktop ?>;
-fifu_square_mobile:<?php echo $square_mobile ?>;
-fifu_wc_lbox:<?php echo $enable_wc_lbox ?>;
-fifu_wc_zoom:<?php echo $enable_wc_zoom ?>;
-Image:<?php echo fifu_get_last('fifu_image_url') ?>;
-Video:<?php echo fifu_get_last('fifu_video_url') ?>;
-Slider:<?php echo fifu_get_last('fifu_slider_image_url_0') ?>;
-Sizes:<?php echo fifu_get_registered_sizes() ?>;
-REST routes:
-- <?php echo get_rest_url() ?>:PHP;
-</textarea>
+        <textarea
+            id="bar"
+            style="width:1220px;height:800px;resize:none;background-color:white;"
+            readonly
+        ><?php echo esc_textarea($support_data); ?></textarea>
     </div>
 </div>
 
 <script>
-    jQuery('#fifu-clipboard').on('click', function() {
-        jQuery("#bar").select();
-        navigator.clipboard.writeText(jQuery("#bar").val());
-        jQuery('#fifu-clipboard').text('Copied');
-    });
+    jQuery('#fifu-clipboard').on(
+        'click',
+        function() {
+            jQuery('#bar').select();
+
+            navigator.clipboard.writeText(
+                jQuery('#bar').val()
+            );
+
+            jQuery('#fifu-clipboard').text(
+                'Copied'
+            );
+        }
+    );
 </script>

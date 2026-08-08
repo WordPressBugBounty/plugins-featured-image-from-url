@@ -1,5 +1,10 @@
 var restUrl = fifuScriptVars.restUrl;
 
+function fifuCloudRestUrl(path) {
+    path = String(path || '').replace(/^\/+/, '');
+    return restUrl + fifuScriptCloudVars.restNamespaceV2 + '/' + path;
+}
+
 function signUp() {
     var email = jQuery('#su_email').val();
     var site = jQuery('#su_site').val();
@@ -13,7 +18,7 @@ function signUp() {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/sign_up/',
+        url: fifuCloudRestUrl('sign_up/'),
         data: {
             "email": email,
         },
@@ -50,19 +55,19 @@ function signUp() {
 function search(action) {
     if (action == 'upload') {
         selectSearch = jQuery('#su-select-search').val();
-        inputSearch = jQuery('#su-input-search').val();
+        inputSearch = String(jQuery('#su-input-search').val() || '').trim();
         if (!selectSearch || !inputSearch)
             return;
         listAllFifu(0, selectSearch, inputSearch);
     } else if (action == 'delete') {
         selectSearch = jQuery('#su-delete-select-search').val();
-        inputSearch = jQuery('#su-delete-input-search').val();
+        inputSearch = String(jQuery('#su-delete-input-search').val() || '').trim();
         if (!selectSearch || !inputSearch)
             return;
         listAllSu(0, selectSearch, inputSearch);
     } else if (action == 'media') {
         selectSearch = jQuery('#su-media-select-search').val();
-        inputSearch = jQuery('#su-media-input-search').val();
+        inputSearch = String(jQuery('#su-media-input-search').val() || '').trim();
         if (!selectSearch || !inputSearch)
             return;
         listAllMediaLibrary(0, selectSearch, inputSearch);
@@ -77,7 +82,7 @@ function payment_info() {
     fifu_block();
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/payment_info/',
+        url: fifuCloudRestUrl('payment_info/'),
         async: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
@@ -105,7 +110,7 @@ function check_connection() {
     fifu_block();
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/connected/',
+        url: fifuCloudRestUrl('connected/'),
         async: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
@@ -163,7 +168,7 @@ function resetCredentials() {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/reset_credentials/',
+        url: fifuCloudRestUrl('cloud/reset-credentials/'),
         data: {
             "email": email
         },
@@ -243,7 +248,7 @@ function listAllSu(page, type, keyword) {
                 text: fifuScriptCloudVars.load,
                 action: function () {
                     if (table.rows().count() == MAX_ROWS || update)
-                        listAllSu(page + 1, null, null);
+                        listAllSu(page + 1, type, keyword);
                 }
             },
         ]
@@ -255,7 +260,7 @@ function listAllSu(page, type, keyword) {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/list_all_su/',
+        url: fifuCloudRestUrl('list_all_su/'),
         data: {
             "page": page,
             "type": type,
@@ -275,8 +280,6 @@ function listAllSu(page, type, keyword) {
 
                     if (photo_data[i]['is_category'])
                         local = fifuScriptCloudVars.category;
-                    else if (photo_data[i]['meta_key'].includes('slider'))
-                        local = fifuScriptCloudVars.slider;
                     else if (photo_data[i]['meta_key'].includes('url_'))
                         local = fifuScriptCloudVars.gallery;
                     else
@@ -336,7 +339,7 @@ function listAllSu(page, type, keyword) {
                 jQuery(this).dialog("close");
                 jQuery.ajax({
                     method: "POST",
-                    url: restUrl + 'featured-image-from-url/v2/delete/',
+                    url: fifuCloudRestUrl('delete/'),
                     data: {
                         "selected": arr,
                     },
@@ -443,7 +446,7 @@ function listAllFifu(page, type, keyword) {
                 text: fifuScriptCloudVars.load,
                 action: function () {
                     if (table.rows().count() == MAX_ROWS || update)
-                        listAllFifu(page + 1, null, null);
+                        listAllFifu(page + 1, type, keyword);
                 }
             },
         ]
@@ -453,7 +456,7 @@ function listAllFifu(page, type, keyword) {
     fifu_block();
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/list_all_fifu/',
+        url: fifuCloudRestUrl('list_all_fifu/'),
         data: {
             "page": page,
             "type": type,
@@ -469,10 +472,6 @@ function listAllFifu(page, type, keyword) {
 
                 if (data[i]['category'] == 1)
                     local = fifuScriptCloudVars.category;
-                else if (data[i]['meta_key'].includes('slider'))
-                    local = fifuScriptCloudVars.slider;
-                else if (data[i]['meta_key'].includes('url_'))
-                    local = fifuScriptCloudVars.gallery;
                 else
                     local = fifuScriptCloudVars.featured;
 
@@ -519,23 +518,24 @@ async function addSu(table) {
     fifu_block_progress();
 
     let arr = [];
+    let totalBatches = Math.ceil(count / MAX_ROWS_BY_REQUEST);
     let finished = 0;
     for (let i = 0; i < count; i++) {
         let data = selected.data()[i];
         arr.push([
-            data[3], // post_id
+            data[3], // post_id / term_id
             data[5], // url
             data[6], // meta_key
             data[7], // meta_id
-            data[8], // category
-            data[9]  // video_url
+            data[8]  // category
         ]);
-        if (i + 1 == count || (i > 0 && i % MAX_ROWS_BY_REQUEST == 0)) {
+        if (arr.length === MAX_ROWS_BY_REQUEST || i + 1 === count) {
+            let batch = arr.slice();
             jQuery.ajax({
                 method: "POST",
-                url: restUrl + 'featured-image-from-url/v2/create_thumbnails_list/',
+                url: fifuCloudRestUrl('create_thumbnails_list/'),
                 data: {
-                    "selected": arr,
+                    "selected": batch,
                 },
                 async: true,
                 beforeSend: function (xhr) {
@@ -555,11 +555,12 @@ async function addSu(table) {
                 },
                 complete: function (data) {
                     finished++;
-                    let progress = 100 * finished / (count / MAX_ROWS_BY_REQUEST);
+                    let progress = Math.min(100, 100 * finished / totalBatches);
                     jQuery('#progressBar').attr('value', progress);
                     jQuery('#progressBar').attr('text', progress);
-                    if (finished >= count / MAX_ROWS_BY_REQUEST) {
-                        if (data['responseJSON']['code'] == -24 || data['responseJSON']['code'] == -20) {
+                    if (finished >= totalBatches) {
+                        const code = data && data.responseJSON ? data.responseJSON.code : null;
+                        if (code == -24 || code == -20) {
                             // none
                         } else {
                             // success
@@ -583,6 +584,13 @@ function sleep(ms) {
 }
 
 jQuery(function () {
+    jQuery('#su-input-search').on('keydown', function (event) {
+        if (event.key === 'Enter' || event.which === 13 || event.keyCode === 13) {
+            event.preventDefault();
+            search('upload');
+        }
+    });
+
     jQuery("#su-dialog-cancel").dialog({
         autoOpen: false,
         modal: true,
@@ -593,7 +601,7 @@ jQuery(function () {
                 jQuery(this).dialog("close");
                 jQuery.ajax({
                     method: "POST",
-                    url: restUrl + 'featured-image-from-url/v2/cancel/',
+                    url: fifuCloudRestUrl('cancel/'),
                     async: true,
                     beforeSend: function (xhr) {
                         xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
@@ -660,7 +668,7 @@ function fifu_disable_edition_buttons(text) {
 
 function fifu_enable_edition_buttons() {
     jQuery("button#cloud-add").removeAttr('disabled');
-    jQuery("button#cloud-del").attr('disabled');
+    jQuery("button#cloud-del").removeAttr('disabled');
 }
 
 function listAllMediaLibrary(page, type, keyword) {
@@ -678,23 +686,23 @@ function listAllMediaLibrary(page, type, keyword) {
             search: fifuScriptCloudVars.filterResults + ': ', // Replace "Search:" with custom text
             lengthMenu: fifuScriptCloudVars.showResults + ": _MENU_",
         },
-        select: true,
+        select: false,
         buttons: [
             {
                 text: fifuScriptCloudVars.selectAll,
                 titleAttr: fifuScriptCloudVars.limit,
+                enabled: false,
+                className: 'fifu-pro-disabled-button',
                 action: function () {
-                    total_rows = table.rows().count();
-                    amount = total_rows < MAX_ROWS ? total_rows : MAX_ROWS;
-                    table.rows({search: 'applied'}, [...Array(amount).keys()]).select();
-                    if (table.rows({selected: true}).count() == 0)
-                        table.rows([...Array(amount).keys()]).select();
+                    return false;
                 }
             },
             {
                 text: fifuScriptCloudVars.selectNone,
+                enabled: false,
+                className: 'fifu-pro-disabled-button',
                 action: function () {
-                    table.rows().deselect();
+                    return false;
                 }
             },
             {
@@ -702,33 +710,34 @@ function listAllMediaLibrary(page, type, keyword) {
                 attr: {
                     id: 'cloud-link'
                 },
+                enabled: false,
+                className: 'fifu-pro-disabled-button',
                 action: function () {
-                    update = true;
+                    return false;
                 }
             },
             {
                 text: fifuScriptCloudVars.load,
+                enabled: false,
+                className: 'fifu-pro-disabled-button',
                 action: function () {
-                    if (table.rows().count() == MAX_ROWS || update)
-                        listAllMediaLibrary(page + 1, null, null);
+                    return false;
                 }
             },
         ]
     });
-    table.buttons().disable();
     table.clear();
 
     fifu_block();
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/list_all_media_library/',
+        url: fifuCloudRestUrl('list_all_media_library/'),
         data: {
             "page": page,
             "type": type,
             "keyword": keyword,
         },
         async: true,
-        // Ensure we expect JSON and gracefully handle empty responses
         dataType: 'json',
         dataFilter: function (raw, type) {
             if (type === 'json') {
@@ -741,24 +750,26 @@ function listAllMediaLibrary(page, type, keyword) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
         },
         success: function (data) {
-            // Normalize unexpected values to an empty array
             if (!Array.isArray(data))
                 data = [];
 
             for (var i = 0; i < data.length; i++) {
-                imgTag = '<img loading="lazy" id="' + data[i]['meta_id'] + '" src="' + data[i]['url'] + '" style="border-radius:5%; height:56px; width:56px; object-fit:cover; text-align:center">';
+                var imgTag =
+                    '<img loading="lazy" src="' +
+                    data[i]['url'] +
+                    '" style="border-radius:5%; height:56px; width:56px; object-fit:cover; text-align:center">';
+
                 table.row.add([
                     imgTag,
                     data[i]['post_title'],
                     data[i]['post_date'],
                     data[i]['post_id'],
-                    data[i]['gallery_ids'] ? data[i]['gallery_ids'].split(',').length : 0,
-                    data[i]['url'],
-                    data[i]['thumbnail_id'],
-                    data[i]['gallery_ids'],
-                    data[i]['category'],
+                    data[i]['gallery_ids']
+                        ? data[i]['gallery_ids'].split(',').length
+                        : 0,
                 ]);
             }
+
             table.draw(true);
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -766,7 +777,7 @@ function listAllMediaLibrary(page, type, keyword) {
             console.log(textStatus);
             console.log(errorThrown);
         },
-        complete: function (data) {
+        complete: function () {
             fifu_unblock();
         }
     });
@@ -778,6 +789,7 @@ function listAllMediaLibrary(page, type, keyword) {
             dt.rows(ix).deselect();
     });
 }
+
 
 function listDailyCount() {
     if (!fifuScriptCloudVars.signUpComplete)
@@ -802,19 +814,60 @@ function listDailyCount() {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/list_daily_count/',
+        url: fifuCloudRestUrl('cloud/list-daily-count/'),
         async: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
         },
         success: function (data) {
+            function fifuBillingIsValidScalar(value) {
+                return value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'null' && String(value).trim() !== 'undefined' && String(value).trim() !== 'NaN';
+            }
+
+            function fifuBillingFormatDate(value) {
+                if (!fifuBillingIsValidScalar(value))
+                    return '—';
+                return String(value).split('+')[0];
+            }
+
+            function fifuBillingAverage(quantity, rows) {
+                if (quantity !== null && quantity !== undefined && String(quantity).trim() !== '' && !isNaN(Number(quantity)))
+                    return quantity;
+
+                var total = 0;
+                var count = 0;
+
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i] && rows[i]['quantity'] !== null && rows[i]['quantity'] !== undefined && String(rows[i]['quantity']).trim() !== '' && !isNaN(Number(rows[i]['quantity']))) {
+                        total += Number(rows[i]['quantity']);
+                        count++;
+                    }
+                }
+
+                if (count === 0)
+                    return '—';
+
+                var average = total / count;
+                if (average % 1 === 0)
+                    return String(average);
+
+                return String(Math.round(average * 100) / 100);
+            }
+
+            function fifuBillingCost(amountDue) {
+                if (!fifuBillingIsValidScalar(amountDue) || isNaN(Number(amountDue)))
+                    return '—';
+
+                return '€ ' + amountDue;
+            }
+
             code = data['code'];
             if (code > 0) {
-                var dc_data = data['dc_data'];
-                jQuery('#billing-start').html(data['start_date'].split('+')[0]);
-                jQuery('#billing-end').html(data['end_date'].split('+')[0]);
-                jQuery('#billing-average').html(data['quantity']);
-                jQuery('#billing-cost').html('€ ' + data['amount_due']);
+                var dc_data = Array.isArray(data['dc_data']) ? data['dc_data'] : [];
+                jQuery('#billing-start').html(fifuBillingFormatDate(data['start_date']));
+                jQuery('#billing-end').html(fifuBillingFormatDate(data['end_date']));
+                jQuery('#billing-average').html(fifuBillingAverage(data['quantity'], dc_data));
+                jQuery('#billing-cost').html(fifuBillingCost(data['amount_due']));
                 for (var i = 0; i < dc_data.length; i++) {
                     table.row.add([
                         dc_data[i]['date'],
@@ -852,7 +905,7 @@ function set_upload_auto() {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/cloud_upload_auto/',
+        url: fifuCloudRestUrl('cloud/upload-auto/'),
         data: {
             "toggle": toggle,
         },
@@ -884,7 +937,7 @@ function set_delete_auto() {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/cloud_delete_auto/',
+        url: fifuCloudRestUrl('cloud/delete-auto/'),
         data: {
             "toggle": toggle,
         },
@@ -916,7 +969,7 @@ function set_hotlink() {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/cloud_hotlink/',
+        url: fifuCloudRestUrl('cloud/hotlink/'),
         data: {
             "toggle": toggle,
         },

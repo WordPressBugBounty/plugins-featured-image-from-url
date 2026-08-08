@@ -22,11 +22,16 @@ jQuery(document).ready(function ($) {
     });
 });
 
+function isValidImgClass(className) {
+    // bimber
+    return !className || !className.includes('avatar');
+}
+
 function disableClick($) {
     if (!fifuImageVars.fifu_woo_lbox_enabled) {
         let firstParentClass = '';
         let parentClass = '';
-        jQuery('figure.woocommerce-product-gallery__wrapper').find('div.woocommerce-product-gallery__image').each(function (index) {
+        jQuery('.woocommerce-product-gallery__wrapper').find('div.woocommerce-product-gallery__image').each(function (index) {
             parentClass = jQuery(this).parent().attr('class').split(' ')[0];
             if (!firstParentClass)
                 firstParentClass = parentClass;
@@ -46,7 +51,7 @@ function disableLink($) {
     if (!fifuImageVars.fifu_woo_lbox_enabled) {
         let firstParentClass = '';
         let parentClass = '';
-        jQuery('figure.woocommerce-product-gallery__wrapper').find('div.woocommerce-product-gallery__image').each(function (index) {
+        jQuery('.woocommerce-product-gallery__wrapper').find('div.woocommerce-product-gallery__image').each(function (index) {
             parentClass = jQuery(this).parent().attr('class').split(' ')[0];
             if (!firstParentClass)
                 firstParentClass = parentClass;
@@ -69,4 +74,8 @@ function fifu_fix_gallery_height() {
         if (mainImage)
             jQuery('.woocommerce-product-gallery__wrapper div.flickity-viewport').css('height', mainImage.clientHeight + 'px');
     }
+}
+
+function fifu_no_protocol(url) {
+    return url.replace(/^https?:\/\//, '');
 }

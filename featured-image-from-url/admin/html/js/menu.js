@@ -1,4 +1,72 @@
 var metaIntervalId = null;
+var FIFU_FREE_PRO_ONLY_TOGGLE_IDS = [
+    'auto_share',
+    'auto_share_facebook',
+    'auto_share_instagram',
+    'auto_share_x',
+    'gallery',
+    'adaptive_height',
+    'videos_before',
+    'variations_merge',
+    'order_email',
+    'screenshot',
+    'auto_set',
+    'finder',
+    'video_finder',
+    'amazon_finder',
+    'cron_metadata',
+    'video',
+    'video_later',
+    'video_later_left',
+    'video_background',
+    'video_background_single',
+    'video_privacy',
+    'slider',
+    'slider_stop',
+    'slider_ctrl',
+    'slider_auto',
+    'slider_gallery',
+    'slider_thumb',
+    'slider_counter',
+    'slider_crop',
+    'slider_single',
+    'slider_vertical'
+];
+
+var FIFU_FREE_PRO_ONLY_FORM_IDS = [
+    'fifu_form_auto_share',
+    'fifu_form_auto_share_facebook',
+    'fifu_form_auto_share_instagram',
+    'fifu_form_auto_share_x',
+    'fifu_form_auto_share_test',
+    'fifu_form_screenshot',
+    'fifu_form_screenshot_size',
+    'fifu_form_screenshot_custom_field',
+    'fifu_form_auto_set',
+    'fifu_form_auto_set_dimensions',
+    'fifu_form_auto_set_blocklist',
+    'fifu_form_auto_set_source',
+    'fifu_form_auto_set_layout',
+    'fifu_form_auto_set_cpt',
+    'fifu_form_finder',
+    'fifu_form_video_finder',
+    'fifu_form_finder_custom_field',
+    'fifu_form_amazon_finder',
+    'fifu_form_video',
+    'fifu_form_spinner',
+    'fifu_form_vimeo_access_token',
+    'fifu_form_vimeo_mp4_rendition',
+    'fifu_form_slider',
+    'fifu_form_slider_stop',
+    'fifu_form_slider_ctrl',
+    'fifu_form_slider_auto',
+    'fifu_form_slider_gallery',
+    'fifu_form_slider_thumb',
+    'fifu_form_slider_counter',
+    'fifu_form_slider_crop',
+    'fifu_form_slider_single',
+    'fifu_form_slider_vertical'
+];
 
 jQuery(document).ready(function () {
     jQuery('link[href*="jquery-ui.css"]').attr("disabled", "true");
@@ -9,7 +77,43 @@ jQuery(document).ready(function () {
 
 var restUrl = fifuScriptVars.restUrl;
 
+function fifu_is_free_pro_only_toggle_id(id) {
+    return FIFU_FREE_PRO_ONLY_TOGGLE_IDS.indexOf(id) !== -1;
+}
+
+function fifu_is_free_pro_only_form_id(formId) {
+    if (!formId) {
+        return false;
+    }
+
+    if (FIFU_FREE_PRO_ONLY_FORM_IDS.indexOf(formId) !== -1) {
+        return true;
+    }
+
+    return FIFU_FREE_PRO_ONLY_TOGGLE_IDS.some(function (id) {
+        return formId === 'fifu_form_' + id;
+    });
+}
+
+function fifu_force_free_pro_only_toggle_off(id) {
+    jQuery('#fifu_toggle_' + id)
+        .removeClass('toggleon')
+        .addClass('toggleoff')
+        .attr('aria-disabled', 'true')
+        .attr('tabindex', '-1');
+
+    jQuery('#fifu_input_' + id)
+        .val('off')
+        .prop('disabled', true)
+        .attr('aria-disabled', 'true');
+}
+
 function invert(id) {
+    if (fifu_is_free_pro_only_toggle_id(id)) {
+        fifu_force_free_pro_only_toggle_off(id);
+        return false;
+    }
+
     if (jQuery("#fifu_toggle_" + id).attr("class") == "toggleon") {
         jQuery("#fifu_toggle_" + id).attr("class", "toggleoff");
         jQuery("#fifu_input_" + id).val('off');
@@ -19,12 +123,97 @@ function invert(id) {
     }
 }
 
+function fifu_force_free_pro_only_screenshot_inputs_readonly() {
+    jQuery('#fifu_input_screenshot_size, #fifu_input_screenshot_custom_field')
+        .prop('readonly', true)
+        .attr('aria-disabled', 'true')
+        .attr('tabindex', '-1');
+}
+
+function fifu_force_free_pro_only_auto_set_inputs_readonly() {
+    jQuery(
+        '#fifu_input_auto_set_width, ' +
+        '#fifu_input_auto_set_height, ' +
+        '#fifu_input_auto_set_blocklist, ' +
+        '#fifu_input_auto_set_source, ' +
+        '#fifu_input_auto_set_cpt'
+    )
+        .prop('readonly', true)
+        .attr('aria-disabled', 'true')
+        .attr('tabindex', '-1');
+
+    jQuery('#select_auto_set_layout, #fifu_input_auto_set_layout')
+        .prop('disabled', true)
+        .attr('aria-disabled', 'true')
+        .attr('tabindex', '-1');
+}
+
+function fifu_force_free_pro_only_auto_share_inputs_readonly() {
+    jQuery('#fifu_input_auto_share_x_clientid, #fifu_input_auto_share_postid')
+        .prop('readonly', true)
+        .attr('aria-disabled', 'true')
+        .attr('tabindex', '-1');
+
+    jQuery('#fifu_form_auto_share_test input[type=submit], #fifu_form_auto_share_test button[type=submit], #fifu_form_auto_share_test input[type=button]')
+        .attr('aria-disabled', 'true')
+        .attr('tabindex', '-1')
+        .off('.fifuProOnly')
+        .on('click.fifuProOnly mousedown.fifuProOnly mouseup.fifuProOnly keydown.fifuProOnly keyup.fifuProOnly change.fifuProOnly', function (event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            event.stopPropagation();
+            return false;
+        });
+}
+
+function fifu_force_free_pro_only_finder_inputs_readonly() {
+    jQuery('#fifu_input_finder_custom_field')
+        .val('')
+        .prop('readonly', true)
+        .attr('aria-disabled', 'true')
+        .attr('tabindex', '-1');
+}
+
+function fifu_force_free_pro_only_featured_video_inputs_readonly() {
+    jQuery('#fifu_input_video')
+        .val('off')
+        .prop('disabled', true)
+        .attr('aria-disabled', 'true');
+
+    jQuery('#fifu_toggle_video')
+        .removeClass('toggleon')
+        .addClass('toggleoff')
+        .attr('aria-disabled', 'true')
+        .attr('tabindex', '-1');
+}
+
+function fifu_force_free_pro_only_slider_inputs_readonly() {
+    jQuery(
+        '#fifu_input_slider_pause, ' +
+        '#fifu_input_slider_speed, ' +
+        '#fifu_input_slider_left, ' +
+        '#fifu_input_slider_right'
+    )
+        .prop('readonly', true)
+        .attr('aria-disabled', 'true')
+        .attr('tabindex', '-1');
+}
+
+function fifu_keep_pro_toggle_off(id, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        event.stopPropagation();
+    }
+
+    fifu_force_free_pro_only_toggle_off(id);
+    return false;
+}
+
 jQuery(function () {
     var url = window.location.href;
 
     jQuery("#tabs-top").tabs();
-    jQuery("#fifu_input_slider_speed").spinner({min: 0});
-    jQuery("#fifu_input_slider_pause").spinner({min: 0});
     jQuery("#fifu_input_auto_set_width").spinner({min: 0});
     jQuery("#fifu_input_auto_set_height").spinner({min: 0});
     jQuery("#tabsApi").addClass("ui-tabs-vertical ui-helper-clearfix");
@@ -47,17 +236,52 @@ jQuery(function () {
     jQuery("#tabsAutoShareSub").tabs();
     jQuery("#tabsTags").tabs();
     jQuery("#tabsScreenshot").tabs();
-    jQuery("#tabsIsbn").tabs();
     jQuery("#tabsAsin").tabs();
     jQuery("#tabsCustomfield").tabs();
     jQuery("#tabsFinder").tabs();
     jQuery("#tabsVideo").tabs();
+    jQuery("#tabsVimeoOptions").tabs();
+    jQuery("#tabsVimeoMp4Options").tabs();
     jQuery("#tabsContent").tabs();
     jQuery("#tabsCli").tabs();
     jQuery("#tabsGallery").tabs();
 
+    FIFU_FREE_PRO_ONLY_TOGGLE_IDS.forEach(function (id) {
+        fifu_force_free_pro_only_toggle_off(id);
+
+        var $toggle = jQuery('#fifu_toggle_' + id);
+        var $form = jQuery('#fifu_form_' + id);
+
+        $toggle
+            .removeAttr('onclick')
+            .off('.fifuProOnly')
+            .on('click.fifuProOnly mousedown.fifuProOnly mouseup.fifuProOnly keydown.fifuProOnly keyup.fifuProOnly change.fifuProOnly', function (event) {
+                return fifu_keep_pro_toggle_off(id, event);
+            });
+
+        $form
+            .off('.fifuProOnly')
+            .on('click.fifuProOnly change.fifuProOnly submit.fifuProOnly', function (event) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                event.stopPropagation();
+                fifu_force_free_pro_only_toggle_off(id);
+                return false;
+            });
+    });
+
+    fifu_force_free_pro_only_screenshot_inputs_readonly();
+    fifu_force_free_pro_only_auto_set_inputs_readonly();
+    fifu_force_free_pro_only_auto_share_inputs_readonly();
+    fifu_force_free_pro_only_finder_inputs_readonly();
+    fifu_force_free_pro_only_featured_video_inputs_readonly();
+    fifu_force_free_pro_only_slider_inputs_readonly();
+
     //forms with id started by...
     jQuery("form[id^=fifu_form]").each(function (i, el) {
+        if (el && fifu_is_free_pro_only_form_id(el.id)) {
+            return true;
+        }
         jQuery(this).find("input[type=text]").on("change", function () {
             save(this);
         });
@@ -89,11 +313,14 @@ jQuery(function () {
 });
 
 function isClickable(id) {
-    return false;
+    return id.match("fifu_form_spinner");
 }
 
 function save(formName, url) {
     var frm = jQuery(formName);
+    if (fifu_is_free_pro_only_form_id(frm.attr('id'))) {
+        return false;
+    }
     showMessage('Processing...', fifuScriptVars.saving + '...', 'processing');
     jQuery.ajax({
         type: frm.attr('method'),
@@ -141,25 +368,27 @@ function updateMessage(title, message, state) {
 }
 
 function fifu_default_js() {
-    jQuery('#tabs-top').block({message: fifuScriptVars.wait, css: {backgroundColor: 'none', border: 'none', color: 'white'}});
+    const toggle = jQuery('#fifu_toggle_enable_default_url').attr('class');
 
-    let toggle = jQuery("#fifu_toggle_enable_default_url").attr('class');
-    switch (toggle) {
-        case "toggleoff":
-            option = "disable_default_api";
-            break;
-        default:
-            let url = jQuery("#fifu_input_default_url").val();
-            option = url ? "none_default_api" : "disable_default_api";
+    if (toggle !== 'toggleoff') {
+        return;
     }
+
+    jQuery('#tabs-top').block({
+        message: fifuScriptVars.wait,
+        css: {
+            backgroundColor: 'none',
+            border: 'none',
+            color: 'white'
+        }
+    });
+
     jQuery.ajax({
-        method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/' + option + '/',
+        method: 'POST',
+        url: restUrl + fifuScriptVars.restNamespaceV2 + '/disable_default_api/',
         async: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
-        },
-        success: function (data) {
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.log(jqXHR);
@@ -180,7 +409,7 @@ function fifu_sizes_js() {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/load-sizes-api/',
+        url: restUrl + fifuScriptVars.restNamespaceV2 + '/load-sizes-api/',
         async: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
@@ -348,7 +577,7 @@ function fifu_reset_sizes() {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/reset-sizes-api/',
+        url: restUrl + fifuScriptVars.restNamespaceV2 + '/reset-sizes-api/',
         async: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
@@ -382,7 +611,7 @@ function fifu_save_sizes() {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/save-sizes-api/',
+        url: restUrl + fifuScriptVars.restNamespaceV2 + '/save-sizes-api/',
         data: JSON.stringify(sizeData),
         contentType: 'application/json',
         beforeSend: function (xhr) {
@@ -414,23 +643,24 @@ function fifu_fake_js() {
             return;
     }
 
-    setTimeout(function () {
-        if (toggle == "toggleon") {
-            metaIntervalId = setInterval(updateMetadataCounter.bind(null, true), 3000);
-        } else {
-            jQuery('#tabs-top').unblock();
-            jQuery('#image_metadata_counter').text('');
-        }
-    }, 1000);
-
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/' + option + '/',
+        url: restUrl + fifuScriptVars.restNamespaceV2 + '/' + option + '/',
         async: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
         },
         success: function (data) {
+            setTimeout(function () {
+                if (toggle == "toggleon") {
+                    jQuery("#fifu_toggle_cron_metadata").attr('class', 'toggleoff');
+                    updateMetadataCounter(false);
+                    metaIntervalId = setInterval(updateMetadataCounter.bind(null, true), 3000);
+                } else {
+                    jQuery('#tabs-top').unblock();
+                    jQuery('#image_metadata_counter').text('');
+                }
+            }, 1000);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.log(jqXHR);
@@ -438,6 +668,8 @@ function fifu_fake_js() {
             console.log(errorThrown);
         },
         complete: function () {
+            if (typeof metaIntervalId !== 'undefined')
+                clearInterval(metaIntervalId);
         },
         timeout: 0
     });
@@ -453,13 +685,9 @@ function fifu_clean_js() {
 function fifu_run_clean_js() {
     jQuery('#tabs-top').block({message: fifuScriptVars.wait, css: {backgroundColor: 'none', border: 'none', color: 'white'}});
 
-    setTimeout(function () {
-        metaIntervalId = setInterval(updateMetadataCounter.bind(null, true), 3000);
-    }, 1000);
-
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/data_clean_api/',
+        url: restUrl + fifuScriptVars.restNamespaceV2 + '/data_clean_api/',
         async: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
@@ -475,6 +703,9 @@ function fifu_run_clean_js() {
             setTimeout(function () {
                 jQuery("#fifu_toggle_data_clean").attr('class', 'toggleoff');
                 jQuery("#fifu_toggle_fake").attr('class', 'toggleoff');
+                jQuery("#fifu_toggle_cron_metadata").attr('class', 'toggleoff');
+                updateMetadataCounter(false);
+                metaIntervalId = setInterval(updateMetadataCounter.bind(null, true), 3000);
             }, 1000);
         },
         timeout: 0
@@ -491,7 +722,7 @@ function fifu_run_delete_all_js() {
 
     jQuery.ajax({
         method: "POST",
-        url: restUrl + 'featured-image-from-url/v2/run_delete_all_api/',
+        url: restUrl + fifuScriptVars.restNamespaceV2 + '/run_delete_all_api/',
         async: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
@@ -515,7 +746,7 @@ function fifu_run_delete_all_js() {
 
 function updateMetadataCounter(transient) {
     jQuery.ajax({
-        url: `${restUrl}featured-image-from-url/v2/metadata_counter_api/`,
+        url: `${restUrl}${fifuScriptVars.restNamespaceV2}/metadata_counter_api/`,
         data: {
             "transient": transient,
         },

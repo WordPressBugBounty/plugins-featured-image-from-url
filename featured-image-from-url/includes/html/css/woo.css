@@ -1,0 +1,28 @@
+/* video lightbox */
+
+.pswp__zoom-wrap {
+    text-align: center;
+}
+
+.pswp__zoom-wrap::before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.pswp div.wrapper {
+    line-height: 0;
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 auto;
+    text-align: center;
+    z-index: 1045;
+}
+
+ul#image-gallery {
+    cursor: pointer;
+}

@@ -1,6 +1,20 @@
-<div id="fifu_meta_box">
+<div id="fifu_meta_box"
+     data-native-preview-only="<?php echo !empty($is_native_preview_only) ? '1' : '0'; ?>"
+     data-native-preview-url="<?php echo esc_attr($native_preview_url ?? ''); ?>"
+     data-native-preview-alt="<?php echo esc_attr($native_preview_alt ?? ''); ?>">
+
+    <?php if (!empty($is_debug_enabled) && isset($post->ID)) : ?>
+        <button id="fifu-copy-debug-data-editor-button"
+                class="fifu-quick-button fifu-copy-debug-data-button"
+                type="button"
+                onclick="fifu_copy_quick_edit_debug_data(<?php echo (int) $post->ID; ?>, this, false)">
+            <span class="dashicons dashicons-clipboard fifu-copy-debug-data-icon" aria-hidden="true"></span>
+            <span class="fifu-copy-debug-data-label"><?php esc_html_e('Copy debug data', FIFU_SLUG); ?></span>
+        </button>
+    <?php endif; ?>
 
     <!-- show alt field, image and link if URL was already provided -->
+
 
     <table id="fifu_table_alt" style="width:100%;position:relative;<?php echo $show_alt ?>">
         <tr>
@@ -9,7 +23,7 @@
                        type="text" 
                        name="fifu_input_alt" 
                        placeholder="<?php $fifu['common']['alt']() ?>"
-                       value="<?php echo esc_attr($alt); ?>" 
+                       value="<?php echo esc_attr($display_alt ?? $alt); ?>" 
                        style="<?php echo $width ?>;font-size:13px;margin:0px 0px 0px 2px" />
             </td>
             <td style="padding:unset !important;">
@@ -24,7 +38,7 @@
 
     <div id="fifu_image"
          style="<?php echo $height, $show_image ?>
-         background:url('<?php echo esc_url($url ?? ''); ?>') no-repeat center center;
+         background:url('<?php echo esc_url($display_url ?? $url ?? ''); ?>') no-repeat center center;
          background-size:cover;
          cursor:zoom-in;
          border-radius:3px;
@@ -38,7 +52,7 @@
                        type="text" 
                        name="fifu_input_url" 
                        placeholder="<?php $fifu['image']['keywords']() ?>"
-                       value="<?php echo esc_attr($url ?? ''); ?>"
+                       value="<?php echo esc_attr($display_input_url ?? $url ?? ''); ?>"
                        style="<?php echo $width ?>;font-size:13px;" />
             </td>
             <td>
@@ -81,7 +95,7 @@
        onClick="previewImage();" 
        style="<?php echo $align, $margin, $show_button ?>" ><?php $fifu['common']['preview']() ?></a>
 
-    <div id="fifu_sirv_button" style="<?php echo 'float:left;padding-right:8px;' . $align, $margin, fifu_is_sirv_active() ? $show_button : 'display:none' ?>">
+    <div id="fifu_sirv_button" style="<?php echo 'float:left;padding-right:8px;' . $align, $margin, Fifu_Plugin_Detector::is_sirv_active() ? $show_button : 'display:none' ?>">
         <div class="sirv-modal"></div>
         <a id="sirv-add-featured-image"
            data-input-anchor="#fifu_input_url"

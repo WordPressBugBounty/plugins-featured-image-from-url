@@ -5,10 +5,6 @@ import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { TextControl, PanelBody, Button } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
 import React from 'react';
-import domReady from '@wordpress/dom-ready';
-
-const { toggleEditorPanelEnabled } = wp.data.dispatch('core/edit-post');
-const { isEditorPanelEnabled } = wp.data.select('core/edit-post');
 
 export default function Edit({ attributes, setAttributes }) {
 	/* ─────────────────────────────────────
@@ -170,35 +166,6 @@ export default function Edit({ attributes, setAttributes }) {
 			}
 		}
 	}
-
-	/* ─────────────────────────────────────
-	   Featured Image Panel Sync
-	───────────────────────────────────── */
-	const syncFeaturedPanel = () => {
-		const hasFifu = wp.data
-			.select('core/block-editor')
-			.getBlocks()
-			.some((b) => b.name === 'fifu/image');
-
-		// Check if FIFU meta box has an image URL
-		const metaInput = document.getElementById('fifu_input_url');
-		const hasFifuMetaUrl = metaInput && metaInput.value && metaInput.value.trim();
-
-		const enabled = isEditorPanelEnabled
-			? isEditorPanelEnabled('featured-image')
-			: true; // fallback WP < 6.4
-
-		if ((hasFifu || hasFifuMetaUrl) && enabled) {
-			// Hide WP featured image panel if FIFU block or meta box has image
-			toggleEditorPanelEnabled('featured-image');
-		} else if (!hasFifu && !hasFifuMetaUrl && !enabled) {
-			// Show WP featured image panel if neither block nor meta box has image
-			toggleEditorPanelEnabled('featured-image');
-		}
-	};
-
-	syncFeaturedPanel(); // primeira execução
-	wp.data.subscribe(syncFeaturedPanel); // mantém em sincronia
 
 	/* ─────────────────────────────────────
 	   Block UI

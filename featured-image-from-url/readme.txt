@@ -1,10 +1,11 @@
 === Featured Image from URL (FIFU) ===
 Contributors: marceljm
 Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
-Tags: featured, image, url, video, woocommerce
+Tags: featured, image, url, woocommerce, remote
 Requires at least: 5.6
-Tested up to: 6.9
-Stable tag: 5.3.3
+Tested up to: 7.0.3
+Stable tag: 6.0.0
+Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -12,31 +13,41 @@ Use remote media as the featured image and beyond.
 
 == Description ==
 
-### WordPress plugin for remote featured images, videos, audios and more
+### WordPress plugin for remote featured images and more
 
-FIFU plugin has helped thousands of websites worldwide save money on storage, processing, and copyright since 2015.
+FIFU has helped thousands of websites worldwide save storage, processing resources, and time since 2015.
 
 If you are tired of wasting time and resources with thumbnail regeneration, image optimization, and never-ending imports, this plugin is for you.
 
 #### Featured image
-Use a remote image as featured image of your post, page or custom post type.
+
+Use a remote image as the featured image of your post, page, custom post type, or WooCommerce product.
 
 * Remote featured image
+* Featured image alternative text
 * Optimized images
 * Make all images square
-* Image search (Unsplash)
+* Image search with Unsplash
 * Default featured image
 * Hide featured media
 * Modify post content
 * Auto set image title
-* Column for featured image
-* **[PRO]** Image search (search engine)
+* Featured image column
+* Quick Edit
+* **[PRO]** Image search with a search engine
 * **[PRO]** Disable right-click
 * **[PRO]** Save in the media library
 * **[PRO]** Replace not found image
 * **[PRO]** Custom popup
 * **[PRO]** bbPress and BuddyBoss Platform integration
 * **[PRO]** Page redirection
+
+#### Category image
+
+Use a remote image for categories and other supported taxonomy terms.
+
+* Remote category image
+* Category image alternative text
 
 #### Automatic featured media
 
@@ -45,37 +56,36 @@ Use a remote image as featured image of your post, page or custom post type.
 * **[PRO]** Auto set featured media using web page address
 * **[PRO]** Auto set product images from ASIN
 * **[PRO]** Auto set featured media from custom field
-* **[PRO]** Auto set featured image using ISBN
 * **[PRO]** Auto set screenshot as featured image
-* **[PRO]** Auto set featured image from Unsplash using tags
 * **[PRO]** Auto-share on social media
 
 #### Automation
 
 * WP-CLI integration
+* Developer functions
 * **[PRO]** Add-on for WP All Import
 * **[PRO]** WooCommerce import
-* **[PRO]** WP REST API
-* **[PRO]** WooCommerce REST API
-* **[PRO]** Schedule metadata generation
+* **[PRO]** Advanced REST API integrations
 
 #### WooCommerce
 
 * Remote product image
 * Lightbox and zoom
+* Remote product category image
 * **[PRO]** Gallery for remote images
 * **[PRO]** Gallery for remote videos
 * **[PRO]** Category images auto set
-* **[PRO]** Variable product
-* **[PRO]** Variation image
-* **[PRO]** Gallery for variation image
+* **[PRO]** Variable product image tools
+* **[PRO]** Variation image tools
+* **[PRO]** Gallery for variation images
 * **[PRO]** Save in the media library
 * **[PRO]** FIFU product gallery
 * **[PRO]** Quick Buy
 * **[PRO]** Add image to order email
 
 #### Featured video
-Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, JW Player, VideoPress, Sprout, Odysee, Rumble, Dailymotion, Cloudflare Stream, Bunny Stream, Amazon, BitChute, Brighteon, Google Drive, Spotify and SoundCloud. External and local video files are supported as well. 
+
+The PRO version supports featured videos from services and external video files.
 
 * **[PRO]** Featured video
 * **[PRO]** Watch later
@@ -87,57 +97,48 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 * **[PRO]** Autoplay
 * **[PRO]** Playback loop
 * **[PRO]** Mute
-* **[PRO]** Privacy enhanced mode
-* **[PRO]** Background video
 
 #### Widgets for Elementor
 
-* Featured image 
+* Featured image
 * **[PRO]** Featured video
 
-#### Widgets for WordPress
+#### Fields for Gravity Forms
 
-* **[PRO]** Featured media 
-* **[PRO]** Featured grid
-* **[PRO]** Product gallery
-
-#### Fields for Gravity-Forms
-
-* Featured image 
+* Featured image
 * **[PRO]** Featured video
 * **[PRO]** Featured slider
 
 #### Fields for Dokan
 
-* Featured image 
+* Featured image
 * **[PRO]** Product gallery
 
-#### Others
+#### Other PRO features
 
-* **[PRO]** Quick edit
 * **[PRO]** Featured audio
 * **[PRO]** Featured slider
-* **[PRO]** Shortcode
-* **[PRO]** Taxonomy image
+* **[PRO]** Image and video galleries
+* **[PRO]** Shortcodes
+* **[PRO]** Advanced WooCommerce media features
 
 #### Functions for developers
 
-* fifu_dev_set_image($post_id, $image_url)
-* **[PRO]** fifu_dev_set_video($post_id, $video_url)
-* **[PRO]** fifu_dev_set_slider($post_id, $url_list, $alt_list) 
-* **[PRO]** fifu_dev_set_image_list($post_id, $image_url_list)
-* **[PRO]** fifu_dev_set_video_list($post_id, $video_url_list)
-* **[PRO]** fifu_dev_set_category_image($term_id, $image_url)
-* **[PRO]** fifu_dev_set_category_video($term_id, $video_url)
+* **Featured image:** `fifu_dev_set_image($post_id, $image_url)`
+* **Product category image:** `fifu_dev_set_category_image($term_id, $image_url)`
+* **[PRO] Featured video:** `fifu_dev_set_video($post_id, $video_url)`
+* **[PRO] Featured slider:** `fifu_dev_set_slider($post_id, $url_list, $alt_list)`
+* **[PRO] Product image + Image gallery:** `fifu_dev_set_image_list($post_id, $image_url_list)`
+* **[PRO] Product video + Video gallery:** `fifu_dev_set_video_list($post_id, $video_url_list)`
+* **[PRO] Product category video:** `fifu_dev_set_category_video($term_id, $video_url)`
 
 #### FIFU Cloud
 
-* Cloud storage (never lose an image again)
-* Global CDN (images loaded much faster)
-* Optimized thumbnails (processed in the cloud)
-* Usage-based billing (per stored image)
-* Smart cropping (detects people and objects before cropping)
-* Hotlink protection (sites can't embed your images)
+* Cloud storage
+* Global CDN
+* Optimized thumbnails
+* Automatic cloud upload and deletion scheduling
+* Hotlink protection
 
 #### Links
 
@@ -146,106 +147,82 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 * **<a href="https://chrome.google.com/webstore/detail/fifu-scraper/pccimcccbkdeeadhejdmnffmllpicola">Extension for Google Chrome</a>**
 * **<a href="https://plugintests.com/plugins/wporg/featured-image-from-url/latest">Smoke Test</a>**
 
-
 == Installation ==
 
 ### Install FIFU from within WordPress
 
-1. Visit the plugins page within your dashboard and select 'Add New';
-1. Search for 'FIFU';
-1. Activate FIFU from your Plugins page;
+1. Visit the Plugins page in your WordPress dashboard and select "Add New".
+2. Search for "FIFU".
+3. Install and activate FIFU.
 
 ### Install FIFU manually
 
-1. Upload the 'featured-image-from-url' folder to the /wp-content/plugins/ directory;
-1. Activate the FIFU plugin through the 'Plugins' menu in WordPress;
-
+1. Upload the `featured-image-from-url` folder to `/wp-content/plugins/`.
+2. Activate FIFU through the Plugins menu in WordPress.
 
 == Frequently Asked Questions ==
 
-= Why isn't preview button working? =
+= Why isn't the preview button working? =
 
-* Your image URL is invalid. Take a look at Settings → Getting started.
+Your image URL may be invalid. Check Settings → Getting started.
 
-= Does FIFU save the images in the media library? =
+= Does FIFU save images in the WordPress media library? =
 
-* No. Only the PRO version is capable of doing this, but it is optional. The plugin was designed to work with external images.
+No. FIFU is designed to work with external images. Features that save remote images in the WordPress media library are available in FIFU PRO.
 
-= Why the featured image is being displayed twice? =
+= Why is the featured image displayed twice? =
 
-* You enabled "Modify Post Content → add featured media" option unnecessarily.
+Check whether the option that adds featured media to the post content is enabled unnecessarily.
 
-= Why the featured image is not being displayed? =
+= Why is the featured image not displayed? =
 
-* Please check if "Hide Featured Media" option is unduly enabled.
+Check whether Hide Featured Media is enabled.
 
-= Why are there no changes after updating the settings? =
+= Why are there no changes after updating settings? =
 
-* Try to clear your cache.
+Clear any page, object, or CDN caches used by the site.
 
-= Is any action necessary before removing FIFU?
+= Is any action necessary before removing FIFU? =
 
-* Access settings and clear the metadata.
+If you no longer need FIFU-generated metadata, use the cleanup tools available in FIFU settings before removing the plugin.
 
-= What's the metadata created by FIFU?
+= What metadata does FIFU create? =
 
-* Database registers that help WordPress components to work with remote images. This plugin can generate the metadata of ~50,000 image URLs per minute.
+FIFU creates database records that allow WordPress components and integrations to work with remote images.
 
-= What are the disadvantages of remote images?
+= What are the disadvantages of remote images? =
 
-* No image optimization or thumbnails by default. You can fix that with 'Optimized Images' feature.
+Remote images do not automatically have the same locally generated thumbnails as WordPress media-library images. FIFU provides features such as Optimized Images to handle this use case.
 
-= What are the advantages of remote images?
+= What are the advantages of remote images? =
 
-* You save money on storage, processing and copyright. And you can have extremely fast import processes.
+Remote images can reduce local storage requirements and make large imports significantly faster because the original images do not need to be downloaded into the WordPress media library.
 
-= Is it legal to embed images without permission?
+= Do remote images affect SEO? =
 
-* Yes, it is. Click [here](https://www.globalbankingandfinance.com/embedding-images-the-legal-way-to-steal/) to know more.
-
-= Do remote images affect SEO?
-
-* No, remote images don't affect SEO. Click [here](https://www.searchenginejournal.com/does-using-a-cdn-improve-ranking/) to know more.
-
+Search engines can index remote images. As with local images, image accessibility, performance, structured data, alternative text, and the reliability of the source URL can affect results.
 
 == Screenshots ==
 
 1. Featured image
-
 2. Image search
-
-3. Featured video
-
-4. Image gallery for WooCommerce products
-
-5. Image gallery for WooCommerce product variations
-
-6. Quick edit
-
-7. Widgets for Elementor
-
+3. Featured image settings
+4. WooCommerce remote product image
+5. Quick Edit
+6. Elementor integration
+7. Category image
 8. Settings → Help
-
 9. Settings → Image
-
-10. Settings → Video
-
-11. Settings → Slider
-
-12. Settings → Audio
-
-13. Settings → Automatic
-
-14. Settings → WooCommerce
-
-15. Settings → WP All Import
-
-16. Settings → Metadata
-
-17. Settings → Developers
-
+10. Settings → Automatic
+11. Settings → WooCommerce
+12. Settings → Metadata
+13. Settings → Developers
+14. FIFU Cloud
 
 == Changelog ==
+
+= 6.0.0 =
+* Completely refactored version with an AI-integrated development workflow for faster development, maintenance, and troubleshooting; FIFU now stores remote image URLs in its own database tables instead of relying only on WordPress metadata, improving performance especially on websites with many posts or products; compatibility with PHP 8.1+, WordPress 7.0.3, and WooCommerce 11.0.0.
 
 = 5.3.3 =
 * Fix: Integration with WPML not working; Fix: Deprecated notices.
@@ -280,8 +257,7 @@ Supports URLs from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, 
 = others =
 * [more](https://fifu.app/changelog)
 
-
 == Upgrade Notice ==
 
-= 5.3.3 =
-* Fix: Integration with WPML not working; Fix: Deprecated notices.
+= 6.0.0 =
+* Completely refactored version with an AI-integrated development workflow for faster development, maintenance, and troubleshooting; FIFU now stores remote image URLs in its own database tables instead of relying only on WordPress metadata, improving performance especially on websites with many posts or products; compatibility with PHP 8.1+, WordPress 7.0.3, and WooCommerce 11.0.0.

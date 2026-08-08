@@ -1,126 +1,79 @@
 jQuery(document).ready(function ($) {
-    jQuery('a#deactivate-featured-image-from-url').click(function (e) {
-        e.preventDefault();
-        jQuery.fancybox.open(`
-            <table>`
-                +
-                `             
-                <tr>
-                    <td><button class="uninstall" style="background-color:#f44336" id="pre-deactivate">${fifuUninstallVars.buttonTextClean}</button></td>
-                    <td><button class="uninstall" style="width:100%;background-color:#008CBA" id="deactivate">${fifuUninstallVars.buttonTextDeactivate}</button></td>
-                </tr>
-                <tr>
-                    <td style="color:black;text-align:center">${fifuUninstallVars.buttonDescriptionClean}</td>
-                    <td style="color:black;text-align:center">${fifuUninstallVars.buttonDescriptionDeactivate}</td>
-                </tr>
-            </table>
-            <br>
-            <hr>
-            <h4>${fifuUninstallVars.textWhy} <span style="color:grey">${fifuUninstallVars.textEmail}</span></h4>
-            <textarea id="fifu-description" style="width:100%;height:135px;padding:10px;font-size:13px" placeholder="${fifuUninstallVars.textReasonConflict}&#013;${fifuUninstallVars.textReasonPro}&#013;${fifuUninstallVars.textReasonSeo}...&#013;${fifuUninstallVars.textReasonLocal}&#013;${fifuUninstallVars.textReasonUndestand}&#013;${fifuUninstallVars.textReasonOthers}"></textarea>
-        `);
+    const vars = fifuUninstallVars;
+    const deactivateLinkSelector = `tr[data-plugin="${vars.pluginBasename}"] .deactivate a`;
+
+    function feedbackDescription() {
+        const value = jQuery('textarea#fifu-description').val();
+        return String(value || '').trim();
+    }
+
+    function deactivateHref() {
+        return jQuery(deactivateLinkSelector).attr('href');
+    }
+
+    function redirectToDeactivation() {
+        const href = deactivateHref();
+        if (href) window.location.href = href;
+    }
+
+    function setRestNonce(xhr) {
+        xhr.setRequestHeader('X-WP-Nonce', vars.nonce);
+    }
+
+    function logAjaxError(jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+    }
+
+    jQuery(deactivateLinkSelector).click(function (event) {
+        event.preventDefault();
+        const placeholder = [
+            vars.textReasonConflict, vars.textReasonPro, vars.textReasonSeo,
+            vars.textReasonLocal, vars.textReasonUnderstand, vars.textReasonOthers,
+        ].join('&#10;');
+        const box = `
+            <table><tr>
+                <td><button class="uninstall" style="background-color:#f44336" id="pre-deactivate">${vars.buttonTextClean}</button></td>
+                <td><button class="uninstall" style="width:100%;background-color:#008CBA" id="deactivate">${vars.buttonTextDeactivate}</button></td>
+            </tr><tr>
+                <td style="color:black;text-align:center">${vars.buttonDescriptionClean}</td>
+                <td style="color:black;text-align:center">${vars.buttonDescriptionDeactivate}</td>
+            </tr></table><br><hr>
+            <h4>${vars.textWhy} <span style="color:grey">${vars.textEmail}</span></h4>
+            <textarea id="fifu-description" style="width:100%;height:135px;padding:10px;font-size:13px" placeholder="${placeholder}"></textarea>`;
+        jQuery.fancybox.open(box);
     });
 
-    jQuery(document).on("click", "button#deactivate", function () {
-        let description = jQuery('textarea#fifu-description').val();
-        let temporary = true;
-
-        if (description) {
-            jQuery('.fancybox-slide').block({message: '', css: {backgroundColor: 'none', border: 'none', color: 'white'}});
-            setTimeout(function () {
-                send_feedback(description, temporary);
-            }, 250);
+    jQuery(document).on('click', 'button#deactivate', function () {
+        const description = feedbackDescription();
+        if (description === '') {
+            redirectToDeactivation();
+            return;
         }
-
-        let href = jQuery('a#deactivate-featured-image-from-url').attr('href');
-        window.location.href = href;
-    });
-
-    jQuery(document).on("click", "button#pre-deactivate", function () {
-        let description = jQuery('textarea#fifu-description').val();
-        let temporary = false;
-
         jQuery('.fancybox-slide').block({message: '', css: {backgroundColor: 'none', border: 'none', color: 'white'}});
-        setTimeout(function () {
-            jQuery.ajax({
-                method: "POST",
-                url: fifuUninstallVars.restUrl + 'featured-image-from-url/v2/pre_deactivate/',
-                data: {
-                    "description": description,
-                    "temporary": temporary,
-                },
-                async: false,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', fifuUninstallVars.nonce);
-                },
-                success: function (data) {
-                    let href = jQuery('a#deactivate-featured-image-from-url').attr('href');
-                    window.location.href = href;
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.log(jqXHR);
-                    console.log(textStatus);
-                    console.log(errorThrown);
-                },
-                complete: function () {
-                    // jQuery('.fancybox-slide').unblock();
-                }
-            });
-        }, 250);
+        jQuery.ajax({
+            method: 'POST',
+            url: vars.restUrl + vars.restNamespaceV2 + '/feedback/',
+            data: {description, temporary: true},
+            async: false,
+            beforeSend: setRestNonce,
+            error: logAjaxError,
+            complete: redirectToDeactivation,
+        });
     });
 
-    // activating fifu pro
-    jQuery('a#activate-fifu-premium, a#activate-featured-image-from-url-fifu-premium').click(function (e) {
-        e.preventDefault();
-
-        jQuery('div#wpwrap').block({message: '', css: {backgroundColor: 'none', border: 'none', color: 'white'}});
-        setTimeout(function () {
-            jQuery.ajax({
-                method: "POST",
-                url: fifuUninstallVars.restUrl + 'featured-image-from-url/v2/deactivate_itself/',
-                data: {},
-                async: false,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', fifuUninstallVars.nonce);
-                },
-                success: function (data) {
-                    let href = jQuery('a#activate-fifu-premium').attr('href');
-                    if (!href)
-                        href = jQuery('a#activate-featured-image-from-url-fifu-premium').attr('href');
-                    window.location.href = href;
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.log(jqXHR);
-                    console.log(textStatus);
-                    console.log(errorThrown);
-                },
-                complete: function () {
-                }
-            });
-        }, 250);
+    jQuery(document).on('click', 'button#pre-deactivate', function () {
+        const description = feedbackDescription();
+        jQuery('.fancybox-slide').block({message: '', css: {backgroundColor: 'none', border: 'none', color: 'white'}});
+        jQuery.ajax({
+            method: 'POST',
+            url: vars.restUrl + vars.restNamespaceV2 + '/pre_deactivate/',
+            data: {description, temporary: false},
+            async: false,
+            beforeSend: setRestNonce,
+            success: redirectToDeactivation,
+            error: logAjaxError,
+        });
     });
 });
-
-function send_feedback(description, temporary) {
-    jQuery.ajax({
-        method: "POST",
-        url: fifuUninstallVars.restUrl + 'featured-image-from-url/v2/feedback/',
-        data: {
-            "description": description,
-            "temporary": temporary,
-        },
-        async: false,
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('X-WP-Nonce', fifuUninstallVars.nonce);
-        },
-        success: function (data) {
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.log(jqXHR);
-            console.log(textStatus);
-            console.log(errorThrown);
-        },
-        complete: function () {
-        }
-    });
-}

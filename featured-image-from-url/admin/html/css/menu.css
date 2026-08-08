@@ -40,6 +40,14 @@
     border-radius: 0px 0px 15px 15px;
 }
 
+#tabs-top > .ui-tabs-panel {
+    padding-top: 0 !important;
+}
+
+#tabs-top > .ui-tabs-panel > .fifubox:first-child {
+    margin-top: 0;
+}
+
 #tabs-top > ul:nth-child(1) {
     padding: 0 0 0;
 }
@@ -76,12 +84,6 @@ tr.color:nth-child(even) {
     background: #f9f9f9 !important;
     border: none !important;
     font-weight: inherit !important;
-}
-
-#grad2 {
-    /* border: 1px dotted #aa1919;
-    border-radius: 1px;
-    border-radius: 15px 15px 15px 15px; */
 }
 
 /* table */
@@ -231,7 +233,6 @@ div.polaroid {
     filter: drop-shadow(5px 5px 5px #888888);
 }
 
-
 /* dialog */
 .custom-dialog {
     position: fixed;
@@ -273,8 +274,4 @@ div.polaroid {
     background-color: #ff8c00;
     color: #fff3cd;
     filter:grayscale(25%);
-}
-
-.fifu-pro {
-    float:left;
 }

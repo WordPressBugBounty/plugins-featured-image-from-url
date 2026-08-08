@@ -1,0 +1,1 @@
+-- Timestamp repairs are handled in PHP by Fifu_Schema_Manager.
