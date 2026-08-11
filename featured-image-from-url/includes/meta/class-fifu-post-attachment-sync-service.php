@@ -97,8 +97,30 @@ class Fifu_Post_Attachment_Sync_Service
 
             if ($has_fifu_attachment && $att_id && !$is_default_attachment) {
                 if ($same_logical_media) {
-                    Fifu_Attachment_Update_Service::initialize_remote_attachment((int) $att_id, $url, $alt, null, null, true);
-                    self::persist_attachment_meta((int) $att_id, $url, $alt);
+                    if (
+                        !self::
+                            featured_attachment_state_matches(
+                                (int) $att_id,
+                                (string) $url,
+                                $alt
+                            )
+                    ) {
+                        Fifu_Attachment_Update_Service::
+                            initialize_remote_attachment(
+                                (int) $att_id,
+                                $url,
+                                $alt,
+                                null,
+                                null,
+                                true
+                            );
+
+                        self::persist_attachment_meta(
+                            (int) $att_id,
+                            $url,
+                            $alt
+                        );
+                    }
                 } else {
                     $new_att_id = $attachment_repo->find_attachment_id($post_id, $url, false);
                     if ($new_att_id) {
@@ -219,6 +241,42 @@ class Fifu_Post_Attachment_Sync_Service
         }
 
         return Fifu_Attachment_Update_Service::is_youtube_thumbnail_quality_fallback($current_url, $new_url);
+    }
+
+    private static function featured_attachment_state_matches(
+        int $attachmentId,
+        string $url,
+        ?string $alt
+    ): bool {
+        $currentUrl =
+            self::normalize_attachment_url(
+                Fifu_Attachment_Update_Service::
+                    get_attachment_remote_url(
+                        $attachmentId
+                    )
+            );
+
+        $desiredUrl =
+            self::normalize_attachment_url(
+                $url
+            );
+
+        $currentAlt =
+            trim(
+                (string)
+                get_post_meta(
+                    $attachmentId,
+                    '_wp_attachment_image_alt',
+                    true
+                )
+            );
+
+        return $currentUrl !== null
+            && $currentUrl === $desiredUrl
+            && $currentAlt
+                === trim(
+                    (string) $alt
+                );
     }
 
     /**

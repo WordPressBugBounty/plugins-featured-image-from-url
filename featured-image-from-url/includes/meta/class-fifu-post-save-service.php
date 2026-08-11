@@ -4,7 +4,6 @@ declare(strict_types=1);
 if (!defined('ABSPATH')) {
     exit;
 }
-
 /**
  * Handles editor-based saving for featured media elements.
  */
@@ -41,35 +40,255 @@ final class Fifu_Post_Save_Service
      * @param array $request
      * @param bool $ignore
      */
-    public static function save_from_editor(int $postId, array $request, bool $ignore = false): void
-    {
+    public static function save_from_editor(
+        int $postId,
+        array $request,
+        bool $ignore = false
+    ): void {
         $thrownException = null;
+
         try {
-            $hasFifuInputUrl = array_key_exists('fifu_input_url', $request);
-            $fifuInputUrl = $hasFifuInputUrl ? trim((string) $request['fifu_input_url']) : '';
+            $fromDeferredPostSave =
+                !empty(
+                    $request[
+                        'fifu_post_save_pending'
+                    ]
+                );
+
+            $featuredImageChanged =
+                false;
+
+            $hasFifuInputUrl =
+                array_key_exists(
+                    'fifu_input_url',
+                    $request
+                );
+
+            $fifuInputUrl =
+                $hasFifuInputUrl
+                    ? trim(
+                        (string)
+                        $request[
+                            'fifu_input_url'
+                        ]
+                    )
+                    : '';
+
             if (
                 $hasFifuInputUrl
                 && $fifuInputUrl === ''
-                && Fifu_Options_Utils::is_on('fifu_enable_default_url')
-                && Fifu_Post_Type_Utils::is_valid_default_cpt($postId)
+                && Fifu_Options_Utils::
+                    is_on(
+                        'fifu_enable_default_url'
+                    )
+                && Fifu_Post_Type_Utils::
+                    is_valid_default_cpt(
+                        $postId
+                    )
             ) {
-                delete_post_meta($postId, 'fifu_image_url');
-                delete_post_meta($postId, 'fifu_image_alt');
-                Fifu_Default_Image_Service::add_default_image_to_post($postId);
+                delete_post_meta(
+                    $postId,
+                    'fifu_image_url'
+                );
+
+                delete_post_meta(
+                    $postId,
+                    'fifu_image_alt'
+                );
+
+                Fifu_Default_Image_Service::
+                    add_default_image_to_post(
+                        $postId
+                    );
+
                 return;
             }
 
-            if ($hasFifuInputUrl && $fifuInputUrl !== '') {
-                fifu_update_or_delete($postId, 'fifu_image_url', esc_url_raw(rtrim($fifuInputUrl)));
+            if (
+                $hasFifuInputUrl
+                && $fifuInputUrl !== ''
+            ) {
+                $url =
+                    esc_url_raw(
+                        rtrim(
+                            $fifuInputUrl
+                        )
+                    );
+
+                if (
+                    self::
+                        featured_media_needs_write(
+                            $postId,
+                            $url,
+                            'url'
+                        )
+                ) {
+                    fifu_update_or_delete(
+                        $postId,
+                        'fifu_image_url',
+                        $url
+                    );
+
+                    $featuredImageChanged =
+                        true;
+                }
             }
 
-            self::sync_attachments($postId);
+            if (
+                $fromDeferredPostSave
+                || $featuredImageChanged
+            ) {
+                self::sync_attachments(
+                    $postId
+                );
+            }
         } catch (\Throwable $throwable) {
-            $thrownException = $throwable;
+            $thrownException =
+                $throwable;
+
             throw $throwable;
         } finally {
         }
+    }
 
+
+
+    /**
+     * @return array{known:bool,value:string}
+     */
+    private static function get_db2_featured_state(
+        int $postId,
+        string $field
+    ): array {
+        if (
+            !function_exists(
+                'fifu_db2_manager'
+            )
+            || !class_exists(
+                'Fifu_Db2_Manager',
+                false
+            )
+        ) {
+            return [
+                'known' => false,
+                'value' => '',
+            ];
+        }
+
+        try {
+            $manager =
+                fifu_db2_manager();
+
+            $method =
+                $field === 'alt'
+                    ? 'getPostAltMapping'
+                    : 'getPostMapping';
+
+            if (
+                !$manager
+                    instanceof
+                    Fifu_Db2_Manager
+                || !method_exists(
+                    $manager,
+                    $method
+                )
+            ) {
+                return [
+                    'known' => false,
+                    'value' => '',
+                ];
+            }
+
+            $mapping =
+                $manager->{$method}(
+                    $postId,
+                    'image',
+                    0
+                );
+
+            if (!is_array($mapping)) {
+                return [
+                    'known' => true,
+                    'value' => '',
+                ];
+            }
+
+            $value =
+                $field === 'alt'
+                    ? (
+                        $mapping['alt']
+                        ?? $mapping['value']
+                        ?? ''
+                    )
+                    : (
+                        $mapping['url']
+                        ?? ''
+                    );
+
+            return [
+                'known' => true,
+                'value' =>
+                    self::
+                    normalize_featured_media_value(
+                        (string) $value,
+                        $field
+                    ),
+            ];
+        } catch (\Throwable $throwable) {
+            return [
+                'known' => false,
+                'value' => '',
+            ];
+        }
+    }
+
+    private static function normalize_featured_media_value(
+        string $value,
+        string $field
+    ): string {
+        if ($field === 'alt') {
+            return trim(
+                wp_strip_all_tags(
+                    $value
+                )
+            );
+        }
+
+        return esc_url_raw(
+            rtrim(
+                $value
+            )
+        );
+    }
+
+    private static function featured_media_needs_write(
+        int $postId,
+        string $value,
+        string $field
+    ): bool {
+        $legacyKey =
+            $field === 'alt'
+                ? 'fifu_image_alt'
+                : 'fifu_image_url';
+
+        $state =
+            self::get_db2_featured_state(
+                $postId,
+                $field
+            );
+
+        return !$state['known']
+            || $state['value']
+                !== self::
+                    normalize_featured_media_value(
+                        $value,
+                        $field
+                    )
+            || metadata_exists(
+                'post',
+                $postId,
+                $legacyKey
+            );
     }
 
     private static function normalize_pipe_list(?string $value): ?string
@@ -214,6 +433,7 @@ final class Fifu_Post_Save_Service
         if (!self::has_fifu_request_properties()) {
             return;
         }
+        $requiresDeferredMediaSync = false;
 
         $has_fifu_input_url = array_key_exists('fifu_input_url', $_POST);
         $raw_fifu_input_url = $has_fifu_input_url ? wp_unslash((string) $_POST['fifu_input_url']) : '';
@@ -272,13 +492,17 @@ final class Fifu_Post_Save_Service
                 }
             }
 
-            fifu_update_or_delete($postId, 'fifu_image_url', $url);
+            if (self::featured_media_needs_write($postId, (string) $url, 'url')) {
+                fifu_update_or_delete($postId, 'fifu_image_url', $url);
+                $requiresDeferredMediaSync = true;
+            }
         }
 
         if (Fifu_Plugin_Detector::is_toolset_forms_active() && isset($_POST['wpcf-fifu_image_url'])) {
             $url = esc_url_raw(rtrim($_POST['wpcf-fifu_image_url']));
-            if ($url) {
+            if ($url && self::featured_media_needs_write($postId, $url, 'url')) {
                 fifu_update_or_delete($postId, 'fifu_image_url', $url);
+                $requiresDeferredMediaSync = true;
             }
         }
 
@@ -291,19 +515,76 @@ final class Fifu_Post_Save_Service
 
         if (!$url && isset($_POST['fifu_image_url']) && !is_array($_POST['fifu_image_url'])) {
             $url = esc_url_raw(rtrim($_POST['fifu_image_url']));
-            if ($url) {
+            if ($url && self::featured_media_needs_write($postId, $url, 'url')) {
                 fifu_update_or_delete($postId, 'fifu_image_url', $url);
+                $requiresDeferredMediaSync = true;
             }
         }
 
-        if (isset($_POST['fifu_input_alt'])) {
-            $alt = esc_html(wp_strip_all_tags($_POST['fifu_input_alt']));
-            fifu_update_or_delete_value($postId, 'fifu_image_alt', $alt);
-            self::cleanup_legacy_main_image_alt_after_db2_sync($postId);
+        if (
+            isset(
+                $_POST[
+                    'fifu_input_alt'
+                ]
+            )
+        ) {
+            $alt =
+                esc_html(
+                    wp_strip_all_tags(
+                        $_POST[
+                            'fifu_input_alt'
+                        ]
+                    )
+                );
+
+            if (
+                self::featured_media_needs_write(
+                    $postId,
+                    $alt,
+                    'alt'
+                )
+            ) {
+                fifu_update_or_delete_value(
+                    $postId,
+                    'fifu_image_alt',
+                    $alt
+                );
+
+                self::
+                    cleanup_legacy_main_image_alt_after_db2_sync(
+                        $postId
+                    );
+
+                $requiresDeferredMediaSync =
+                    true;
+            }
         }
-        $_REQUEST['fifu_post_save_pending'] = true;
-        $_REQUEST['fifu_post_save_ignore'] = !$auto_set;
-        $_REQUEST['fifu_post_save_id'] = $postId;
+
+        if ($requiresDeferredMediaSync) {
+            $_REQUEST[
+                'fifu_post_save_pending'
+            ] = true;
+
+            $_REQUEST[
+                'fifu_post_save_ignore'
+            ] = !$auto_set;
+
+            $_REQUEST[
+                'fifu_post_save_id'
+            ] = $postId;
+        } else {
+            unset(
+                $_REQUEST[
+                    'fifu_post_save_pending'
+                ],
+                $_REQUEST[
+                    'fifu_post_save_ignore'
+                ],
+                $_REQUEST[
+                    'fifu_post_save_id'
+                ]
+            );
+        }
 
         $width = Fifu_Meta_Box_Dimensions_Reader::get_main_image_width($_POST);
         $height = Fifu_Meta_Box_Dimensions_Reader::get_main_image_height($_POST);

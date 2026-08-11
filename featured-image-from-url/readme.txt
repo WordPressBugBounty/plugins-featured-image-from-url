@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, woocommerce, remote
 Requires at least: 5.6
 Tested up to: 7.0.3
-Stable tag: 6.0.0
+Stable tag: 6.0.1
 Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -221,6 +221,12 @@ Search engines can index remote images. As with local images, image accessibilit
 
 == Changelog ==
 
+= 6.0.1 =
+* Fix: Improved compatibility with third-party plugins and page builders, including cases that could prevent editors such as Divi from loading.
+* Fix: Fixed an upgrade issue from FIFU 6.0.0 that could cause featured images to stop updating or disappear in some cases.
+* Performance: Improved post and page saving performance by avoiding unnecessary featured image processing.
+* Compatibility: WooCommerce 11.0.1.
+
 = 6.0.0 =
 * Completely refactored version with an AI-integrated development workflow for faster development, maintenance, and troubleshooting; FIFU now stores remote image URLs in its own database tables instead of relying only on WordPress metadata, improving performance especially on websites with many posts or products; compatibility with PHP 8.1+, WordPress 7.0.3, and WooCommerce 11.0.0.
 
@@ -259,5 +265,5 @@ Search engines can index remote images. As with local images, image accessibilit
 
 == Upgrade Notice ==
 
-= 6.0.0 =
-* Completely refactored version with an AI-integrated development workflow for faster development, maintenance, and troubleshooting; FIFU now stores remote image URLs in its own database tables instead of relying only on WordPress metadata, improving performance especially on websites with many posts or products; compatibility with PHP 8.1+, WordPress 7.0.3, and WooCommerce 11.0.0.
+= 6.0.1 =
+* Fixes important compatibility and upgrade issues introduced in 6.0.0, improves saving performance, and adds compatibility with WooCommerce 11.0.1.

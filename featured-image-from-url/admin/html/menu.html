@@ -3888,12 +3888,10 @@
                                     <input id="fifu_input_slider_pause"
                                            type="number"
                                            min="0"
-                                           pattern="[0-9]*"
                                            readonly="readonly"
-                                           class="fifu-size-input"
+                                           style="width:90px"
                                            value="<?php echo $slider_pause; ?>"
-                                           step="500"
-                                           size="4">
+                                           step="500">
                                 </th>
                                 <th>
                                     <?php $fifu['slider']['time']() ?>
@@ -3904,13 +3902,11 @@
                                     <input id="fifu_input_slider_speed"
                                            type="number"
                                            min="0"
-                                           pattern="[0-9]*"
                                            readonly="readonly"
-                                           class="fifu-size-input"
+                                           style="width:90px"
                                            value="<?php echo $slider_speed; ?>"
                                            step="500"
-                                           max="2000"
-                                           size="4">
+                                           max="2000">
                                 </th>
                                 <th>
                                     <?php $fifu['slider']['duration']() ?>

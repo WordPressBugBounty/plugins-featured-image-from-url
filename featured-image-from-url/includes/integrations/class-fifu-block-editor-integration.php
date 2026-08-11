@@ -5,7 +5,6 @@ declare(strict_types=1);
 if (!defined('ABSPATH')) {
     exit;
 }
-
 class Fifu_Block_Editor_Integration {
     private static bool $is_rest_dispatching = false;
 
@@ -72,59 +71,223 @@ class Fifu_Block_Editor_Integration {
         add_filter('rest_request_after_callbacks', [ self::class, 'unmark_rest_dispatching' ], 10, 3);
     }
 
-    public static function sync_block_with_fifu(\WP_Post $post, \WP_REST_Request $request, bool $creating): void {
-        $post_id = isset($post->ID) ? (int) $post->ID : 0;
+    public static function sync_block_with_fifu(
+        \WP_Post $post,
+        \WP_REST_Request $request,
+        bool $creating
+    ): void {
+        $post_id = isset($post->ID)
+            ? (int) $post->ID
+            : 0;
+
         if (!$post_id) {
             return;
         }
 
-        $post_content = isset($post->post_content) ? (string) $post->post_content : '';
+        $post_content = isset($post->post_content)
+            ? (string) $post->post_content
+            : '';
 
-        if (!self::fifu_block_editor_has_fifu_image_block($post_content)) {
+        if (
+            !self::fifu_block_editor_has_fifu_image_block(
+                $post_content
+            )
+        ) {
             return;
         }
 
-        $request_meta = self::fifu_block_editor_get_request_meta($request);
+        $request_meta =
+            self::fifu_block_editor_get_request_meta(
+                $request
+            );
 
-        $has_request_image_url = array_key_exists('fifu_image_url', $request_meta);
-        $has_request_image_alt = array_key_exists('fifu_image_alt', $request_meta);
+        $has_request_image_url =
+            array_key_exists(
+                'fifu_image_url',
+                $request_meta
+            );
 
-        $raw_image_url = $has_request_image_url
-            ? $request_meta['fifu_image_url']
-            : Fifu_Post_Image_Url_Read_Service::get_image_url($post_id);
+        $has_request_image_alt =
+            array_key_exists(
+                'fifu_image_alt',
+                $request_meta
+            );
 
-        $image_url = esc_url_raw(rtrim((string) $raw_image_url));
+        $current_raw_image_url =
+            Fifu_Post_Image_Url_Read_Service::
+                get_image_url(
+                    $post_id
+                );
 
-        if (!function_exists('fifu_dev_set_image')) {
-            $developer_functions = FIFU_PLUGIN_DIR . 'includes/api/fifu-developer-functions.php';
-            if (is_readable($developer_functions)) {
-                require_once $developer_functions;
+        $current_image_url =
+            esc_url_raw(
+                rtrim(
+                    (string) $current_raw_image_url
+                )
+            );
+
+        $raw_image_url =
+            $has_request_image_url
+                ? $request_meta[
+                    'fifu_image_url'
+                ]
+                : $current_raw_image_url;
+
+        $image_url =
+            esc_url_raw(
+                rtrim(
+                    (string) $raw_image_url
+                )
+            );
+
+        $image_url_changed =
+            $image_url
+            !== $current_image_url;
+
+        $current_thumbnail_id =
+            (int) get_post_meta(
+                $post_id,
+                '_thumbnail_id',
+                true
+            );
+
+        $needs_featured_attachment_sync =
+            $image_url !== ''
+            && $current_thumbnail_id <= 0;
+
+        $should_sync_image =
+            $creating
+            || $image_url_changed
+            || $needs_featured_attachment_sync;
+
+        if ($should_sync_image) {
+            if (
+                !function_exists(
+                    'fifu_dev_set_image'
+                )
+            ) {
+                $developer_functions =
+                    FIFU_PLUGIN_DIR
+                    . 'includes/api/'
+                    . 'fifu-developer-functions.php';
+
+                if (
+                    is_readable(
+                        $developer_functions
+                    )
+                ) {
+                    require_once
+                        $developer_functions;
+                }
+            }
+
+            $image_saved =
+                fifu_dev_set_image(
+                    $post_id,
+                    $image_url
+                );
+
+            if (!$image_saved) {
+                return;
             }
         }
 
-        $image_saved = fifu_dev_set_image($post_id, $image_url);
-
-        if (!$image_saved) {
-            return;
-        }
-
         if ($image_url === '') {
-            FIFU_Post_Meta_Updater::instance()->update_or_delete_value($post_id, 'fifu_image_alt', '');
+            $current_image_alt =
+                sanitize_text_field(
+                    (string)
+                    Fifu_Post_Image_Alt_Read_Service::
+                        get_image_alt(
+                            $post_id
+                        )
+                );
+
+            if (
+                $should_sync_image
+                || $current_image_alt !== ''
+            ) {
+                FIFU_Post_Meta_Updater::
+                    instance()
+                    ->update_or_delete_value(
+                        $post_id,
+                        'fifu_image_alt',
+                        ''
+                    );
+            }
+
             return;
         }
 
-        $raw_image_alt = $has_request_image_alt
-            ? $request_meta['fifu_image_alt']
-            : Fifu_Post_Image_Alt_Read_Service::get_image_alt($post_id);
+        if ($should_sync_image) {
+            $raw_image_alt =
+                $has_request_image_alt
+                    ? $request_meta[
+                        'fifu_image_alt'
+                    ]
+                    : Fifu_Post_Image_Alt_Read_Service::
+                        get_image_alt(
+                            $post_id
+                        );
 
-        $image_alt = sanitize_text_field((string) $raw_image_alt);
-        FIFU_Post_Meta_Updater::instance()->update_or_delete_value($post_id, 'fifu_image_alt', $image_alt);
+            $image_alt =
+                sanitize_text_field(
+                    (string) $raw_image_alt
+                );
+
+            FIFU_Post_Meta_Updater::
+                instance()
+                ->update_or_delete_value(
+                    $post_id,
+                    'fifu_image_alt',
+                    $image_alt
+                );
+
+            return;
+        }
+
+        if (!$has_request_image_alt) {
+            return;
+        }
+
+        $image_alt =
+            sanitize_text_field(
+                (string)
+                $request_meta[
+                    'fifu_image_alt'
+                ]
+            );
+
+        $current_image_alt =
+            sanitize_text_field(
+                (string)
+                Fifu_Post_Image_Alt_Read_Service::
+                    get_image_alt(
+                        $post_id
+                    )
+            );
+
+        if (
+            $image_alt
+            === $current_image_alt
+        ) {
+            return;
+        }
+
+        FIFU_Post_Meta_Updater::
+            instance()
+            ->update_or_delete_value(
+                $post_id,
+                'fifu_image_alt',
+                $image_alt
+            );
     }
 
-    public static function filter_block_meta_rest_reads($value, int $post_id, string $meta_key, bool $single, string $meta_type = 'post') {
+    public static function filter_block_meta_rest_reads($value, int $post_id, string $meta_key, mixed $single, string $meta_type = 'post') {
         if (!self::should_virtualize_block_meta($meta_key) || !self::is_rest_request_context()) {
             return $value;
         }
+
+        $single = (bool) $single;
 
         remove_filter('get_post_metadata', [ self::class, 'filter_block_meta_rest_reads' ], 10);
 

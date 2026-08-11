@@ -31,6 +31,14 @@ add_action(
         }
 
         if (
+            wp_is_post_revision(
+                $postId
+            )
+        ) {
+            return;
+        }
+
+        if (
             $action
             === 'woocommerce_do_ajax_product_import'
         ) {

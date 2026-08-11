@@ -4,14 +4,14 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use remote media as the featured image and beyond.
- * Version: 6.0.0
+ * Version: 6.0.1
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * Requires at least: 5.6
  * Tested up to: 7.0.3
  * Requires PHP: 8.1
  * WC requires at least: 4.0
- * WC tested up to: 11.0.0
+ * WC tested up to: 11.0.1
  * Text Domain: featured-image-from-url
  * Domain Path: /languages
  * License: GPLv3
@@ -428,6 +428,39 @@ function fifu_db2_required_schema_exists_for_current_blog(): bool {
 
         $usable = $wpdb->query('SELECT 1 FROM ' . $table . ' LIMIT 0');
         if ($usable === false) {
+            return false;
+        }
+    }
+
+    $required_keys = [
+        1 => 'image',
+        2 => 'slider',
+        3 => 'video',
+        4 => 'audio',
+        5 => 'iframe',
+        6 => 'custom_video',
+        7 => 'finder',
+        8 => 'redirect',
+    ];
+
+    $key_rows = $wpdb->get_results(
+        "SELECT key_id, key_type
+         FROM {$wpdb->prefix}fifu_key",
+        ARRAY_A
+    );
+
+    if (!is_array($key_rows)) {
+        return false;
+    }
+
+    $stored_keys = [];
+
+    foreach ($key_rows as $row) {
+        $stored_keys[(int) $row['key_id']] = (string) $row['key_type'];
+    }
+
+    foreach ($required_keys as $key_id => $key_type) {
+        if (($stored_keys[$key_id] ?? null) !== $key_type) {
             return false;
         }
     }

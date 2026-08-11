@@ -4,7 +4,6 @@ declare(strict_types=1);
 if (!defined('ABSPATH')) {
     exit;
 }
-
 class Fifu_Elementor_Integration {
 
     public static function register_hooks(): void {
@@ -166,8 +165,23 @@ class Fifu_Elementor_Integration {
 
         if ($action['action'] === 'set_image') {
             Fifu_Developer_Media_Service::set_image($post_id, $action['url']);
-            if (array_key_exists('alt', $action) && $action['alt'] !== null) {
-                self::write_image_alt($post_id, (string) $action['alt'], false);
+            if (
+                array_key_exists(
+                    'alt',
+                    $action
+                )
+                && $action['alt'] !== null
+                && self::
+                    image_alt_needs_write(
+                        $post_id,
+                        (string) $action['alt']
+                    )
+            ) {
+                self::write_image_alt(
+                    $post_id,
+                    (string) $action['alt'],
+                    false
+                );
             }
 
             if (function_exists('get_post_thumbnail_id')) {
@@ -176,7 +190,16 @@ class Fifu_Elementor_Integration {
                 $att_id = 0;
             }
 
-            if ($att_id && function_exists('getimagesize')) {
+            if (
+                $att_id
+                && function_exists(
+                    'getimagesize'
+                )
+                && !self::
+                    attachment_has_valid_dimensions(
+                        (int) $att_id
+                    )
+            ) {
                 $image_sizes = @getimagesize($action['url']);
                 if ($image_sizes && isset($image_sizes[0], $image_sizes[1])) {
                     Fifu_Attachment_Dimensions_Service::update_dimensions($att_id, (int) $image_sizes[0], (int) $image_sizes[1]);
@@ -209,6 +232,117 @@ class Fifu_Elementor_Integration {
         }
 
         return (string) $validated_url;
+    }
+
+    private static function image_alt_needs_write(
+        int $post_id,
+        string $alt_value
+    ): bool {
+        $stripped_alt =
+            function_exists(
+                'wp_strip_all_tags'
+            )
+                ? (string)
+                    wp_strip_all_tags(
+                        $alt_value
+                    )
+                : strip_tags(
+                    $alt_value
+                );
+
+        $expected_alt =
+            self::
+            normalize_elementor_alt_value(
+                $stripped_alt
+            );
+
+        if ($expected_alt === null) {
+            return true;
+        }
+
+        if (
+            !function_exists(
+                'fifu_db2_manager'
+            )
+        ) {
+            return true;
+        }
+
+        try {
+            $manager =
+                fifu_db2_manager();
+
+            if (
+                !$manager
+                    instanceof
+                    Fifu_Db2_Manager
+                || !method_exists(
+                    $manager,
+                    'getPostAltMapping'
+                )
+            ) {
+                return true;
+            }
+
+            $mapping =
+                $manager->
+                    getPostAltMapping(
+                        $post_id,
+                        'image',
+                        0
+                    );
+
+            if (
+                !is_array(
+                    $mapping
+                )
+                || !array_key_exists(
+                    'alt',
+                    $mapping
+                )
+            ) {
+                return true;
+            }
+
+            return self::
+                normalize_elementor_alt_value(
+                    (string)
+                    $mapping['alt']
+                )
+                !== $expected_alt;
+        } catch (\Throwable $throwable) {
+            return true;
+        }
+    }
+
+    private static function attachment_has_valid_dimensions(
+        int $attachment_id
+    ): bool {
+        if (
+            $attachment_id <= 0
+            || !function_exists(
+                'wp_get_attachment_metadata'
+            )
+        ) {
+            return false;
+        }
+
+        $metadata =
+            wp_get_attachment_metadata(
+                $attachment_id
+            );
+
+        return is_array(
+            $metadata
+        )
+            && (int) (
+                $metadata['width']
+                ?? 0
+            ) > 0
+            && (int) (
+                $metadata['height']
+                ?? 0
+            ) > 0;
     }
 
     private static function write_image_alt(int $post_id, string $alt_value, bool $force_delete_first): void {
