@@ -43,14 +43,27 @@ class Fifu_VG_Sheet_Editor_Integration
      */
     public static function register_columns($editor): void
     {
-        $postTypes = $editor->args['enabled_post_types'];
+        if (!is_object($editor)) {
+            return;
+        }
+
+        $args = $editor->args ?? null;
+        if (!is_array($args)) {
+            return;
+        }
+
+        $postTypes = $args['enabled_post_types'] ?? null;
+        $columns = $args['columns'] ?? null;
+        if (!is_array($postTypes) || !is_object($columns) || !method_exists($columns, 'register_item')) {
+            return;
+        }
 
         foreach ($postTypes as $postType) {
             if (!post_type_exists($postType)) {
                 return;
             }
 
-            $editor->args['columns']->register_item(
+            $columns->register_item(
                 'fifu_image_url',
                 $postType,
                 [
@@ -69,7 +82,7 @@ class Fifu_VG_Sheet_Editor_Integration
                 ]
             );
 
-            $editor->args['columns']->register_item(
+            $columns->register_item(
                 'fifu_image_alt',
                 $postType,
                 [
@@ -89,10 +102,11 @@ class Fifu_VG_Sheet_Editor_Integration
     /**
      * Prevent internal compatibility fields from appearing.
      */
-    public static function blacklist_columns(
-        array $columns,
-        string $postType
-    ): array {
+    public static function blacklist_columns($columns, $postType) {
+        if (!is_array($columns)) {
+            return $columns;
+        }
+
         $columns[] = 'fifu_search_proxy';
 
         return $columns;
@@ -116,9 +130,20 @@ class Fifu_VG_Sheet_Editor_Integration
         $cellArgs,
         $spreadsheetColumns
     ): void {
+        $postId = is_numeric($postId)
+            ? (int) $postId
+            : 0;
+
+        if (
+            $postId <= 0
+            || ($url !== null && !is_scalar($url))
+        ) {
+            return;
+        }
+
         Fifu_Developer_Media_Service::set_image(
-            (int) $postId,
-            (string) $url
+            $postId,
+            (string) ($url ?? '')
         );
     }
 

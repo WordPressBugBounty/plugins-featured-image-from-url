@@ -10,11 +10,14 @@ class Fifu_Yoast_Schema_Graph_Integration {
     /**
      * Filters the graphql schema graph to include FIFU image URLs.
      *
-     * @param array $graph
+     * @param mixed $graph
      * @param mixed $context
-     * @return array
      */
-    public static function filter_schema_graph(array $graph, $context): array {
+    public static function filter_schema_graph($graph, $context) {
+        if (!is_array($graph)) {
+            return $graph;
+        }
+
         if (!is_singular()) {
             return $graph;
         }

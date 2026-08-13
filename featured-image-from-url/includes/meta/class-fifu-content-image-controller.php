@@ -10,10 +10,13 @@ class Fifu_Content_Image_Controller {
     /**
      * Prepends the featured image to the rendered post content.
      *
-     * @param string $content Original post content.
-     * @return string
+     * @param mixed $content Original post content.
      */
-    public static function append_featured_image( string $content ): string {
+    public static function append_featured_image( $content ) {
+        if ( ! is_string( $content ) ) {
+            return $content;
+        }
+
         if ( Fifu_Options_Utils::is_off( 'fifu_pcontent_add' ) ) {
             return $content;
         }
@@ -37,10 +40,13 @@ class Fifu_Content_Image_Controller {
     /**
      * Removes the first content image that exactly matches the featured image URL.
      *
-     * @param string $content Original post content.
-     * @return string
+     * @param mixed $content Original post content.
      */
-    public static function remove_duplicate_featured_from_content( string $content ): string {
+    public static function remove_duplicate_featured_from_content( $content ) {
+        if ( ! is_string( $content ) ) {
+            return $content;
+        }
+
         if ( Fifu_Options_Utils::is_off( 'fifu_pcontent_remove' ) ) {
             return $content;
         }

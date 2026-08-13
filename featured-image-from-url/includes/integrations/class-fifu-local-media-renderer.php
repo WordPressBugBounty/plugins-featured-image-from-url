@@ -161,11 +161,14 @@ class Fifu_Local_Media_Renderer {
      *
      * Mirrors the former facetwp_filtered_post_ids closure.
      *
-     * @param array $post_ids
+     * @param mixed $post_ids
      * @param mixed $facetwp
-     * @return array
      */
-    public static function register_for_facetwp( array $post_ids, $facetwp ): array {
+    public static function register_for_facetwp( $post_ids, $facetwp ) {
+        if ( ! is_array( $post_ids ) ) {
+            return $post_ids;
+        }
+
         foreach ( $post_ids as $post_id ) {
             self::register_post_thumbnail( (int) $post_id );
         }
@@ -180,11 +183,15 @@ class Fifu_Local_Media_Renderer {
      * Keep the original value unchanged when posts_results receives null or another non-array value.
      *
      * @param array|null $posts
-     * @param \WP_Query  $query
+     * @param mixed $query
      * @return array|null
      */
-    public static function register_posts_results( $posts, \WP_Query $query ) {
+    public static function register_posts_results( $posts, $query ) {
         if ( ! is_array( $posts ) || empty( $posts ) ) {
+            return $posts;
+        }
+
+        if ( ! $query instanceof \WP_Query ) {
             return $posts;
         }
 

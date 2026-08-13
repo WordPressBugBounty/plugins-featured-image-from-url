@@ -21,28 +21,49 @@ final class Fifu_Content_Egg_Integration
      * Action callback for content_egg_save_data.
      * It will eventually replace the legacy anonymous function.
      *
-     * @param array $data
-     * @param string $moduleId
-     * @param int $postId
-     * @param bool $isLastIteration
+     * @param mixed $data
+     * @param mixed $moduleId
+     * @param mixed $postId
+     * @param mixed $isLastIteration
      */
     public static function on_save_data(
-        array $data,
-        string $moduleId,
-        int $postId,
-        bool $isLastIteration
+        $data,
+        $moduleId,
+        $postId,
+        $isLastIteration
     ): void {
-        if (!$isLastIteration) {
+        if (!is_array($data) || !$isLastIteration) {
+            return;
+        }
+
+        $postId = is_numeric($postId) ? (int) $postId : 0;
+        if ($postId <= 0) {
             return;
         }
 
         $first = reset($data);
-        if (!empty($first['img'])) {
-            Fifu_Developer_Media_Service::set_image(
-                $postId,
-                (string) $first['img']
+        $image = is_array($first)
+            ? ($first['img'] ?? null)
+            : null;
+
+        if (
+            !is_array($first)
+            || !is_scalar($image)
+            || empty($image)
+        ) {
+            remove_action(
+                'content_egg_save_data',
+                [\ContentEgg\application\components\ExternalFeaturedImage::class, 'setImage'],
+                13
             );
+
+            return;
         }
+
+        Fifu_Developer_Media_Service::set_image(
+            $postId,
+            (string) $image
+        );
 
         remove_action(
             'content_egg_save_data',

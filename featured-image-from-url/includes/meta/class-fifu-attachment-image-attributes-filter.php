@@ -10,18 +10,22 @@ class Fifu_Attachment_Image_Attributes_Filter {
     /**
      * Filters attachment image attributes for FIFU CDN images.
      *
-     * @param array      $attr
-     * @param \WP_Post   $attachment
-     * @param string|int $size
-     * @return array
+     * @param mixed      $attr
+     * @param mixed      $attachment
+     * @param mixed      $size
+     * @return mixed
      */
-    public static function filter_attributes(array $attr, $attachment, $size): array {
+    public static function filter_attributes($attr, $attachment, $size) {
+        if (!is_array($attr)) {
+            return $attr;
+        }
+
         // ignore themes
         if (in_array(strtolower(get_option('template')), array('jnews'))) {
             return $attr;
         }
 
-        if (!isset($attr['src'])) {
+        if (!isset($attr['src']) || !is_string($attr['src'])) {
             return $attr;
         }
 
@@ -32,7 +36,10 @@ class Fifu_Attachment_Image_Attributes_Filter {
 
         $current_screen = function_exists('get_current_screen') ? get_current_screen() : null;
         if ($current_screen && (($current_screen->parent_file ?? '') == 'edit.php?post_type=product')) {
-            $attr['src'] = Fifu_Cdn_Thumbnail_Resolver::get_optimized_thumbnail_url($original_src, $attachment->ID ?? null);
+            $attachment_id = is_object($attachment) && isset($attachment->ID)
+                ? $attachment->ID
+                : null;
+            $attr['src'] = Fifu_Cdn_Thumbnail_Resolver::get_optimized_thumbnail_url($original_src, $attachment_id);
             return $attr;
         }
 

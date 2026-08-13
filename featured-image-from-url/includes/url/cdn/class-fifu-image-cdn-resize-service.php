@@ -65,7 +65,11 @@ class Fifu_Image_Cdn_Resize_Service {
 
         if ( 'full' === $size ) {
             $metadata = wp_get_attachment_metadata( $attachment_id );
-            if ( ! empty( $metadata['width'] ) && ! empty( $metadata['height'] ) ) {
+            if (
+                is_array($metadata)
+                && ! empty( $metadata['width'] )
+                && ! empty( $metadata['height'] )
+            ) {
                 $original_width  = intval( $metadata['width'] ?? 0 );
                 $original_height = intval( $metadata['height'] ?? 0 );
                 $aspect_ratio    = $original_width ? $original_height / $original_width : 0;

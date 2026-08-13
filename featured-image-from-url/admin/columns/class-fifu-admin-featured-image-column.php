@@ -156,8 +156,12 @@ final class Fifu_Admin_Featured_Image_Column
     /**
      * Adds the featured image column header as the legacy fifu_column_head() helper used to.
      */
-    public static function filter_list_table_columns(array $columns): array
+    public static function filter_list_table_columns($columns)
     {
+        if (!is_array($columns)) {
+            return $columns;
+        }
+
         $fifu = Fifu_Quick_Edit_Strings::get_strings();
         $height = self::COLUMN_HEIGHT;
 
@@ -176,8 +180,17 @@ final class Fifu_Admin_Featured_Image_Column
     /**
      * Renders the featured image column for posts and pages, mirroring the original fifu_column_content().
      */
-    public static function render_post_column(string $column, int $post_id): void
+    public static function render_post_column($column, $post_id): void
     {
+        if (!is_string($column)) {
+            return;
+        }
+
+        $post_id = is_numeric($post_id) ? (int) $post_id : 0;
+        if ($post_id <= 0) {
+            return;
+        }
+
         if ($column !== 'featured_image' || self::is_featured_image_column_hidden()) {
             return;
         }
@@ -247,8 +260,17 @@ final class Fifu_Admin_Featured_Image_Column
     /**
      * Renders the featured image column for taxonomy rows, porting fifu_ctgr_column_content().
      */
-    public static function render_term_column($internal_image, string $column, int $term_id): void
+    public static function render_term_column($internal_image, $column, $term_id): void
     {
+        if (!is_string($column)) {
+            return;
+        }
+
+        $term_id = is_numeric($term_id) ? (int) $term_id : 0;
+        if ($term_id <= 0) {
+            return;
+        }
+
         if ($column !== 'featured_image') {
             echo $internal_image;
             return;

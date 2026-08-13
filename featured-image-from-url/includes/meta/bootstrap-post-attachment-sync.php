@@ -19,16 +19,23 @@ add_action(
 add_action(
     'wp_insert_post',
     static function (
-        int $post_id,
-        \WP_Post $post,
-        bool $update
+        $post_id,
+        $post,
+        $update
     ): void {
-        $postId = (int) ($post->ID ?? 0);
-        $action = $_POST['action'] ?? '';
+        $post_id = is_numeric($post_id) ? (int) $post_id : 0;
 
-        if (!$postId) {
+        if ($post_id <= 0 || !$post instanceof \WP_Post) {
             return;
         }
+
+        $postId = (int) ($post->ID ?? 0);
+
+        if ($postId <= 0) {
+            return;
+        }
+
+        $action = $_POST['action'] ?? '';
 
         if (
             wp_is_post_revision(

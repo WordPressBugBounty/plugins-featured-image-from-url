@@ -72,10 +72,19 @@ class Fifu_Block_Editor_Integration {
     }
 
     public static function sync_block_with_fifu(
-        \WP_Post $post,
-        \WP_REST_Request $request,
-        bool $creating
+        $post,
+        $request,
+        $creating
     ): void {
+        if (
+            !$post instanceof \WP_Post
+            || !$request instanceof \WP_REST_Request
+        ) {
+            return;
+        }
+
+        $creating = (bool) $creating;
+
         $post_id = isset($post->ID)
             ? (int) $post->ID
             : 0;
@@ -282,11 +291,16 @@ class Fifu_Block_Editor_Integration {
             );
     }
 
-    public static function filter_block_meta_rest_reads($value, int $post_id, string $meta_key, mixed $single, string $meta_type = 'post') {
-        if (!self::should_virtualize_block_meta($meta_key) || !self::is_rest_request_context()) {
+    public static function filter_block_meta_rest_reads($value, $post_id, $meta_key, $single, $meta_type = 'post') {
+        if (
+            !is_string($meta_key)
+            || !self::should_virtualize_block_meta($meta_key)
+            || !self::is_rest_request_context()
+        ) {
             return $value;
         }
 
+        $post_id = (int) $post_id;
         $single = (bool) $single;
 
         remove_filter('get_post_metadata', [ self::class, 'filter_block_meta_rest_reads' ], 10);
@@ -308,23 +322,35 @@ class Fifu_Block_Editor_Integration {
         return $single ? (string) $effective_value : array((string) $effective_value);
     }
 
-    public static function filter_block_meta_rest_writes($check, int $post_id, string $meta_key, $meta_value, $prev_value) {
-        if (!self::should_virtualize_block_meta($meta_key) || !self::is_rest_request_context()) {
+    public static function filter_block_meta_rest_writes($check, $post_id, $meta_key, $meta_value, $prev_value) {
+        if (
+            !is_string($meta_key)
+            || !self::should_virtualize_block_meta($meta_key)
+            || !self::is_rest_request_context()
+        ) {
             return $check;
         }
 
         return true;
     }
 
-    public static function filter_block_meta_rest_adds($check, int $post_id, string $meta_key, $meta_value, bool $unique) {
-        if (!self::should_virtualize_block_meta($meta_key) || !self::is_rest_request_context()) {
+    public static function filter_block_meta_rest_adds($check, $post_id, $meta_key, $meta_value, $unique) {
+        if (
+            !is_string($meta_key)
+            || !self::should_virtualize_block_meta($meta_key)
+            || !self::is_rest_request_context()
+        ) {
             return $check;
         }
 
         return true;
     }
 
-    public static function filter_rest_pre_insert_post($prepared_post, \WP_REST_Request $request) {
+    public static function filter_rest_pre_insert_post($prepared_post, $request) {
+        if (!$request instanceof \WP_REST_Request) {
+            return $prepared_post;
+        }
+
         $request_content = self::get_request_block_content($request);
         if (!has_block('fifu/image', $request_content)) {
             return $prepared_post;

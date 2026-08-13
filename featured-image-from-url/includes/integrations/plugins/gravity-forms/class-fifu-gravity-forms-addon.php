@@ -68,8 +68,12 @@ final class Fifu_Gravity_Forms_Addon extends GFAddOn
         return [];
     }
 
-    public function tooltips(array $tooltips): array
+    public function tooltips($tooltips)
     {
+        if (!is_array($tooltips)) {
+            return $tooltips;
+        }
+
         $strings = Fifu_Gravity_Forms_Strings::get_strings();
 
         $simple_tooltips = [
@@ -79,8 +83,9 @@ final class Fifu_Gravity_Forms_Addon extends GFAddOn
         return array_merge($tooltips, $simple_tooltips);
     }
 
-    public function field_appearance_settings(int $position, int $form_id): void
+    public function field_appearance_settings($position, $form_id): void
     {
+        $position = is_numeric($position) ? (int) $position : 0;
         if ($position !== 250) {
             return;
         }

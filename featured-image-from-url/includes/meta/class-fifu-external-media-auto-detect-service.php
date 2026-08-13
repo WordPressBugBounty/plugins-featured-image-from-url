@@ -20,8 +20,16 @@ final class Fifu_External_Media_Auto_Detect_Service
         add_action('save_post', [self::class, 'handle_save_post'], 10, 2);
     }
 
-    public static function capture_raw_post_content(array $data, array $postarr, $unsanitized_postarr = [], bool $update = false): array
+    public static function capture_raw_post_content($data, $postarr, $unsanitized_postarr = [], $update = false)
     {
+        if (!is_array($data)) {
+            return $data;
+        }
+
+        if (!is_array($postarr)) {
+            return $data;
+        }
+
         $postId = (int) ($postarr['ID'] ?? $postarr['post_ID'] ?? 0);
         if ($postId > 0) {
             $rawContent = null;
@@ -52,11 +60,17 @@ final class Fifu_External_Media_Auto_Detect_Service
     /**
      * Handle save_post to detect external media URLs and apply defaults.
      *
-     * @param int     $postId
-     * @param WP_Post $post
+     * @param mixed $postId
+     * @param mixed $post
      */
-    public static function handle_save_post(int $postId, \WP_Post $post): void
+    public static function handle_save_post($postId, $post): void
     {
+        $postId = is_numeric($postId) ? (int) $postId : 0;
+
+        if ($postId <= 0 || !$post instanceof \WP_Post) {
+            return;
+        }
+
         if (isset($_POST['fifu_input_url'])) {
             return;
         }

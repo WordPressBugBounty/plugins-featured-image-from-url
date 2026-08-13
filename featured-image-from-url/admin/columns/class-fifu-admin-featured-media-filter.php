@@ -29,8 +29,12 @@ final class Fifu_Admin_Featured_Media_Filter
         add_filter('posts_clauses', [self::class, 'filter_posts_clauses'], 10, 2);
     }
 
-    public static function render_dropdown(string $postType, string $which): void
+    public static function render_dropdown($postType, $which): void
     {
+        if (!is_string($postType) || !is_string($which)) {
+            return;
+        }
+
         if ($which !== 'top' || !post_type_supports($postType, 'thumbnail')) {
             return;
         }
@@ -95,8 +99,12 @@ final class Fifu_Admin_Featured_Media_Filter
         );
     }
 
-    public static function filter_query(WP_Query $query): void
+    public static function filter_query($query): void
     {
+        if (!$query instanceof WP_Query) {
+            return;
+        }
+
         if (!self::isEligibleQuery($query)) {
             return;
         }
@@ -113,8 +121,16 @@ final class Fifu_Admin_Featured_Media_Filter
         }
     }
 
-    public static function filter_posts_clauses(array $clauses, WP_Query $query): array
+    public static function filter_posts_clauses($clauses, $query)
     {
+        if (!is_array($clauses)) {
+            return $clauses;
+        }
+
+        if (!$query instanceof WP_Query) {
+            return $clauses;
+        }
+
         if (!self::isEligibleQuery($query)) {
             return $clauses;
         }

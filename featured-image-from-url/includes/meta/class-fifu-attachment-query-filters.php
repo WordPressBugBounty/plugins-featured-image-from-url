@@ -35,10 +35,13 @@ class Fifu_Attachment_Query_Filters {
     /**
      * Removes FIFU attachments from media library AJAX requests.
      *
-     * @param string $where
-     * @return string
+     * @param mixed $where
      */
-    public static function filter_media_library_where( string $where ): string {
+    public static function filter_media_library_where( $where ) {
+        if ( ! is_string( $where ) ) {
+            return $where;
+        }
+
         global $wpdb;
 
         $action = $_POST['action'] ?? '';
@@ -52,11 +55,18 @@ class Fifu_Attachment_Query_Filters {
     /**
      * Removes FIFU attachments from the admin attachment list query.
      *
-     * @param string   $where
-     * @param \WP_Query $query
-     * @return string
+     * @param mixed $where
+     * @param mixed $query
      */
-    public static function filter_admin_attachment_list_where( string $where, \WP_Query $query ): string {
+    public static function filter_admin_attachment_list_where( $where, $query ) {
+        if ( ! is_string( $where ) ) {
+            return $where;
+        }
+
+        if ( ! $query instanceof \WP_Query ) {
+            return $where;
+        }
+
         global $wpdb;
 
         if ( Fifu_Web_Stories_Integration::is_web_story() || ( is_admin() && $query->is_main_query() && strpos( $where, 'attachment' ) !== false ) ) {

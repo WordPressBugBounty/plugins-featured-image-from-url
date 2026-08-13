@@ -577,7 +577,11 @@ if (!class_exists('Fifu_Migration_Auto_Runner')) {
             }
         }
 
-        public static function add_cron_schedule(array $schedules): array {
+        public static function add_cron_schedule($schedules) {
+            if (!is_array($schedules)) {
+                return $schedules;
+            }
+
             if (!isset($schedules['fifu_every_minute'])) {
                 $schedules['fifu_every_minute'] = array(
                     'interval' => 60,

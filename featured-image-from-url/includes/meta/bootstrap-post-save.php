@@ -5,8 +5,19 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-add_action('save_post', static function (int $postId, WP_Post $post, bool $update): void {
+add_action('save_post', static function ($postId, $post, $update): void {
     if (empty($_REQUEST['fifu_post_save_pending'])) {
+        return;
+    }
+
+    $postId = is_numeric($postId)
+        ? (int) $postId
+        : 0;
+
+    if (
+        $postId <= 0
+        || !$post instanceof WP_Post
+    ) {
         return;
     }
 

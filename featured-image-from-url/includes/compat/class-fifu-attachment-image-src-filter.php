@@ -28,6 +28,10 @@ final class Fifu_Attachment_Image_Src_Filter
             return $image;
         }
 
+        if (!is_array($image)) {
+            return $image;
+        }
+
         if (
             !$image
             || Fifu_Theme_Detector::is_houzez_active()

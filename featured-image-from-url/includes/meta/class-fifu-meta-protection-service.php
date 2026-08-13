@@ -27,8 +27,10 @@ final class Fifu_Meta_Protection_Service
     /**
      * Determines whether the provided meta key should remain hidden.
      */
-    public static function filter_is_protected_meta(bool $protected, $meta_key, string $meta_type): bool
+    public static function filter_is_protected_meta($protected, $meta_key, $meta_type): bool
     {
+        $protected = (bool) $protected;
+
         if (!is_string($meta_key)) {
             return $protected;
         }

@@ -10,11 +10,10 @@ final class Fifu_Attachment_Compat_Filters {
     /**
      * Keeps WooCommerce thumbnail filter behavior until overrides are needed.
      *
-     * @param string     $html
+     * @param mixed      $html
      * @param mixed|null $post_id
-     * @return string
      */
-    public static function passthrough_woocommerce_thumbnail_html( string $html, $post_id = null ): string {
+    public static function passthrough_woocommerce_thumbnail_html( $html, $post_id = null ) {
         // Pass-through so legacy filter behavior remains unchanged for now.
         return $html;
     }
@@ -23,10 +22,12 @@ final class Fifu_Attachment_Compat_Filters {
      * Sanitizes attachment metadata for FIFU-owned attachments.
      *
      * @param mixed $data
-     * @param int   $att_id
+     * @param mixed $att_id
      * @return mixed
      */
-    public static function passthrough_attachment_metadata( $data, int $att_id ) {
+    public static function passthrough_attachment_metadata( $data, $att_id ) {
+        $att_id = is_numeric( $att_id ) ? (int) $att_id : 0;
+
         if ( $att_id <= 0 ) {
             return $data;
         }
@@ -174,14 +175,13 @@ final class Fifu_Attachment_Compat_Filters {
     /**
      * Keeps wp_get_attachment_image output untouched.
      *
-     * @param string     $html
+     * @param mixed      $html
      * @param mixed      $attachment_id
      * @param mixed      $size
      * @param mixed      $icon
      * @param array|bool $attr
-     * @return string
      */
-    public static function passthrough_attachment_image( string $html, $attachment_id, $size, $icon, $attr ): string {
+    public static function passthrough_attachment_image( $html, $attachment_id, $size, $icon, $attr ) {
         // Pass-through stub to preserve compatibility.
         return $html;
     }
@@ -190,11 +190,11 @@ final class Fifu_Attachment_Compat_Filters {
      * Pass-through for calculate_image_sizes.
      *
      * @param mixed  $sizes
-     * @param array  $size_array
-     * @param string $src
+     * @param mixed  $size_array
+     * @param mixed  $src
      * @return mixed
      */
-    public static function passthrough_calculate_image_sizes( $sizes, array $size_array, string $src ) {
+    public static function passthrough_calculate_image_sizes( $sizes, $size_array, $src ) {
         // Pass-through stub to retain existing hooks.
         return $sizes;
     }
@@ -202,14 +202,13 @@ final class Fifu_Attachment_Compat_Filters {
     /**
      * Pass-through for calculate_image_srcset.
      *
-     * @param array  $sources
-     * @param array  $size_array
-     * @param string $image_src
-     * @param array  $image_meta
-     * @param int    $attachment_id
-     * @return array
+     * @param mixed $sources
+     * @param mixed $size_array
+     * @param mixed $image_src
+     * @param mixed $image_meta
+     * @param mixed $attachment_id
      */
-    public static function passthrough_calculate_image_srcset( array $sources, array $size_array, string $image_src, array $image_meta, int $attachment_id ): array {
+    public static function passthrough_calculate_image_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
         // Pass-through stub to preserve srcset hooks.
         return $sources;
     }
@@ -217,13 +216,13 @@ final class Fifu_Attachment_Compat_Filters {
     /**
      * Pass-through for calculate_image_srcset_meta.
      *
-     * @param array  $image_meta
-     * @param array  $size_array
-     * @param string $image_src
-     * @param int    $attachment_id
+     * @param mixed $image_meta
+     * @param mixed $size_array
+     * @param mixed $image_src
+     * @param mixed $attachment_id
      * @return array
      */
-    public static function passthrough_calculate_image_srcset_meta( array|false $image_meta, array $size_array, string $image_src, int $attachment_id ): array {
+    public static function passthrough_calculate_image_srcset_meta( $image_meta, $size_array, $image_src, $attachment_id ): array {
         // Pass-through stub to preserve srcset metadata hooks.
         if ( ! is_array( $image_meta ) ) {
             return [];
@@ -234,11 +233,10 @@ final class Fifu_Attachment_Compat_Filters {
     /**
      * Pass-through for max_srcset_image_width.
      *
-     * @param int   $max_width
-     * @param array $size_array
-     * @return int
+     * @param mixed $max_width
+     * @param mixed $size_array
      */
-    public static function passthrough_max_srcset_image_width( int $max_width, array $size_array ): int {
+    public static function passthrough_max_srcset_image_width( $max_width, $size_array ) {
         // Pass-through stub for width limits.
         return $max_width;
     }
@@ -246,12 +244,11 @@ final class Fifu_Attachment_Compat_Filters {
     /**
      * Pass-through for admin post thumbnail HTML.
      *
-     * @param string $content
-     * @param int    $post_id
-     * @param int    $thumbnail_id
-     * @return string
+     * @param mixed $content
+     * @param mixed $post_id
+     * @param mixed $thumbnail_id
      */
-    public static function passthrough_admin_post_thumbnail_html( string $content, int $post_id, $thumbnail_id ): string {
+    public static function passthrough_admin_post_thumbnail_html( $content, $post_id, $thumbnail_id ) {
         // Pass-through stub to keep legacy admin filter behavior intact.
         return $content;
     }

@@ -86,10 +86,15 @@ final class Fifu_Dokan_Integration
      * Outputs the image field for editing an existing Dokan product.
      *
      * @param mixed $post
-     * @param int $post_id
+     * @param mixed $post_id
      */
-    public static function render_edit_product_image_field($post, int $post_id): void
+    public static function render_edit_product_image_field($post, $post_id): void
     {
+        $post_id = is_numeric($post_id) ? (int) $post_id : 0;
+        if ($post_id <= 0) {
+            return;
+        }
+
         $fifu = Fifu_Dokan_Strings::get_strings();
         $url = esc_url(Fifu_Post_Image_Url_Read_Service::get_image_url((int) $post_id) ?? '');
         ?>
@@ -109,17 +114,28 @@ final class Fifu_Dokan_Integration
      * Handles Dokan product creation/update.
      * It will eventually replace fifu_dokan_save_meta().
      *
-     * @param int $postId
-     * @param array $data
+     * @param mixed $postId
+     * @param mixed $data
      */
-    public static function on_product_save(int $postId, array $data): void
+    public static function on_product_save($postId, $data): void
     {
+        $postId = is_numeric($postId) ? (int) $postId : 0;
+        if ($postId <= 0 || !is_array($data)) {
+            return;
+        }
+
         if (!function_exists('dokan_is_user_seller') || !dokan_is_user_seller(get_current_user_id())) {
             return;
         }
 
         $postMetaUpdater = FIFU_Post_Meta_Updater::instance();
-        $url = esc_url_raw(rtrim((string) ($data['fifu_input_url'] ?? '')));
+        $rawUrl = $data['fifu_input_url'] ?? '';
+
+        if ($rawUrl !== null && !is_scalar($rawUrl)) {
+            return;
+        }
+
+        $url = esc_url_raw(rtrim((string) ($rawUrl ?? '')));
         $postMetaUpdater->update_or_delete($postId, 'fifu_image_url', $url);
 
         Fifu_Post_Attachment_Sync_Service::sync_attachments($postId);

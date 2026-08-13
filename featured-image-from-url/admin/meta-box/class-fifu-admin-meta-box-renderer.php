@@ -11,7 +11,11 @@ class Fifu_Admin_Meta_Box_Renderer {
         return is_string($alt) ? $alt : '';
     }
 
-    public static function render_featured_image_box( WP_Post $post ): void {
+    public static function render_featured_image_box( $post ): void {
+        if (!$post instanceof WP_Post) {
+            return;
+        }
+
         $margin = 'margin-top:5px;margin-left:3px;';
         $width = 'width:100%;';
         $height = 'height:150px;';

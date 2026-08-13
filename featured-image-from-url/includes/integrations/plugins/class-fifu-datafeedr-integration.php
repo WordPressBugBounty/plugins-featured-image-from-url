@@ -23,25 +23,41 @@ final class Fifu_Datafeedr_Integration
      *
      * Alternate images and product-gallery creation are Premium-only.
      *
-     * @param bool $doImport
-     * @param WP_Post $post
-     * @param array $product
+     * @param mixed $doImport
+     * @param mixed $post
+     * @param mixed $product
      */
     public static function on_do_import_thumbnail(
-        bool $doImport,
-        WP_Post $post,
-        array $product
-    ): bool {
-        $imageUrl = isset($product['image'])
-            ? trim((string) $product['image'])
-            : '';
+        $doImport,
+        $post,
+        $product
+    ) {
+        if (!$post instanceof \WP_Post || !is_array($product)) {
+            return $doImport;
+        }
+
+        $postId = is_numeric($post->ID ?? null) ? (int) $post->ID : 0;
+        if ($postId <= 0) {
+            return $doImport;
+        }
+
+        $imageValue = $product['image'] ?? null;
+
+        if (
+            $imageValue === null
+            || !is_scalar($imageValue)
+        ) {
+            return $doImport;
+        }
+
+        $imageUrl = trim((string) $imageValue);
 
         if ($imageUrl === '') {
             return $doImport;
         }
 
         Fifu_Developer_Media_Service::set_image(
-            (int) $post->ID,
+            $postId,
             $imageUrl
         );
 

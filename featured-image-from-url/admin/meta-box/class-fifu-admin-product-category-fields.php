@@ -90,11 +90,16 @@ class Fifu_Admin_Product_Category_Fields
      * This mirrors the legacy behavior of fifu_ctgr_save_properties() but
      * uses the new FIFU_Term_Meta_Updater and attachment sync service.
      *
-     * @param int $term_id The term ID.
+     * @param mixed $term_id The term ID.
      * @return void
      */
-    public static function save_image_meta(int $term_id): void
+    public static function save_image_meta($term_id): void
     {
+        $term_id = is_numeric($term_id) ? (int) $term_id : 0;
+        if ($term_id <= 0) {
+            return;
+        }
+
         // Only handle WooCommerce product categories.
         if (!isset($_POST['taxonomy']) || $_POST['taxonomy'] !== 'product_cat') {
             return;

@@ -10,10 +10,13 @@ class Fifu_Content_Image_Cdn_Optimizer {
     /**
      * Rewrites content images to use the public FIFU CDN plus lazy-load assets.
      *
-     * @param string $content
-     * @return string
+     * @param mixed $content
      */
-    public static function optimize(string $content): string {
+    public static function optimize($content) {
+        if (!is_string($content)) {
+            return $content;
+        }
+
         if (Fifu_Options_Utils::is_off('fifu_cdn_content') || empty($content)) {
             return $content;
         }

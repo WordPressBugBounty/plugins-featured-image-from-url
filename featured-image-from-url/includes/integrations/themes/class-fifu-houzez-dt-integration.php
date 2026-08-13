@@ -30,26 +30,41 @@ class Fifu_Houzez_Dt_Integration {
     /**
      * Hook that adjusts metadata prepared by DataTransport.
      */
-    public static function prepared_meta(array $prepared_meta, int $postId): array {
+    public static function prepared_meta($prepared_meta, $postId) {
+        if (!is_array($prepared_meta)) {
+            return $prepared_meta;
+        }
+
         if (isset($prepared_meta['_thumbnail_id']) || isset($prepared_meta['fave_property_images'])) {
             $prepared_meta['fifu_houzez_urls'] = [];
         }
 
         if (isset($prepared_meta['_thumbnail_id'])) {
-            $thumbnailId = $prepared_meta['_thumbnail_id'][0] ?? null;
-            if ($thumbnailId) {
-                $thumbnailUrl = wp_get_attachment_url($thumbnailId);
-                if ($thumbnailUrl) {
-                    $prepared_meta['fifu_houzez_urls'][] = $thumbnailUrl;
+            $thumbnailMeta = $prepared_meta['_thumbnail_id'];
+
+            if (is_array($thumbnailMeta)) {
+                $thumbnailId = $thumbnailMeta[0] ?? null;
+
+                if ($thumbnailId) {
+                    $thumbnailUrl = wp_get_attachment_url($thumbnailId);
+
+                    if ($thumbnailUrl) {
+                        $prepared_meta['fifu_houzez_urls'][] = $thumbnailUrl;
+                    }
                 }
             }
         }
 
         if (isset($prepared_meta['fave_property_images'])) {
-            foreach ($prepared_meta['fave_property_images'] as $imageId) {
-                $imageUrl = wp_get_attachment_url($imageId);
-                if ($imageUrl) {
-                    $prepared_meta['fifu_houzez_urls'][] = $imageUrl;
+            $gallery = $prepared_meta['fave_property_images'];
+
+            if (is_iterable($gallery)) {
+                foreach ($gallery as $imageId) {
+                    $imageUrl = wp_get_attachment_url($imageId);
+
+                    if ($imageUrl) {
+                        $prepared_meta['fifu_houzez_urls'][] = $imageUrl;
+                    }
                 }
             }
         }

@@ -29,8 +29,14 @@ final class Fifu_Free_Premium_Handoff
         return true;
     }
 
-    public static function completeHandoffAfterPremiumActivation(string $plugin, bool $network_wide): void
+    public static function completeHandoffAfterPremiumActivation($plugin, $network_wide): void
     {
+        if (!is_string($plugin)) {
+            return;
+        }
+
+        $network_wide = (bool) $network_wide;
+
         if (self::normalizePlugin($plugin) !== self::PREMIUM_PLUGIN_BASENAME) return;
         $free = self::$pendingFreePlugin;
         self::clearDeferredHandoff();

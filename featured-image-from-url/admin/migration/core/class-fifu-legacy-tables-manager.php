@@ -90,12 +90,6 @@ class Fifu_Legacy_Tables_Manager {
 			[ $this->wpdb->prefix, $this->wpdb->get_charset_collate() ],
 			$content
 		);
-		$first_line = '';
-		$lines = preg_split( '/\\r?\\n/', $sql );
-		if ( false !== $lines && isset( $lines[0] ) ) {
-			$first_line = $lines[0];
-		}
-
 		$statements = array_filter(
 			array_map( 'trim', explode( ';', $sql ) )
 		);
@@ -105,25 +99,7 @@ class Fifu_Legacy_Tables_Manager {
 				continue;
 			}
 
-			$result = $this->wpdb->query( $statement );
-			$expectedTable = null;
-			if ( preg_match( '/CREATE TABLE IF NOT EXISTS\\s+`?([a-zA-Z0-9_]+)`?/i', $statement, $m ) ) {
-				$expectedTable = $m[1];
-			}
-
-			$dbName = $this->wpdb->get_var( 'SELECT DATABASE()' );
-			$showLike = $expectedTable
-				? $this->wpdb->get_var( $this->wpdb->prepare( 'SHOW TABLES LIKE %s', $expectedTable ) )
-				: null;
-			$infoSchema = $expectedTable
-				? $this->wpdb->get_var( $this->wpdb->prepare(
-					'SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s',
-					$expectedTable
-				) )
-				: null;
-			$allFifuTables = $this->wpdb->get_col(
-				"SHOW TABLES LIKE '" . $this->wpdb->esc_like( $this->wpdb->prefix . 'fifu_' ) . "%'"
-			);
+			$this->wpdb->query( $statement );
 		}
 	}
 

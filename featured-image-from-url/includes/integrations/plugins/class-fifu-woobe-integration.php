@@ -24,21 +24,29 @@ final class Fifu_Woobe_Integration
      * Premium gallery/list fields are intentionally ignored in Free.
      *
      * @param mixed $value
-     * @param int $productId
-     * @param string $fieldKey
+     * @param mixed $productId
+     * @param mixed $fieldKey
      * @return mixed
      */
     public static function on_before_update_product_field(
         $value,
-        int $productId,
-        string $fieldKey
+        $productId,
+        $fieldKey
     ) {
-        if ($fieldKey === 'fifu_image_url') {
-            Fifu_Developer_Media_Service::set_image(
-                (int) $productId,
-                (string) $value
-            );
+        if (!is_string($fieldKey) || $fieldKey !== 'fifu_image_url') {
+            return $value;
         }
+
+        $productId = is_numeric($productId) ? (int) $productId : 0;
+        if ($productId <= 0) {
+            return $value;
+        }
+
+        if ($value !== null && !is_scalar($value)) {
+            return $value;
+        }
+
+        Fifu_Developer_Media_Service::set_image($productId, (string) $value);
 
         return $value;
     }

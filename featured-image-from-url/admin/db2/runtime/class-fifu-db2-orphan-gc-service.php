@@ -35,7 +35,11 @@ class Fifu_Db2_Orphan_Gc_Service {
         $this->registerHooks();
     }
 
-    public function addCronSchedule(array $schedules): array {
+    public function addCronSchedule($schedules) {
+        if (!is_array($schedules)) {
+            return $schedules;
+        }
+
         if (isset($schedules[self::CRON_RECURRENCE])) {
             return $schedules;
         }

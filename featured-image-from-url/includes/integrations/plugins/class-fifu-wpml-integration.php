@@ -27,9 +27,15 @@ final class Fifu_WPML_Integration
         add_action('wpml_after_copy_custom_field', [self::class, 'after_copy_custom_field'], PHP_INT_MAX, 3);
     }
 
-    public static function after_copy_custom_field(int $from_id, int $to_id, string $meta_key): void
+    public static function after_copy_custom_field($from_id, $to_id, $meta_key): void
     {
-        if ('fifu_image_url' !== $meta_key || $to_id <= 0) {
+        if (!is_string($meta_key) || 'fifu_image_url' !== $meta_key) {
+            return;
+        }
+
+        $to_id = is_numeric($to_id) ? (int) $to_id : 0;
+
+        if ($to_id <= 0) {
             return;
         }
 
@@ -69,18 +75,39 @@ final class Fifu_WPML_Integration
         self::$deferred_image_sync = [];
     }
 
-    public static function after_duplicate_product_post_meta(int $originalId, int $translatedId, $data): void
+    public static function after_duplicate_product_post_meta($originalId, $translatedId, $data): void
     {
+        $originalId = is_numeric($originalId) ? (int) $originalId : 0;
+        $translatedId = is_numeric($translatedId) ? (int) $translatedId : 0;
+
+        if ($originalId <= 0 || $translatedId <= 0) {
+            return;
+        }
+
         self::copy_prefixed_post_meta($originalId, $translatedId);
     }
 
-    public static function after_sync_product_data(int $originalId, int $translatedId, $language): void
+    public static function after_sync_product_data($originalId, $translatedId, $language): void
     {
+        $originalId = is_numeric($originalId) ? (int) $originalId : 0;
+        $translatedId = is_numeric($translatedId) ? (int) $translatedId : 0;
+
+        if ($originalId <= 0 || $translatedId <= 0) {
+            return;
+        }
+
         self::copy_prefixed_post_meta($originalId, $translatedId);
     }
 
-    public static function on_make_duplicate(int $sourceId, string $lang, array $postArray, int $duplicateId): void
+    public static function on_make_duplicate($sourceId, $lang, $postArray, $duplicateId): void
     {
+        $sourceId = is_numeric($sourceId) ? (int) $sourceId : 0;
+        $duplicateId = is_numeric($duplicateId) ? (int) $duplicateId : 0;
+
+        if ($sourceId <= 0 || $duplicateId <= 0) {
+            return;
+        }
+
         $postType = get_post_type($sourceId);
         if (!$postType) {
             return;

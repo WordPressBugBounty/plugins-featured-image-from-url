@@ -36,7 +36,11 @@ class Fifu_Elementor_Integration {
         load_plugin_textdomain(FIFU_SLUG);
     }
 
-    public static function on_widgets_register(\Elementor\Widgets_Manager $widgets_manager): void {
+    public static function on_widgets_register($widgets_manager): void {
+        if (!$widgets_manager instanceof \Elementor\Widgets_Manager) {
+            return;
+        }
+
         require_once __DIR__ . '/widgets/class-elementor-fifu-image-widget.php';
         $widgets_manager->register(new \Elementor_FIFU_Widget());
     }
@@ -49,8 +53,14 @@ class Fifu_Elementor_Integration {
         // Frontend assets are not enqueued via this integration.
     }
 
-    public static function image_after_save_elementor_data(int $post_id, $editor_data): void {
+    public static function image_after_save_elementor_data($post_id, $editor_data): void {
         if (!is_array($editor_data)) {
+            return;
+        }
+
+        $post_id = is_numeric($post_id) ? (int) $post_id : 0;
+
+        if ($post_id <= 0) {
             return;
         }
 
@@ -74,11 +84,20 @@ class Fifu_Elementor_Integration {
                 $settings = $el['settings'] ?? [];
 
                 if ($el['widgetType'] === 'fifu-elementor') {
+                    if (!is_array($settings)) {
+                        continue;
+                    }
+
                     if (!array_key_exists('fifu_input_url', $settings)) {
                         continue;
                     }
 
                     $raw_url = $settings['fifu_input_url'];
+
+                    if ($raw_url !== null && !is_scalar($raw_url)) {
+                        continue;
+                    }
+
                     $trimmed_url = trim((string) $raw_url);
                     if ($trimmed_url === '') {
                         $candidates[] = ['type' => 'image_clear'];
@@ -90,10 +109,18 @@ class Fifu_Elementor_Integration {
                         continue;
                     }
 
+                    $raw_alt = $settings['fifu_input_alt'] ?? null;
+                    $alt = (
+                        $raw_alt === null
+                        || is_scalar($raw_alt)
+                    )
+                        ? self::normalize_elementor_alt_value($raw_alt)
+                        : null;
+
                     $candidates[] = [
                         'type' => 'image',
                         'url' => $image_url,
-                        'alt' => self::normalize_elementor_alt_value($settings['fifu_input_alt'] ?? null),
+                        'alt' => $alt,
                         'depth' => $depth,
                     ];
                 }

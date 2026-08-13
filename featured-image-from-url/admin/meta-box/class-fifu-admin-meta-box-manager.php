@@ -91,7 +91,11 @@ class Fifu_Admin_Meta_Box_Manager {
 
     }
 
-    public static function filter_admin_body_class(string $classes): string {
+    public static function filter_admin_body_class($classes) {
+        if (!is_string($classes)) {
+            return $classes;
+        }
+
         if (!Fifu_Wp_Context::is_gutenberg_screen()) {
             return $classes;
         }

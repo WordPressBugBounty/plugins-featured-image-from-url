@@ -209,7 +209,7 @@ final class Fifu_Admin_Menu
         }
     }
 
-    public static function maybe_enqueue_assets(string $hook): void
+    public static function maybe_enqueue_assets($hook): void
     {
         $page = $_GET['page'] ?? '';
 

@@ -53,21 +53,35 @@ final class Fifu_Polylang_Integration
      * The normal Free image URL metadata remains available for Polylang to
      * copy. Product-gallery and image-list synchronization are Premium-only.
      *
-     * @param array $metas
-     * @param bool $sync
-     * @param int $from
-     * @param int $to
-     * @param string $lang
-     * @return array
+     * @param mixed $metas
+     * @param mixed $sync
+     * @param mixed $from
+     * @param mixed $to
+     * @param mixed $lang
+     * @return mixed
      */
     public static function on_copy_post_metas(
-        array $metas,
-        bool $sync,
-        int $from,
-        int $to,
-        string $lang
-    ): array {
+        $metas,
+        $sync,
+        $from,
+        $to,
+        $lang
+    ) {
+        if (!is_array($metas)) {
+            return $metas;
+        }
+
+        $sync = is_bool($sync)
+            ? $sync
+            : in_array($sync, [1, '1'], true);
+
         if (!$sync) {
+            return $metas;
+        }
+
+        $to = is_numeric($to) ? (int) $to : 0;
+
+        if ($to <= 0) {
             return $metas;
         }
 

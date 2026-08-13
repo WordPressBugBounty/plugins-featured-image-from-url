@@ -67,6 +67,32 @@ class Fifu_Schema_Manager {
 	}
 
 	/**
+	 * Runs only the requested schema files without the full timestamp repair pass.
+	 *
+	 * @param string[] $filenames
+	 * @return void
+	 */
+	public function run_files( array $filenames ): void {
+		foreach ( $filenames as $filename ) {
+			$file = $this->schema_dir . '/' . basename( $filename );
+			if ( ! is_file( $file ) ) {
+				continue;
+			}
+
+			$this->current_file = $file;
+			$sql = $this->load_sql_from_file( $file );
+			if ( '' === trim( $sql ) ) {
+				continue;
+			}
+
+			$prepared = $this->prepare_sql( $sql );
+			if ( '' !== trim( $prepared ) ) {
+				$this->execute_sql( $prepared );
+			}
+		}
+	}
+
+	/**
 	 * @return string[]
 	 */
 	protected function get_schema_files(): array {

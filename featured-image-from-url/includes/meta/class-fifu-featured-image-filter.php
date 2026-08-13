@@ -10,17 +10,23 @@ class Fifu_Featured_Image_Filter {
     /**
      * Filters post thumbnail HTML to inject FIFU managed media.
      *
-     * @param string       $html
-     * @param int          $post_id
-     * @param int|null     $post_thumbnail_id
+     * @param mixed        $html
+     * @param mixed        $post_id
+     * @param mixed        $post_thumbnail_id
      * @param array|string|null $size
      * @param array|null   $attr
-     * @return string
+     * @return mixed
      */
-    public static function filter_post_thumbnail_html(string $html, int $post_id, ?int $post_thumbnail_id, $size = null, $attr = null): string {
+    public static function filter_post_thumbnail_html($html, $post_id, $post_thumbnail_id, $size = null, $attr = null) {
         global $FIFU_SESSION;
 
-        if (!$html || $post_id <= 0) {
+        if (!is_string($html) || $html === '') {
+            return $html;
+        }
+
+        $post_id = is_numeric($post_id) ? (int) $post_id : 0;
+
+        if ($post_id <= 0) {
             return $html;
         }
 

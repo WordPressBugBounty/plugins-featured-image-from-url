@@ -55,12 +55,13 @@ final class Fifu_Cloud_Cron_Service
     /**
      * Adds the two Free FIFU Cloud recurrence intervals.
      *
-     * @param array<string,array<string,mixed>> $schedules
-     * @return array<string,array<string,mixed>>
+     * @param mixed $schedules
      */
-    public static function add_schedules(
-        array $schedules
-    ): array {
+    public static function add_schedules($schedules) {
+        if (!is_array($schedules)) {
+            return $schedules;
+        }
+
         if (!isset($schedules[self::UPLOAD_SCHEDULE])) {
             $schedules[self::UPLOAD_SCHEDULE] = [
                 'interval' => 5 * 60,

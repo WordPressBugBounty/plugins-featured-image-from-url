@@ -42,6 +42,13 @@ class Fifu_Yoast_Image_Integration {
             return;
         }
 
+        if (
+            !is_object($object)
+            || !is_callable([$object, 'add_image'])
+        ) {
+            return;
+        }
+
         $post_id = (int) get_queried_object_id();
         if ( ! $post_id ) {
             return;

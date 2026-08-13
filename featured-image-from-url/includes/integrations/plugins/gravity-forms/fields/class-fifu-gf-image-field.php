@@ -20,11 +20,19 @@ class Fifu_GF_Image_Field extends GF_Field
         GF_Fields::register(new self());
     }
 
-    public static function add_field_button(array $field_groups): array
+    public static function add_field_button($field_groups)
     {
+        if (!is_array($field_groups)) {
+            return $field_groups;
+        }
+
         foreach ($field_groups as &$group) {
-            if ($group['name'] !== 'post_fields') {
+            if (!is_array($group) || ($group['name'] ?? null) !== 'post_fields') {
                 continue;
+            }
+
+            if (!isset($group['fields']) || !is_array($group['fields'])) {
+                $group['fields'] = [];
             }
 
             $group['fields'][] = [
@@ -40,8 +48,12 @@ class Fifu_GF_Image_Field extends GF_Field
         return $field_groups;
     }
 
-    public static function register_field_type(array $field_types): array
+    public static function register_field_type($field_types)
     {
+        if (!is_array($field_types)) {
+            return $field_types;
+        }
+
         $field_types[self::TYPE] = [
             'name' => self::TYPE,
             'label' => self::get_fifu_field_label(),

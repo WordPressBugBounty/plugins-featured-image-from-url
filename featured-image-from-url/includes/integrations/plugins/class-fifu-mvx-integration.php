@@ -97,10 +97,15 @@ final class Fifu_Mvx_Integration
     /**
      * Displays the MVX panel field rendered after the right panel controls.
      *
-     * @param int $post_id
+     * @param mixed $post_id
      */
-    public static function render_product_manager_image_field(int $post_id): void
+    public static function render_product_manager_image_field($post_id): void
     {
+        $post_id = is_numeric($post_id) ? (int) $post_id : 0;
+        if ($post_id <= 0) {
+            return;
+        }
+
         $fifu = Fifu_Dokan_Strings::get_strings();
         $url = esc_url(self::get_current_image_url((int) $post_id));
         ?>

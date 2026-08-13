@@ -206,9 +206,11 @@ fifu_db2_orphan_gc_service();
 // Cleans up db2 mappings when a post is permanently deleted.
 add_action(
     'before_delete_post',
-    static function (int $post_id): void {
-        $postId = (int) $post_id;
-        if ( ! $postId ) {
+    static function ($post_id): void {
+        $postId = is_numeric($post_id)
+            ? (int) $post_id
+            : 0;
+        if ( $postId <= 0 ) {
             return;
         }
 

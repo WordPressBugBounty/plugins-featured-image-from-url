@@ -365,12 +365,18 @@ final class Fifu_Post_Save_Service
      * integrations (WCFM, Toolset, AliPlugin, external forms), metadata updates,
      * dimension updates, video helpers, and request flags into this method.
      *
-     * @param int $postId
-     * @param \WP_Post $post
-     * @param bool $update
+     * @param mixed $postId
+     * @param mixed $post
+     * @param mixed $update
      */
-    public static function on_save_post(int $postId, \WP_Post $post, bool $update): void
+    public static function on_save_post($postId, $post, $update): void
     {
+        $postId = is_numeric($postId) ? (int) $postId : 0;
+
+        if ($postId <= 0 || !$post instanceof \WP_Post) {
+            return;
+        }
+
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return;
         }

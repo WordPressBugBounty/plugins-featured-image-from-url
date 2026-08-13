@@ -199,7 +199,7 @@ class Fifu_Post_Attachment_Sync_Service
     /**
      * Sync the FIFU featured attachment for a post.
      *
-     * @param int $post_id Post ID.
+     * @param mixed $post_id Post ID.
      * @return void
      */
     public static function sync_attachments(int $post_id): void
@@ -285,8 +285,14 @@ class Fifu_Post_Attachment_Sync_Service
      * @param int $post_id Post ID.
      * @return void
      */
-    public static function handle_post_deleted(int $post_id): void
+    public static function handle_post_deleted($post_id): void
     {
+        $post_id = is_numeric($post_id) ? (int) $post_id : 0;
+
+        if ($post_id <= 0) {
+            return;
+        }
+
         $attachmentId = (int) get_post_thumbnail_id($post_id);
 
         if ($attachmentId <= 0) {
