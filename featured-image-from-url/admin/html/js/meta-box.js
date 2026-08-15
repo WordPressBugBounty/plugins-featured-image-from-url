@@ -1,5 +1,33 @@
 var restUrl = fifuScriptVars.restUrl;
 var FIFU_IMAGE_NOT_FOUND_URL = 'https://storage.googleapis.com/featuredimagefromurl/image-not-found-a.jpg';
+var fifu_dimension_load = {
+    token: 0,
+    url: '',
+    status: 'idle',
+    waitingForm: null,
+    waitingSubmitter: null
+};
+
+function fifu_resume_dimension_submit() {
+    var form = fifu_dimension_load.waitingForm;
+    var submitter = fifu_dimension_load.waitingSubmitter;
+    fifu_dimension_load.waitingForm = null;
+    fifu_dimension_load.waitingSubmitter = null;
+
+    if (!form) {
+        return;
+    }
+
+    if (typeof form.requestSubmit === 'function') {
+        if (submitter) {
+            form.requestSubmit(submitter);
+        } else {
+            form.requestSubmit();
+        }
+    } else if (typeof form.submit === 'function') {
+        form.submit();
+    }
+}
 
 function fifu_get_native_preview_state() {
     var $box = jQuery('#fifu_meta_box');
@@ -207,8 +235,25 @@ jQuery(document).ready(function () {
         }
     });
 
-    jQuery('form#post').on('submit', function () {
+    jQuery('form#post').on('submit', function (event) {
         fifu_clear_native_preview_submission_if_unchanged();
+
+        var imageUrl = fifu_cdn_adjust(fifu_convert(jQuery('#fifu_input_url').val() || '').trim());
+        var width = Number(jQuery('#fifu_input_image_width').val());
+        var height = Number(jQuery('#fifu_input_image_height').val());
+        var hasValidDimensions = Number.isFinite(width) && width > 0 && Number.isFinite(height) && height > 0;
+
+        if (
+                imageUrl &&
+                (imageUrl.startsWith('http') || imageUrl.startsWith('//')) &&
+                !hasValidDimensions &&
+                fifu_dimension_load.status === 'loading' &&
+                fifu_dimension_load.url === imageUrl
+                ) {
+            event.preventDefault();
+            fifu_dimension_load.waitingForm = this;
+            fifu_dimension_load.waitingSubmitter = event.submitter || (event.originalEvent && event.originalEvent.submitter) || null;
+        }
     });
 
 
@@ -366,6 +411,9 @@ function fifu_get_sizes() {
     var image_url = fifu_convert(jQuery("#fifu_input_url").val());
     image_url = fifu_cdn_adjust(image_url);
     if (!image_url || (!image_url.startsWith("http") && !image_url.startsWith("//"))) {
+        fifu_dimension_load.token++;
+        fifu_dimension_load.url = '';
+        fifu_dimension_load.status = 'idle';
         var preview = fifu_get_native_preview_state();
         if (preview.isNativePreviewOnly && preview.url) {
             let adjustedPreviewUrl = fifu_cdn_adjust(preview.url);
@@ -392,9 +440,18 @@ function fifu_get_sizes() {
 }
 
 function fifu_get_image(url) {
+    var loadToken = ++fifu_dimension_load.token;
+    fifu_dimension_load.url = url;
+    fifu_dimension_load.status = 'loading';
     var image = new Image();
     image.onload = function () {
+        if (loadToken !== fifu_dimension_load.token || fifu_dimension_load.url !== url) {
+            return;
+        }
+
         fifu_store_sizes(this);
+        fifu_dimension_load.status = 'loaded';
+        fifu_resume_dimension_submit();
 
         // Set background image only after validation
         let adjustedUrl = fifu_cdn_adjust(url);
@@ -409,7 +466,13 @@ function fifu_get_image(url) {
         jQuery("#fifu_help").hide(); // Hide help icon when valid image
     };
     image.onerror = function () {
+        if (loadToken !== fifu_dimension_load.token || fifu_dimension_load.url !== url) {
+            return;
+        }
+
+        fifu_dimension_load.status = 'failed';
         showImageFallback();
+        fifu_resume_dimension_submit();
     };
     jQuery(image).attr('src', url);
 }
@@ -446,6 +509,13 @@ function fifu_type_url() {
         if (preview.url && (jQuery(this).val() || '').trim() !== preview.url) {
             jQuery('#fifu_meta_box').attr('data-native-preview-only', '0');
         }
+
+        var effectiveUrl = fifu_cdn_adjust(fifu_convert((jQuery(this).val() || '').trim()));
+        if (effectiveUrl !== fifu_dimension_load.url) {
+            jQuery('#fifu_input_image_width').val('');
+            jQuery('#fifu_input_image_height').val('');
+        }
+
         fifu_get_sizes();
     });
 }

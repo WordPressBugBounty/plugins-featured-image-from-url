@@ -4,11 +4,11 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use remote media as the featured image and beyond.
- * Version: 6.0.2
+ * Version: 6.0.3
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * Requires at least: 5.6
- * Tested up to: 7.0.4
+ * Tested up to: 7.1
  * Requires PHP: 8.1
  * WC requires at least: 4.0
  * WC tested up to: 11.0.1
@@ -422,6 +422,14 @@ function fifu_schema_migration_network_version_option_name(): string {
     return 'fifu_schema_migration_network_version';
 }
 
+function fifu_schema_migration_runtime_upgrade_attempted_version_option_name(): string {
+    return 'fifu_schema_migration_runtime_upgrade_attempted_version';
+}
+
+function fifu_schema_migration_network_runtime_upgrade_attempted_version_option_name(): string {
+    return 'fifu_schema_migration_network_runtime_upgrade_attempted_version';
+}
+
 function fifu_db2_key_seed_revision(): string {
     return '1';
 }
@@ -714,24 +722,41 @@ function fifu_maybe_run_upgrade_routines_for_current_blog(): void {
         return;
     }
 
+    /*
+     * This check must happen before fifu_get_schema_migration_version().
+     * The Free getter can validate the DB2 schema while importing the legacy
+     * Premium marker.
+     */
+    $runtime_attempted_version = (string) get_option(
+        fifu_schema_migration_runtime_upgrade_attempted_version_option_name(),
+        '0.0.0'
+    );
+
+    if (version_compare($runtime_attempted_version, $current_version, '>=')) {
+        return;
+    }
+
     $installed_version = fifu_get_schema_migration_version();
 
-    if (version_compare($installed_version, $current_version, '>=')) {
+    try {
+        if (version_compare($installed_version, $current_version, '>=')) {
+            fifu_maybe_initialize_db2_key_seed_for_current_blog();
+            return;
+        }
+
+        if (version_compare($installed_version, '6.0.0', '<')) {
+            fifu_upgrade_actions();
+            return;
+        }
+
         fifu_maybe_initialize_db2_key_seed_for_current_blog();
-        return;
+        fifu_record_schema_migration_version_if_ready();
+    } finally {
+        update_option(
+            fifu_schema_migration_runtime_upgrade_attempted_version_option_name(),
+            $current_version
+        );
     }
-
-    if (version_compare($installed_version, '6.0.0', '<')) {
-        fifu_upgrade_actions();
-        return;
-    }
-
-    if (!fifu_record_schema_migration_version_if_ready()) {
-        fifu_upgrade_actions();
-        return;
-    }
-
-    fifu_maybe_initialize_db2_key_seed_for_current_blog();
 }
 
 /**
@@ -748,6 +773,20 @@ function fifu_maybe_run_upgrade_routines(): void {
 
         if ($is_network_active) {
             $current_version = fifu_current_plugin_version();
+
+            if ($current_version === '') {
+                return;
+            }
+
+            $network_runtime_attempted_version = (string) get_site_option(
+                fifu_schema_migration_network_runtime_upgrade_attempted_version_option_name(),
+                '0.0.0'
+            );
+
+            if (version_compare($network_runtime_attempted_version, $current_version, '>=')) {
+                return;
+            }
+
             $network_version = (string) get_site_option(
                 fifu_schema_migration_network_version_option_name(),
                 '0.0.0'
@@ -759,38 +798,39 @@ function fifu_maybe_run_upgrade_routines(): void {
             );
 
             if (
-                $current_version === ''
-                || (
-                    version_compare($network_version, $current_version, '>=')
-                    && version_compare($network_seed_version, $seed_revision, '>=')
-                )
+                version_compare($network_version, $current_version, '>=')
+                && version_compare($network_seed_version, $seed_revision, '>=')
             ) {
                 return;
             }
 
-            $network_seed_complete = true;
-            $blog_ids = fifu_get_network_blog_ids();
-            foreach ($blog_ids as $blog_id) {
-                fifu_run_in_blog_context((int) $blog_id, static function () use (&$network_seed_complete, $seed_revision): void {
-                    fifu_maybe_run_upgrade_routines_for_current_blog();
-                    if (version_compare(
-                        (string) get_option(fifu_db2_key_seed_version_option_name(), '0'),
-                        $seed_revision,
-                        '<'
-                    )) {
-                        $network_seed_complete = false;
-                    }
-                });
-            }
+            try {
+                $network_seed_complete = true;
+                $blog_ids = fifu_get_network_blog_ids();
+                foreach ($blog_ids as $blog_id) {
+                    fifu_run_in_blog_context((int) $blog_id, static function () use (&$network_seed_complete, $seed_revision): void {
+                        fifu_maybe_run_upgrade_routines_for_current_blog();
+                        if (version_compare(
+                            (string) get_option(fifu_db2_key_seed_version_option_name(), '0'),
+                            $seed_revision,
+                            '<'
+                        )) {
+                            $network_seed_complete = false;
+                        }
+                    });
+                }
 
-            if ($network_seed_complete) {
+                if ($network_seed_complete) {
+                    update_site_option(fifu_db2_key_seed_network_version_option_name(), $seed_revision);
+                }
+
+                fifu_record_network_schema_migration_version_if_complete($blog_ids, $current_version);
+            } finally {
                 update_site_option(
-                    fifu_db2_key_seed_network_version_option_name(),
-                    $seed_revision
+                    fifu_schema_migration_network_runtime_upgrade_attempted_version_option_name(),
+                    $current_version
                 );
             }
-
-            fifu_record_network_schema_migration_version_if_complete($blog_ids, $current_version);
 
             return;
         }
@@ -1012,6 +1052,7 @@ function fifu_prepare_network_state_for_new_site($new_site): void {
 
     delete_site_option(fifu_schema_migration_network_version_option_name());
     delete_site_option(fifu_db2_key_seed_network_version_option_name());
+    delete_site_option(fifu_schema_migration_network_runtime_upgrade_attempted_version_option_name());
 }
 
 add_action('wp_insert_site', 'fifu_prepare_network_state_for_new_site', 10, 1);
@@ -1039,6 +1080,7 @@ function fifu_custom_action_after_site_initialization($new_site) {
 
     delete_site_option(fifu_schema_migration_network_version_option_name());
     delete_site_option(fifu_db2_key_seed_network_version_option_name());
+    delete_site_option(fifu_schema_migration_network_runtime_upgrade_attempted_version_option_name());
 
     $seed_initialized = false;
     $schema_initialized = false;

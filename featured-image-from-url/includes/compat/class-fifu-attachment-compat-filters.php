@@ -249,7 +249,25 @@ final class Fifu_Attachment_Compat_Filters {
      * @param mixed $thumbnail_id
      */
     public static function passthrough_admin_post_thumbnail_html( $content, $post_id, $thumbnail_id ) {
-        // Pass-through stub to keep legacy admin filter behavior intact.
-        return $content;
+        $post_id = is_numeric( $post_id ) ? (int) $post_id : 0;
+        $thumbnail_id = is_numeric( $thumbnail_id ) ? (int) $thumbnail_id : 0;
+
+        if ( $post_id <= 0 || $thumbnail_id <= 0 ) {
+            return $content;
+        }
+
+        if ( class_exists( 'Fifu_Wp_Context' ) && Fifu_Wp_Context::is_gutenberg_screen() ) {
+            return $content;
+        }
+
+        if ( ! self::is_fifu_attachment( $thumbnail_id ) ) {
+            return $content;
+        }
+
+        if ( ! function_exists( '_wp_post_thumbnail_html' ) ) {
+            return $content;
+        }
+
+        return _wp_post_thumbnail_html( 0, $post_id );
     }
 }

@@ -141,6 +141,24 @@ final class Fifu_Post_Save_Service
                 self::sync_attachments(
                     $postId
                 );
+
+                $width = Fifu_Meta_Box_Dimensions_Reader::get_main_image_width($request);
+                $height = Fifu_Meta_Box_Dimensions_Reader::get_main_image_height($request);
+                $finalAttachmentId = (int) get_post_thumbnail_id($postId);
+
+                if (
+                    $finalAttachmentId > 0
+                    && $width !== null
+                    && $height !== null
+                    && $width > 0
+                    && $height > 0
+                ) {
+                    Fifu_Attachment_Dimensions_Service::update_dimensions(
+                        $finalAttachmentId,
+                        (int) $width,
+                        (int) $height
+                    );
+                }
             }
         } catch (\Throwable $throwable) {
             $thrownException =

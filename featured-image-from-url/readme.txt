@@ -3,8 +3,8 @@ Contributors: marceljm
 Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, woocommerce, remote
 Requires at least: 5.6
-Tested up to: 7.0.4
-Stable tag: 6.0.2
+Tested up to: 7.1
+Stable tag: 6.0.3
 Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -221,6 +221,14 @@ Search engines can index remote images. As with local images, image accessibilit
 
 == Changelog ==
 
+= 6.0.3 =
+* Fix: Restored remote featured images correctly in the Classic Editor, including when changing or removing an existing featured image.
+* Fix: Rank Math social image URLs now remain secure HTTPS URLs instead of being changed to HTTP.
+* Fix: Fixed database setup and upgrade compatibility with MariaDB 10.3.
+* Fix: Featured image width and height are now saved correctly on the first editor save.
+* Performance: Prevented repeated database upgrade work on WordPress Multisite installations.
+* Compatibility: WordPress 7.1.
+
 = 6.0.2 =
 * Fix: Improved compatibility with page builders and third-party plugins by safely handling unexpected data passed through WordPress hooks.
 * Fix: Fixed remote featured images when cloning posts with Yoast Duplicate Post.
@@ -270,6 +278,9 @@ Search engines can index remote images. As with local images, image accessibilit
 * [more](https://fifu.app/changelog)
 
 == Upgrade Notice ==
+
+= 6.0.3 =
+* Fixes Classic Editor featured images, Rank Math HTTPS social images, MariaDB 10.3 database upgrades, first-save image dimensions, improves Multisite upgrade performance, and adds WordPress 7.1 compatibility.
 
 = 6.0.2 =
 * Improves compatibility with third-party plugins and page builders, fixes remote featured image cloning, improves Multisite upgrades, and adds compatibility with WordPress 7.0.4.

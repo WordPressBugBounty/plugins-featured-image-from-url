@@ -5,12 +5,14 @@ CREATE TABLE IF NOT EXISTS {PREFIX}fifu_identifier_type (
 
 INSERT INTO {PREFIX}fifu_identifier_type (type_key)
 SELECT 'asin'
+FROM DUAL
 WHERE NOT EXISTS (
   SELECT 1 FROM {PREFIX}fifu_identifier_type WHERE type_key = 'asin'
 );
 
 INSERT INTO {PREFIX}fifu_identifier_type (type_key)
 SELECT 'isbn'
+FROM DUAL
 WHERE NOT EXISTS (
   SELECT 1 FROM {PREFIX}fifu_identifier_type WHERE type_key = 'isbn'
 );

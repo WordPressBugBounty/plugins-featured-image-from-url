@@ -76,6 +76,10 @@ class Fifu_Admin_Meta_Box_Manager {
     }
 
     public static function remove_native_metaboxes(): void {
+        if (!Fifu_Wp_Context::is_gutenberg_screen()) {
+            return;
+        }
+
         global $post;
 
         if (!$post) {

@@ -8,36 +8,22 @@ defined('ABSPATH') || exit;
 class Fifu_Rank_Math_Integration {
 
     /**
-     * Prevents Rank Math from stripping query params on Facebook OpenGraph images.
+     * Preserves the Facebook OpenGraph image URL provided by Rank Math.
      *
      * @param mixed $image_url
      * @return mixed
      */
     public static function filter_facebook_image($image_url) {
-        if (!is_string($image_url)) {
-            return $image_url;
-        }
-
-        if (Fifu_Options_Utils::is_on('fifu_photon') && Fifu_Image_Url_Utils::is_remote_image_url($image_url)) {
-            return str_replace('https://', 'http://', $image_url);
-        }
         return $image_url;
     }
 
     /**
-     * Prevents Rank Math from stripping query params on Twitter card images.
+     * Preserves the Twitter card image URL provided by Rank Math.
      *
      * @param mixed $image_url
      * @return mixed
      */
     public static function filter_twitter_image($image_url) {
-        if (!is_string($image_url)) {
-            return $image_url;
-        }
-
-        if (Fifu_Options_Utils::is_on('fifu_photon') && Fifu_Image_Url_Utils::is_remote_image_url($image_url)) {
-            return str_replace('https://', 'http://', $image_url);
-        }
         return $image_url;
     }
 
