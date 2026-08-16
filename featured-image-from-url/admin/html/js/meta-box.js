@@ -7,6 +7,35 @@ var fifu_dimension_load = {
     waitingForm: null,
     waitingSubmitter: null
 };
+var fifu_native_featured_image_removal_pending = false;
+
+function fifu_begin_native_featured_image_sync() {
+    if (
+            typeof document === 'undefined' ||
+            !document.body ||
+            !document.body.classList
+            ) {
+        return;
+    }
+
+    document.body.classList.add(
+            'fifu-native-featured-image-syncing'
+    );
+}
+
+function fifu_clear_native_featured_image_sync() {
+    if (
+            typeof document !== 'undefined' &&
+            document.body &&
+            document.body.classList
+            ) {
+        document.body.classList.remove(
+                'fifu-native-featured-image-syncing'
+        );
+    }
+
+    fifu_native_featured_image_removal_pending = false;
+}
 
 function fifu_resume_dimension_submit() {
     var form = fifu_dimension_load.waitingForm;
@@ -75,6 +104,7 @@ function removeImage(fromUploadButton = false) {
 
     // Only show WooCommerce placeholder if NOT triggered by upload button
     if (!fromUploadButton) {
+        fifu_native_featured_image_removal_pending = true;
         jQuery('#product_cat_thumbnail').find('img').attr('src', WC_PLACEHOLDER_IMAGE_URL);
         jQuery('#product_cat_thumbnail_id').val('');
         jQuery('.remove_image_button').hide();
@@ -207,15 +237,42 @@ jQuery(document).ready(function () {
     updateWpFeaturedImagePanel();
 
     // Listen for changes in the FIFU input (all user actions)
-    jQuery('#fifu_input_url').on('input keyup paste', updateWpFeaturedImagePanel);
+    let lastFifuUrl =
+            (jQuery('#fifu_input_url').val() || '')
+                    .trim();
+
+    function trackFifuUrlTransition() {
+        const current =
+                (jQuery('#fifu_input_url').val() || '')
+                        .trim();
+
+        if (
+                lastFifuUrl !== '' &&
+                current === ''
+                ) {
+            fifu_native_featured_image_removal_pending = true;
+        } else if (current !== '') {
+            /*
+             * A new/current FIFU image cancels any previous unsaved
+             * removal intent.
+             */
+            fifu_native_featured_image_removal_pending = false;
+
+            fifu_clear_native_featured_image_sync();
+        }
+
+        lastFifuUrl = current;
+
+        updateWpFeaturedImagePanel();
+    }
+
+    jQuery('#fifu_input_url').on('input keyup paste', trackFifuUrlTransition);
 
     // Fallback: poll for value changes (covers autocomplete by mouse)
-    let lastFifuUrl = jQuery('#fifu_input_url').val();
     setInterval(function () {
         let current = jQuery('#fifu_input_url').val();
         if (current !== lastFifuUrl) {
-            lastFifuUrl = current;
-            updateWpFeaturedImagePanel();
+            trackFifuUrlTransition();
         }
     }, 300);
 
@@ -676,6 +733,140 @@ function showImageFallback() {
 
         let wasSaving = false;
 
+        async function refreshSavedPostEntity(editorSelect) {
+            try {
+                if (
+                    !editorSelect ||
+                    typeof editorSelect.getCurrentPostId !== 'function' ||
+                    typeof editorSelect.getCurrentPostType !== 'function' ||
+                    typeof wp === 'undefined' ||
+                    !wp.apiFetch ||
+                    !wp.data ||
+                    typeof wp.data.select !== 'function' ||
+                    typeof wp.data.dispatch !== 'function'
+                        ) {
+                    return;
+                }
+
+                const postId =
+                    Number(
+                            editorSelect.getCurrentPostId()
+                    ) || 0;
+
+                const postType =
+                    editorSelect.getCurrentPostType();
+
+                if (
+                    postId <= 0 ||
+                    typeof postType !== 'string' ||
+                    postType === ''
+                        ) {
+                    return;
+                }
+
+                const coreSelect =
+                    wp.data.select('core');
+
+                if (
+                    !coreSelect ||
+                    typeof coreSelect.getPostType !== 'function'
+                        ) {
+                    return;
+                }
+
+                const postTypeObject =
+                    coreSelect.getPostType(postType);
+
+                if (!postTypeObject) {
+                    return;
+                }
+
+                const restBase =
+                    typeof postTypeObject.rest_base === 'string'
+                            ? postTypeObject.rest_base.replace(
+                                    /^\/+|\/+$/g,
+                                    ''
+                            )
+                            : '';
+
+                const restNamespace =
+                    typeof postTypeObject.rest_namespace === 'string'
+                            ? postTypeObject.rest_namespace.replace(
+                                    /^\/+|\/+$/g,
+                                    ''
+                            )
+                            : 'wp/v2';
+
+                if (
+                    restBase === '' ||
+                    restNamespace === ''
+                        ) {
+                    return;
+                }
+
+                const path =
+                    '/' +
+                    restNamespace +
+                    '/' +
+                    restBase +
+                    '/' +
+                    postId +
+                    '?context=edit&_ts=' +
+                    Date.now();
+
+                let freshRecord;
+
+                try {
+                    freshRecord =
+                            await wp.apiFetch({
+                                path: path
+                            });
+                } catch (e) {
+                    return;
+                }
+
+                if (
+                    !freshRecord ||
+                    typeof freshRecord !== 'object' ||
+                    Number(freshRecord.id) !== postId
+                        ) {
+                    return;
+                }
+
+                const coreDispatch =
+                    wp.data.dispatch('core');
+
+                if (
+                    !coreDispatch ||
+                    typeof coreDispatch.receiveEntityRecords !== 'function'
+                        ) {
+                    return;
+                }
+
+            /*
+             * Gutenberg's save response can become stale when FIFU's
+             * meta-box/server lifecycle changes _thumbnail_id after the
+             * editor has already cached the save result.
+             *
+             * Receive the actual current REST record as the persisted
+             * entity state.
+             *
+             * Do not pass an "edits" argument here. A newer explicit user
+             * edit made while this request is in flight must remain layered
+             * on top of the refreshed persisted record.
+             */
+                coreDispatch.receiveEntityRecords(
+                        'postType',
+                        postType,
+                        freshRecord
+                );
+            } catch (e) {
+                return;
+            } finally {
+                fifu_clear_native_featured_image_sync();
+            }
+        }
+
         function fetchAndApplyFifuUrl(postId) {
             if (!postId)
                 return;
@@ -709,9 +900,6 @@ function showImageFallback() {
                     newUrl = value.url || '';
                 }
 
-                if (!newUrl)
-                    return;
-
                 // Original logic to update the image field
                 var $input = jQuery('#fifu_input_url');
                 if (!$input.length)
@@ -742,9 +930,46 @@ function showImageFallback() {
                 const isAutosaving = !!(sel.isAutosavingPost && sel.isAutosavingPost());
                 const didSucceed = sel.didPostSaveRequestSucceed ? !!sel.didPostSaveRequestSucceed() : true;
 
+                if (
+                        !wasSaving &&
+                        isSaving &&
+                        fifu_native_featured_image_removal_pending
+                        ) {
+                    fifu_begin_native_featured_image_sync();
+                }
+
+                if (
+                        wasSaving &&
+                        !isSaving &&
+                        !didSucceed
+                        ) {
+                    fifu_clear_native_featured_image_sync();
+                }
+
                 // Detect transition: saving -> not saving, success, and not autosave
-                if (wasSaving && !isSaving && didSucceed && !isAutosaving) {
-                    const postId = (sel.getCurrentPostId && sel.getCurrentPostId()) || (fifuMetaBoxVars && fifuMetaBoxVars.get_the_ID) || null;
+                if (
+                        wasSaving &&
+                        !isSaving &&
+                        didSucceed &&
+                        !isAutosaving
+                        ) {
+                    /*
+                     * FIFU's server-side/meta-box lifecycle can finish with
+                     * a different featured_media value than the one cached
+                     * from Gutenberg's primary save response.
+                     *
+                     * Refresh the persisted core entity independently from
+                     * FIFU URL hydration.
+                     */
+                    refreshSavedPostEntity(sel);
+
+                    const postId =
+                            (sel.getCurrentPostId &&
+                                    sel.getCurrentPostId()) ||
+                            (fifuMetaBoxVars &&
+                                    fifuMetaBoxVars.get_the_ID) ||
+                            null;
+
                     fetchAndApplyFifuUrl(postId);
                 }
 

@@ -1,6 +1,27 @@
 body.fifu-hide-native-featured-image [data-panel="featured-image"],
-body.fifu-hide-native-featured-image .editor-post-featured-image,
-body.fifu-hide-native-featured-image .components-panel__body[data-title="Featured image"],
-body.fifu-hide-native-featured-image [aria-label="Featured image"] {
+body.fifu-hide-native-featured-image .editor-post-featured-image {
     display: none !important;
+}
+
+body.fifu-native-featured-image-syncing .editor-post-featured-image {
+    position: relative;
+    min-height: 48px;
+    height: 48px;
+    overflow: hidden;
+}
+
+body.fifu-native-featured-image-syncing .editor-post-featured-image > * {
+    visibility: hidden !important;
+}
+
+body.fifu-native-featured-image-syncing .editor-post-featured-image::after {
+    content: "Updating featured image...";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    font-size: 12px;
+    opacity: 0.75;
 }

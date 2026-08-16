@@ -63,7 +63,16 @@ final class Fifu_Rest_Controller {
         if ($post_id <= 0) {
             return null;
         }
-        return Fifu_Post_Main_Image_Resolver::get_main_image_url($post_id, true);
+
+        /*
+         * This endpoint hydrates the FIFU editor field.
+         *
+         * It must expose only the direct stored FIFU image URL.
+         * Fifu_Post_Main_Image_Resolver may return the configured
+         * Default Featured Image or another fallback, which must never
+         * be written back into the FIFU URL field.
+         */
+        return Fifu_Post_Image_Url_Read_Service::get_image_url($post_id) ?? '';
     }
 
     /**

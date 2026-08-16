@@ -32,6 +32,42 @@ final class Fifu_Post_Save_Service
 
         return false;
     }
+
+    private static function clear_featured_image_and_apply_default(int $postId): void
+    {
+        /*
+         * FIFU-owned metadata must be cleared through the DB2-aware updater.
+         *
+         * Direct delete_post_meta() only removes legacy postmeta and can leave
+         * the DB2 index-0 image/ALT mapping behind.
+         */
+        fifu_delete_post_meta(
+            $postId,
+            'fifu_image_url'
+        );
+
+        fifu_delete_post_meta(
+            $postId,
+            'fifu_image_alt'
+        );
+
+        /*
+         * Attachment sync must run after the DB2 mappings are gone.
+         *
+         * It can then:
+         * - resolve the featured FIFU URL as empty;
+         * - delete the obsolete FIFU fake attachment;
+         * - preserve a real/local WordPress featured image;
+         * - assign the configured default attachment when appropriate.
+         *
+         * Do not call Fifu_Default_Image_Service::add_default_image_to_post()
+         * before this sync because the existing FIFU fake attachment may still
+         * occupy _thumbnail_id and block the default replacement.
+         */
+        self::sync_attachments(
+            $postId
+        );
+    }
     /**
      * Entry point for editor-based post saving.
      * It will replace the legacy fifu_save() callback.
@@ -86,20 +122,9 @@ final class Fifu_Post_Save_Service
                         $postId
                     )
             ) {
-                delete_post_meta(
-                    $postId,
-                    'fifu_image_url'
+                self::clear_featured_image_and_apply_default(
+                    $postId
                 );
-
-                delete_post_meta(
-                    $postId,
-                    'fifu_image_alt'
-                );
-
-                Fifu_Default_Image_Service::
-                    add_default_image_to_post(
-                        $postId
-                    );
 
                 return;
             }
@@ -469,9 +494,9 @@ final class Fifu_Post_Save_Service
                 Fifu_Options_Utils::is_on('fifu_enable_default_url')
                 && Fifu_Post_Type_Utils::is_valid_default_cpt($postId)
             ) {
-                delete_post_meta($postId, 'fifu_image_url');
-                delete_post_meta($postId, 'fifu_image_alt');
-                Fifu_Default_Image_Service::add_default_image_to_post($postId);
+                self::clear_featured_image_and_apply_default(
+                    $postId
+                );
                 return;
             }
         }

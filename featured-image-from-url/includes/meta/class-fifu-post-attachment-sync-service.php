@@ -53,7 +53,33 @@ class Fifu_Post_Attachment_Sync_Service
         $cleanup = self::get_cleanup();
         $attachment_repo = self::get_attachment_repository();
         $default_attach_id = (int) get_option('fifu_default_attach_id');
-        $att_id = get_post_thumbnail_id($post_id);
+        $att_id = (int) get_post_thumbnail_id($post_id);
+
+        /*
+         * WordPress/Gutenberg may leave _thumbnail_id pointing to an
+         * attachment that no longer exists.
+         *
+         * get_post_thumbnail_id() still exposes that numeric ID, but
+         * Gutenberg cannot retrieve its media entity and displays:
+         *
+         * "Could not retrieve the featured image data."
+         *
+         * Normalize that broken state before deciding whether FIFU,
+         * Default Featured Image, or a local WordPress attachment should
+         * own the featured-media slot.
+         */
+        if (
+            $att_id > 0
+            && !get_post($att_id)
+        ) {
+            delete_post_meta(
+                $post_id,
+                '_thumbnail_id'
+            );
+
+            $att_id = 0;
+        }
+
         $url = Fifu_Post_Main_Image_Resolver::get_main_image_url($post_id, false);
 
         $has_fifu_attachment = $att_id
@@ -68,27 +94,40 @@ class Fifu_Post_Attachment_Sync_Service
 
         if ($should_use_default_fallback) {
             if ($has_fifu_attachment && $att_id) {
+                /*
+                 * Remove the obsolete FIFU featured attachment before applying
+                 * the default. The default-image service intentionally refuses
+                 * to replace another active thumbnail.
+                 */
                 wp_delete_attachment($att_id);
                 delete_post_thumbnail($post_id);
-                if (Fifu_Options_Utils::get_default_image_url() && Fifu_Post_Type_Utils::is_valid_default_cpt($post_id)) {
-                    set_post_thumbnail($post_id, $default_attach_id);
-                }
             } else {
                 $attachment_ids = self::normalize_attachment_ids(
                     $attachment_repo->get_orphan_attachments_for_post($post_id)
                 );
+
                 if ($attachment_ids) {
-                    $cleanup->delete_attachment_file_and_alt($attachment_ids);
-                    $cleanup->delete_fifu_attachments($attachment_ids);
-                }
-                if (Fifu_Options_Utils::get_default_image_url() && Fifu_Post_Type_Utils::is_valid_default_cpt($post_id)) {
-                    $post_thumbnail_id = get_post_thumbnail_id($post_id);
-                    $has_internal = $post_thumbnail_id && get_post_field('post_author', $post_thumbnail_id) !== self::get_author_id();
-                    if (!$has_internal) {
-                        set_post_thumbnail($post_id, $default_attach_id);
-                    }
+                    $cleanup->delete_attachment_file_and_alt(
+                        $attachment_ids
+                    );
+
+                    $cleanup->delete_fifu_attachments(
+                        $attachment_ids
+                    );
                 }
             }
+
+            /*
+             * Delegate Default Featured Image assignment to its canonical
+             * service.
+             *
+             * Besides respecting the feature toggle and configured CPT, this
+             * ensures a FIFU-owned default attachment is initialized before use
+             * and preserves a genuine local WordPress thumbnail.
+             */
+            Fifu_Default_Image_Service::add_default_image_to_post(
+                $post_id
+            );
         } else {
             $alt = self::resolve_featured_attachment_alt((int) $post_id, $url);
             $current_url = $att_id ? Fifu_Attachment_Update_Service::get_attachment_remote_url((int) $att_id) : '';

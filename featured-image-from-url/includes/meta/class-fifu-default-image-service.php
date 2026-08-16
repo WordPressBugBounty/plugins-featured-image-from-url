@@ -42,6 +42,7 @@ final class Fifu_Default_Image_Service
 
         $meta_gap_repo = new Fifu_Meta_Gap_Repository();
         $tuples = [];
+        $post_ids = [];
         foreach ($meta_gap_repo->get_posts_without_featured_image($post_types_csv) as $res) {
             $post_id = isset($res->post_id) ? (int) $res->post_id : (int) ($res->id ?? 0);
             if ($post_id <= 0) {
@@ -49,10 +50,15 @@ final class Fifu_Default_Image_Service
             }
 
             $tuples[] = $wpdb->prepare("(%d, %s, %d)", $post_id, '_thumbnail_id', $att_id);
+            $post_ids[] = $post_id;
         }
 
         if ($tuples) {
             self::insert_default_thumbnail_rows(implode(',', $tuples));
+
+            foreach (array_unique($post_ids) as $post_id) {
+                wp_cache_delete($post_id, 'post_meta');
+            }
         }
     }
 

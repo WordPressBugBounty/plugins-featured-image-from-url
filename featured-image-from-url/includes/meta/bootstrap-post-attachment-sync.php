@@ -17,11 +17,12 @@ add_action(
 );
 
 add_action(
-    'wp_insert_post',
+    'wp_after_insert_post',
     static function (
         $post_id,
         $post,
-        $update
+        $update,
+        $post_before
     ): void {
         $post_id = is_numeric($post_id) ? (int) $post_id : 0;
 
@@ -60,8 +61,10 @@ add_action(
         }
 
         Fifu_Post_Attachment_Sync_Service::
-            sync_featured_attachment($postId);
+            sync_featured_attachment(
+                $postId
+            );
     },
     10,
-    3
+    4
 );
