@@ -4,7 +4,7 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use remote media as the featured image and beyond.
- * Version: 6.0.4
+ * Version: 6.0.5
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * Requires at least: 5.6

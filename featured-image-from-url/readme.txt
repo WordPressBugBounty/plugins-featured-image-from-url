@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, woocommerce, remote
 Requires at least: 5.6
 Tested up to: 7.1
-Stable tag: 6.0.4
+Stable tag: 6.0.5
 Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -221,6 +221,10 @@ Search engines can index remote images. As with local images, image accessibilit
 
 == Changelog ==
 
+= 6.0.5 =
+* Fix: Featured images are now synchronized correctly with third-party plugins that process posts immediately after they are saved.
+* Fix: WooCommerce product featured images no longer disappear after changing a product permalink.
+
 = 6.0.4 =
 * Fix: Fixed featured image synchronization in the block editor (Gutenberg) when setting, changing, or removing a remote featured image.
 
@@ -281,6 +285,9 @@ Search engines can index remote images. As with local images, image accessibilit
 * [more](https://fifu.app/changelog)
 
 == Upgrade Notice ==
+
+= 6.0.5 =
+* Fixes featured image compatibility with third-party plugins and WooCommerce product images after permalink changes.
 
 = 6.0.4 =
 * Fixes remote featured image synchronization in the block editor when images are set, changed, or removed.
