@@ -157,26 +157,6 @@ class Fifu_Local_Media_Renderer {
     }
 
     /**
-     * Populates FIFU session data for FacetWP filtered posts.
-     *
-     * Mirrors the former facetwp_filtered_post_ids closure.
-     *
-     * @param mixed $post_ids
-     * @param mixed $facetwp
-     */
-    public static function register_for_facetwp( $post_ids, $facetwp ) {
-        if ( ! is_array( $post_ids ) ) {
-            return $post_ids;
-        }
-
-        foreach ( $post_ids as $post_id ) {
-            self::register_post_thumbnail( (int) $post_id );
-        }
-
-        return $post_ids;
-    }
-
-    /**
      * Registers thumbnails when posts_results is filtered to keep FIFU session data in sync.
      *
      * WordPress and third-party plugins can short-circuit queries before posts are populated.

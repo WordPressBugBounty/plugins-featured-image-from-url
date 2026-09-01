@@ -169,7 +169,12 @@ class Fifu_Admin_Meta_Box_Manager {
             array(),
             Fifu_Plugin_Info::get_enqueue_version()
         );
-        $meta_script_dependencies = Fifu_Wp_Context::is_gutenberg_screen()
+        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+        $is_post_block_editor = Fifu_Wp_Context::is_gutenberg_screen()
+            && $screen
+            && ($screen->base ?? null) === 'post';
+
+        $meta_script_dependencies = $is_post_block_editor
             ? array('jquery', 'wp-edit-post', 'fifu-shared-js')
             : array('jquery', 'fifu-shared-js');
         wp_enqueue_script(
@@ -183,9 +188,6 @@ class Fifu_Admin_Meta_Box_Manager {
         wp_register_style('fifu-search-lightbox-css', plugins_url('/admin/html/css/search-lightbox.css', FIFU_PLUGIN_FILE), array(), Fifu_Plugin_Info::get_enqueue_version());
         wp_enqueue_style('fifu-search-lightbox-css');
         wp_enqueue_script('fifu-search-lightbox-js', plugins_url('/admin/html/js/search-lightbox.js', FIFU_PLUGIN_FILE), array('jquery'), Fifu_Plugin_Info::get_enqueue_version());
-
-        // Keep the screen context available for downstream localization logic.
-        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
 
         // register custom variables for the AJAX script
         wp_localize_script('fifu-rest-route-js', 'fifuScriptVars', [

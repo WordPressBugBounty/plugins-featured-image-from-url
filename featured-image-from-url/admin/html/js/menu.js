@@ -1,4 +1,7 @@
 var metaIntervalId = null;
+var fifuMetainLoopRunning = false;
+var fifuMetainStopRequested = false;
+var fifuMetaoutLoopRunning = false;
 var FIFU_FREE_PRO_ONLY_TOGGLE_IDS = [
     'auto_share',
     'auto_share_facebook',
@@ -305,6 +308,10 @@ jQuery(function () {
                 save(this);
             });
         }
+    });
+
+    fifu_resume_manual_metadata_operations().catch(function () {
+        return null;
     });
 
     // show settings
@@ -628,120 +635,459 @@ function fifu_save_sizes() {
     });
 }
 
-function fifu_fake_js() {
-    jQuery('#tabs-top').block({message: fifuScriptVars.wait, css: {backgroundColor: 'none', border: 'none', color: 'white'}});
+function fifu_refresh_rest_nonce() {
+    return new Promise(function (resolve, reject) {
+        if (typeof ajaxurl === 'undefined' || !ajaxurl) {
+            var unavailable = new Error('WordPress session expired; login required');
+            unavailable.code = 'session_expired'; reject(unavailable); return;
+        }
+        jQuery.ajax({method: 'POST', url: ajaxurl, data: {action: 'rest-nonce'}, success: function (response) {
+            var nonce = String(response == null ? '' : response).trim();
+            if (!nonce || nonce === '0' || nonce === '-1') { var expired = new Error('WordPress session expired; login required'); expired.code = 'session_expired'; reject(expired); return; }
+            fifuScriptVars.nonce = nonce; resolve(nonce);
+        }, error: function () { var expired = new Error('WordPress session expired; login required'); expired.code = 'session_expired'; reject(expired); }});
+    });
+}
 
-    let toggle = jQuery("#fifu_toggle_fake").attr('class');
-    switch (toggle) {
-        case "toggleon":
-            option = "enable_fake_api";
-            break;
-        case "toggleoff":
-            option = "disable_fake_api";
-            break;
-        default:
-            return;
+function fifu_metain_request(endpoint, allowNonceRefresh = true) {
+    return new Promise(function (resolve, reject) {
+        jQuery.ajax({method: 'POST', url: restUrl + fifuScriptVars.restNamespaceV2 + '/' + endpoint + '/', async: true, timeout: 0,
+            beforeSend: function (xhr) { xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce); }, success: resolve,
+            error: function (jqXHR) { var httpStatus = jqXHR && jqXHR.status;
+                if (allowNonceRefresh && (httpStatus === 401 || httpStatus === 403)) { fifu_refresh_rest_nonce().then(function () { return fifu_metain_request(endpoint, false); }).then(resolve).catch(reject); return; }
+                var error = new Error(httpStatus ? 'Manual metadata request failed: ' + httpStatus : 'Manual metadata request interrupted'); error.status = httpStatus || 0;
+                if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.code) { error.code = jqXHR.responseJSON.code; } reject(error);
+            }});
+    });
+}
+
+function fifu_render_metain_progress(status) {
+    status = status || {}; var state = status.state || 'idle'; var percent = Math.max(0, Math.min(100, parseInt(status.percent, 10) || 0));
+    jQuery('#fifu_image_metadata_progress').val(percent); jQuery('#fifu_image_metadata_progress_percent').text(percent + '%');
+    if (state === 'idle' || state === 'complete') { jQuery('#fifu_image_metadata_progress_wrap').hide(); } else { jQuery('#fifu_image_metadata_progress_wrap').show(); }
+}
+
+function fifu_is_transient_metain_error(error) {
+    if (error && error.code === 'session_expired') { return false; }
+    var status = Number(error && error.status) || 0;
+    return status === 0 || status === 408 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+}
+
+async function fifu_run_manual_metain_loop() {
+    if (fifuMetainLoopRunning) { return; }
+    fifuMetainLoopRunning = true;
+    try { var transientRetries = 0; var maxTransientRetries = 3;
+        while (!fifuMetainStopRequested) { var status;
+            try { status = await fifu_metain_request('metain_batch_api'); transientRetries = 0; }
+            catch (error) { if (!fifu_is_transient_metain_error(error) || transientRetries >= maxTransientRetries) { throw error; } transientRetries++; await new Promise(function (resolve) { setTimeout(resolve, transientRetries * 1000); }); continue; }
+            if (fifuMetainStopRequested) { break; } fifu_render_metain_progress(status);
+            if (!status || status.done || status.state !== 'running' || !status.running) { break; }
+        }
+    } catch (error) {} finally { fifuMetainLoopRunning = false; jQuery('#tabs-top').unblock(); }
+}
+
+async function fifu_resume_manual_metain() {
+    try { var status = await fifu_metain_request('metain_status_api'); fifu_render_metain_progress(status);
+        if (status && status.state === 'running' && status.running && !status.done) { fifuMetainStopRequested = false; await fifu_run_manual_metain_loop(); }
+    } catch (error) {}
+}
+
+async function fifu_fake_js() {
+    var toggle = jQuery('#fifu_toggle_fake').attr('class');
+    if (toggle !== 'toggleon' && toggle !== 'toggleoff') { jQuery('#tabs-top').unblock(); return; }
+    jQuery('#tabs-top').block({message: fifuScriptVars.wait, css: {backgroundColor: 'none', border: 'none', color: 'white'}});
+    try { fifuMetainStopRequested = toggle === 'toggleoff'; var status = await fifu_metain_request(toggle === 'toggleon' ? 'enable_fake_api' : 'disable_fake_api'); fifu_render_metain_progress(status);
+        if (toggle === 'toggleon' && status && status.state === 'running' && status.running && !status.done) { await fifu_run_manual_metain_loop(); } else { jQuery('#tabs-top').unblock(); }
+    } catch (error) { jQuery('#tabs-top').unblock(); }
+}
+
+async function fifu_clean_js() {
+    const toggle =
+        jQuery(
+            '#fifu_toggle_data_clean'
+        ).attr(
+            'class'
+        );
+
+    if (
+        toggle !== 'toggleon'
+    ) {
+        return null;
     }
 
-    jQuery.ajax({
-        method: "POST",
-        url: restUrl + fifuScriptVars.restNamespaceV2 + '/' + option + '/',
-        async: true,
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
-        },
-        success: function (data) {
-            setTimeout(function () {
-                if (toggle == "toggleon") {
-                    jQuery("#fifu_toggle_cron_metadata").attr('class', 'toggleoff');
-                    updateMetadataCounter(false);
-                    metaIntervalId = setInterval(updateMetadataCounter.bind(null, true), 3000);
-                } else {
-                    jQuery('#tabs-top').unblock();
-                    jQuery('#image_metadata_counter').text('');
-                }
-            }, 1000);
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.log(jqXHR);
-            console.log(textStatus);
-            console.log(errorThrown);
-        },
-        complete: function () {
-            if (typeof metaIntervalId !== 'undefined')
-                clearInterval(metaIntervalId);
-        },
-        timeout: 0
-    });
+    try {
+        return await fifu_run_clean_js();
+    } catch (error) {
+        console.log(error);
+
+        return null;
+    }
 }
 
-function fifu_clean_js() {
-    if (jQuery("#fifu_toggle_data_clean").attr('class') != 'toggleon')
-        return;
+async function fifu_run_clean_js() {
+    jQuery(
+        '#tabs-top'
+    ).block({
+        message:
+            fifuScriptVars.wait,
+        css: {
+            backgroundColor:
+                'none',
+            border:
+                'none',
+            color:
+                'white',
+        },
+    });
 
-    fifu_run_clean_js();
+    try {
+        let current =
+            await fifu_metaout_request(
+                'data_clean_api'
+            );
+
+        fifu_metaout_render(
+            current
+        );
+
+        if (
+            current
+            && current.state
+                === 'running'
+        ) {
+            current =
+                await fifu_run_manual_metaout_loop(
+                    current
+                );
+        }
+
+        if (
+            current
+            && current.state
+                === 'complete'
+            && current.done
+        ) {
+            jQuery(
+                '#fifu_toggle_data_clean'
+            ).attr(
+                'class',
+                'toggleoff'
+            );
+
+            jQuery(
+                '#fifu_toggle_fake'
+            ).attr(
+                'class',
+                'toggleoff'
+            );
+        }
+
+        return current;
+    } finally {
+        jQuery(
+            '#tabs-top'
+        ).unblock();
+    }
 }
 
-function fifu_run_clean_js() {
-    jQuery('#tabs-top').block({message: fifuScriptVars.wait, css: {backgroundColor: 'none', border: 'none', color: 'white'}});
-
-    jQuery.ajax({
-        method: "POST",
-        url: restUrl + fifuScriptVars.restNamespaceV2 + '/data_clean_api/',
-        async: true,
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
+async function fifu_run_delete_all_js() {
+    jQuery(
+        '#tabs-top'
+    ).block({
+        message:
+            fifuScriptVars.wait,
+        css: {
+            backgroundColor:
+                'none',
+            border:
+                'none',
+            color:
+                'white',
         },
-        success: function (data) {
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.log(jqXHR);
-            console.log(textStatus);
-            console.log(errorThrown);
-        },
-        complete: function () {
-            setTimeout(function () {
-                jQuery("#fifu_toggle_data_clean").attr('class', 'toggleoff');
-                jQuery("#fifu_toggle_fake").attr('class', 'toggleoff');
-                jQuery("#fifu_toggle_cron_metadata").attr('class', 'toggleoff');
-                updateMetadataCounter(false);
-                metaIntervalId = setInterval(updateMetadataCounter.bind(null, true), 3000);
-            }, 1000);
-        },
-        timeout: 0
     });
+
+    try {
+        const cleanup =
+            await fifu_run_clean_js();
+
+        if (
+            !cleanup
+            || cleanup.state
+                !== 'complete'
+            || !cleanup.done
+        ) {
+            return cleanup;
+        }
+
+        return await fifu_metaout_request(
+            'run_delete_all_api'
+        );
+    } finally {
+        jQuery(
+            '#tabs-top'
+        ).unblock();
+    }
 }
 
-function fifu_run_delete_all_js() {
-    if (jQuery("#fifu_toggle_run_delete_all").attr('class') != 'toggleon')
-        return;
+function fifu_metaout_request(
+    operation,
+    nonceRetried = false
+) {
+    return new Promise(
+        function (
+            resolve,
+            reject
+        ) {
+            jQuery.ajax({
+                method:
+                    'POST',
 
-    fifu_run_clean_js();
+                url:
+                    restUrl
+                    + fifuScriptVars
+                        .restNamespaceV2
+                    + '/'
+                    + operation
+                    + '/',
 
-    jQuery('#tabs-top').block({message: fifuScriptVars.wait, css: {backgroundColor: 'none', border: 'none', color: 'white'}});
+                async:
+                    true,
 
-    jQuery.ajax({
-        method: "POST",
-        url: restUrl + fifuScriptVars.restNamespaceV2 + '/run_delete_all_api/',
-        async: true,
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('X-WP-Nonce', fifuScriptVars.nonce);
-        },
-        success: function (data) {
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.log(jqXHR);
-            console.log(textStatus);
-            console.log(errorThrown);
-        },
-        complete: function () {
-            setTimeout(function () {
-                jQuery("#fifu_toggle_run_delete_all").attr('class', 'toggleoff');
-                jQuery('#tabs-top').unblock();
-            }, 3000);
-        },
-        timeout: 0
-    });
+                beforeSend:
+                    function (
+                        xhr
+                    ) {
+                        xhr.setRequestHeader(
+                            'X-WP-Nonce',
+                            fifuScriptVars
+                                .nonce
+                        );
+                    },
+
+                success:
+                    function (
+                        data
+                    ) {
+                        resolve(
+                            data
+                        );
+                    },
+
+                error:
+                    function (
+                        jqXHR,
+                        textStatus,
+                        errorThrown
+                    ) {
+                        const status =
+                            Number(
+                                jqXHR
+                                && jqXHR
+                                    .status
+                            )
+                            || 0;
+
+                        if (
+                            (
+                                status === 401
+                                || status === 403
+                            )
+                            && !nonceRetried
+                        ) {
+                            fifu_refresh_rest_nonce()
+                                .then(
+                                    function () {
+                                        return fifu_metaout_request(
+                                            operation,
+                                            true
+                                        );
+                                    }
+                                )
+                                .then(
+                                    resolve
+                                )
+                                .catch(
+                                    reject
+                                );
+
+                            return;
+                        }
+
+                        const response =
+                            jqXHR
+                            && jqXHR
+                                .responseJSON
+                                ? jqXHR
+                                    .responseJSON
+                                : {};
+
+                        reject({
+                            status:
+                                status,
+
+                            code:
+                                response.code
+                                || null,
+
+                            message:
+                                response.message
+                                || errorThrown
+                                || textStatus
+                                || 'Request failed',
+                        });
+                    },
+
+                timeout:
+                    0,
+            });
+        }
+    );
+}
+
+function fifu_metaout_render(
+    data
+) {
+    const percent =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                Number(
+                    data
+                    && data.percent
+                )
+                || 0
+            )
+        );
+
+    const wrapper =
+        jQuery(
+            '#fifu_clear_metadata_progress_wrap'
+        );
+
+    const progress =
+        jQuery(
+            '#fifu_clear_metadata_progress'
+        );
+
+    const percentText =
+        jQuery(
+            '#fifu_clear_metadata_progress_percent'
+        );
+
+    progress.prop(
+        'max',
+        100
+    );
+
+    progress.val(
+        percent
+    );
+
+    percentText.text(
+        percent + '%'
+    );
+
+    if (
+        data
+        && data.state
+            === 'running'
+    ) {
+        wrapper.show();
+    } else {
+        wrapper.hide();
+    }
+}
+
+async function fifu_run_manual_metaout_loop(
+    initialStatus
+) {
+    fifu_metaout_render(
+        initialStatus
+    );
+
+    if (
+        !initialStatus
+        || initialStatus.state
+            !== 'running'
+    ) {
+        return initialStatus;
+    }
+
+    if (
+        fifuMetaoutLoopRunning
+    ) {
+        return initialStatus;
+    }
+
+    fifuMetaoutLoopRunning =
+        true;
+
+    try {
+        let current =
+            initialStatus;
+
+        while (
+            current
+            && current.state
+                === 'running'
+        ) {
+            current =
+                await fifu_metaout_request(
+                    'metaout_batch_api'
+                );
+
+            fifu_metaout_render(
+                current
+            );
+        }
+
+        return current;
+    } finally {
+        fifuMetaoutLoopRunning =
+            false;
+    }
+}
+
+async function fifu_resume_manual_metaout() {
+    let current =
+        await fifu_metaout_request(
+            'metaout_status_api'
+        );
+
+    fifu_metaout_render(
+        current
+    );
+
+    if (
+        current
+        && current.state
+            === 'running'
+    ) {
+        current =
+            await fifu_run_manual_metaout_loop(
+                current
+            );
+    }
+
+    return current;
+}
+
+async function fifu_resume_manual_metadata_operations() {
+    const metaoutStatus =
+        await fifu_resume_manual_metaout();
+
+    if (
+        metaoutStatus
+        && metaoutStatus.state
+            === 'running'
+        && metaoutStatus.done
+            !== true
+    ) {
+        return metaoutStatus;
+    }
+
+    return await fifu_resume_manual_metain();
 }
 
 function updateMetadataCounter(transient) {

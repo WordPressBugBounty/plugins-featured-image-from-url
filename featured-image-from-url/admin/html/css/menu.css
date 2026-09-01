@@ -275,3 +275,25 @@ div.polaroid {
     color: #fff3cd;
     filter:grayscale(25%);
 }
+.fifu-metadata-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fifu-metadata-progress-wrap {
+    display: none;
+    align-items: center;
+    gap: 6px;
+}
+
+.fifu-metadata-progress {
+    width: 220px;
+    height: 7px;
+}
+
+#fifu_image_metadata_progress_percent {
+    min-width: 32px;
+    font-size: 13px;
+    line-height: 1;
+}

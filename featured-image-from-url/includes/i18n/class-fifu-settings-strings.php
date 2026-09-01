@@ -103,21 +103,6 @@ class Fifu_Settings_Strings {
             $help['support']['status'] = function () {
                 _e("status", FIFU_SLUG);
             };
-            $help['support']['release']['title'] = function () {
-                _e("Important notice about FIFU 6.0", FIFU_SLUG);
-            };
-            $help['support']['release']['refactor'] = function () {
-                _e("FIFU 6.0 is a major release that includes a large refactor of the plugin.", FIFU_SLUG);
-            };
-            $help['support']['release']['edge-cases'] = function () {
-                _e("Although the release has been extensively tested, changes of this size may expose edge cases during the first weeks of real-world use. If any issues are found, they will be addressed as quickly as possible. For this reason, you may see several FIFU updates released during the first days and weeks following version 6.0.", FIFU_SLUG);
-            };
-            $help['support']['release']['rollback'] = function () {
-                _e("If you experience an issue that prevents you from using FIFU normally, you can temporarily return to the previous stable version:", FIFU_SLUG);
-            };
-            $help['support']['release']['report'] = function () {
-                _e("If you find a problem with FIFU 6.0, please report it to support@fifu.app so it can be investigated and fixed as quickly as possible.", FIFU_SLUG);
-            };
 
         // start
             $help['start']['url']['external'] = function () {

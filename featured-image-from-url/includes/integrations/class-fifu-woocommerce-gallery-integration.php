@@ -25,45 +25,135 @@ class Fifu_Woocommerce_Gallery_Integration {
     }
 
     /**
-     * Responds to product duplication events to copy FIFU metadata.
+     * Normalizes a native WooCommerce product duplicate into independent
+     * FIFU featured-image state.
      *
-     * @param mixed $array Product duplication context.
+     * WooCommerce copies normal product metadata, including the featured
+     * attachment reference, but FIFU DB2 mappings live outside post meta.
+     * Resolve the image from the source product and let FIFU create
+     * independent DB2 and attachment state for the duplicate.
+     *
+     * @param mixed $duplicate Duplicated WooCommerce product object.
+     * @param mixed $source    Source WooCommerce product object.
      * @return void
      */
-    public static function on_product_duplicate( $array ): void {
-        if ( ! is_object( $array ) || ! method_exists( $array, 'get_meta_data' ) || ! method_exists( $array, 'get_id' ) ) {
+    public static function on_product_duplicate(
+        $duplicate,
+        $source
+    ): void {
+        if (
+            !is_object($duplicate)
+            || !method_exists($duplicate, 'get_id')
+            || !is_object($source)
+            || !method_exists($source, 'get_id')
+        ) {
             return;
         }
 
-        $meta_data = $array->get_meta_data();
-        if ( empty( $meta_data ) || ! is_iterable( $meta_data ) ) {
+        $duplicate_post_id = $duplicate->get_id();
+        $duplicate_post_id = is_numeric($duplicate_post_id)
+            ? (int) $duplicate_post_id
+            : 0;
+
+        $source_post_id = $source->get_id();
+        $source_post_id = is_numeric($source_post_id)
+            ? (int) $source_post_id
+            : 0;
+
+        if (
+            $duplicate_post_id <= 0
+            || $source_post_id <= 0
+            || $duplicate_post_id === $source_post_id
+        ) {
             return;
         }
 
-        $post_id = $array->get_id();
-        $post_id = is_numeric( $post_id ) ? (int) $post_id : 0;
-        if ( $post_id <= 0 ) {
+        $url = Fifu_Post_Image_Url_Read_Service::get_image_url(
+            $source_post_id
+        );
+
+        /*
+         * A product using a normal local WordPress featured image has no
+         * FIFU URL. Leave WooCommerce's copied thumbnail reference alone.
+         */
+        if (
+            $url === null
+            || trim($url) === ''
+        ) {
             return;
         }
 
-        foreach ( $meta_data as $meta_item ) {
+        $alt = Fifu_Post_Image_Alt_Read_Service::get_image_alt(
+            $source_post_id
+        );
+
+        /*
+         * WooCommerce may have copied the source FIFU attachment ID.
+         *
+         * Remove only the duplicate's reference before asking FIFU to create
+         * its own attachment. Never delete or modify the source attachment.
+         */
+        delete_post_meta(
+            $duplicate_post_id,
+            '_thumbnail_id'
+        );
+
+        if (
+            !Fifu_Developer_Media_Service::set_image(
+                $duplicate_post_id,
+                $url,
+                true
+            )
+        ) {
+            return;
+        }
+
+        $alt_persisted = false;
+
+        if (
+            $alt !== null
+            && trim($alt) !== ''
+            && function_exists('fifu_db2_manager')
+        ) {
+            $manager = fifu_db2_manager();
+
             if (
-                !is_object($meta_item)
-                || !is_callable([$meta_item, 'get_data'])
+                $manager instanceof Fifu_Db2_Manager
+                && method_exists(
+                    $manager,
+                    'savePostAlt'
+                )
             ) {
-                continue;
+                $alt_persisted =
+                    $manager->savePostAlt(
+                        $duplicate_post_id,
+                        'image',
+                        0,
+                        $alt
+                    );
             }
+        }
 
-            $data = $meta_item->get_data();
+        /*
+         * WooCommerce may also have copied legacy FIFU post meta.
+         *
+         * The duplicate has now been normalized into DB2, so remove only
+         * the duplicate's legacy copies. Do not alter the source product.
+         */
+        delete_post_meta(
+            $duplicate_post_id,
+            'fifu_image_url'
+        );
 
-            if (!is_array($data)) {
-                continue;
-            }
-
-            $key = $data['key'] ?? '';
-            if ( in_array( $key, array( 'fifu_image_url' ), true ) ) {
-                delete_post_meta( $post_id, '_thumbnail_id' );
-            }
+        if (
+            $alt === null
+            || trim($alt) === ''
+            || $alt_persisted
+        ) {
+            delete_post_meta(
+                $duplicate_post_id,
+                'fifu_image_alt'
+            );
         }
     }
 

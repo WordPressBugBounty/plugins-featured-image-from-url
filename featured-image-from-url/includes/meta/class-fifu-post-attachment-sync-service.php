@@ -16,6 +16,64 @@ class Fifu_Post_Attachment_Sync_Service
 {
     private static ?Fifu_Local_Media_Cleanup $cleanup = null;
 
+    private static function is_attachment_owned_by_post(
+        int $attachment_id,
+        int $post_id
+    ): bool {
+        if (
+            $attachment_id <= 0
+            || $post_id <= 0
+        ) {
+            return false;
+        }
+
+        if (
+            (int) get_post_field(
+                'post_parent',
+                $attachment_id
+            ) !== $post_id
+        ) {
+            return false;
+        }
+
+        $post_name =
+            (string) get_post_field(
+                'post_name',
+                $attachment_id
+            );
+
+        return strpos(
+            $post_name,
+            'fifu-category-'
+        ) !== 0;
+    }
+
+    private static function is_category_attachment_owned_by_term(
+        int $attachment_id,
+        int $term_id
+    ): bool {
+        if (
+            $attachment_id <= 0
+            || $term_id <= 0
+        ) {
+            return false;
+        }
+
+        if (
+            (int) get_post_field(
+                'post_parent',
+                $attachment_id
+            ) !== $term_id
+        ) {
+            return false;
+        }
+
+        return (string) get_post_field(
+            'post_name',
+            $attachment_id
+        ) === 'fifu-category-' . $term_id;
+    }
+
     private static function persist_attachment_meta(int $attachment_id, string $url, ?string $alt = null): void
     {
         if ($attachment_id <= 0) {
@@ -85,6 +143,30 @@ class Fifu_Post_Attachment_Sync_Service
         $has_fifu_attachment = $att_id
             ? ($attachment_repo->is_fifu_attachment($att_id) && $default_attach_id !== $att_id)
             : false;
+
+        if (
+            $has_fifu_attachment
+            && !self::is_attachment_owned_by_post(
+                $att_id,
+                $post_id
+            )
+        ) {
+            /*
+             * Another post owns this FIFU attachment.
+             *
+             * The current post may reference it because a plugin,
+             * duplication workflow, importer, migration or custom code
+             * copied _thumbnail_id.
+             *
+             * Never mutate or delete the foreign attachment.
+             * Remove only this post's reference and continue as though
+             * no featured attachment were assigned.
+             */
+            delete_post_thumbnail($post_id);
+
+            $att_id = 0;
+            $has_fifu_attachment = false;
+        }
 
         $default_url = (string) get_option('fifu_default_url');
         $should_use_default_fallback = !$url || (
@@ -360,6 +442,10 @@ class Fifu_Post_Attachment_Sync_Service
             !$attachmentRepository->is_fifu_attachment(
                 $attachmentId
             )
+            || !self::is_attachment_owned_by_post(
+                $attachmentId,
+                $post_id
+            )
         ) {
             return;
         }
@@ -397,6 +483,39 @@ $cleanup = self::get_cleanup();
         $dimension_key_type = 'image';
         $url = Fifu_Term_Image_Url_Read_Service::get_image_url((int) $term_id);
 $is_wvs = Fifu_Woocommerce_Context::is_woo_variation_swatches_taxonomy($term_id);
+
+        if (
+            $has_fifu_attachment
+            && $att_id
+            && !self::is_category_attachment_owned_by_term(
+                (int) $att_id,
+                (int) $term_id
+            )
+        ) {
+            /*
+             * The current term references a FIFU category attachment
+             * owned by another term.
+             *
+             * Never delete or mutate the foreign attachment. Remove only
+             * this term's references and continue synchronization as
+             * though no category attachment were assigned.
+             */
+            update_term_meta(
+                $term_id,
+                'thumbnail_id',
+                0
+            );
+
+            if ($is_wvs) {
+                delete_term_meta(
+                    $term_id,
+                    'product_attribute_image'
+                );
+            }
+
+            $att_id = null;
+            $has_fifu_attachment = false;
+        }
 
         if (!$url) {
 if ($has_fifu_attachment && $att_id && Fifu_Attachment_Update_Service::is_fifu_owned((int) $att_id)) {

@@ -19,6 +19,10 @@ final class Fifu_Rest_Migration_Controller
             ['route' => '/run_delete_all_api/', 'callback' => [self::class, 'run_delete_all']],
             ['route' => '/pre_deactivate/', 'callback' => [self::class, 'pre_deactivate']],
             ['route' => '/feedback/', 'callback' => [self::class, 'feedback']],
+            ['route' => '/metain_status_api/', 'callback' => [self::class, 'metain_status']],
+            ['route' => '/metain_batch_api/', 'callback' => [self::class, 'metain_batch']],
+            ['route' => '/metaout_status_api/', 'callback' => [self::class, 'metaout_status']],
+            ['route' => '/metaout_batch_api/', 'callback' => [self::class, 'metaout_batch']],
         ];
 
         foreach ($routes as $route) {
@@ -50,25 +54,77 @@ final class Fifu_Rest_Migration_Controller
     public static function enable_fake(\WP_REST_Request $request)
     {
         update_option('fifu_fake_stop', false, 'no');
-        Fifu_Meta_Maintenance_Controller::enable_fake();
-        return json_encode([]);
+        Fifu_Meta_Maintenance_Controller::clear_meta_out();
+        try {
+            return new WP_REST_Response(Fifu_Manual_Metain_Service::start(), 200);
+        } catch (Fifu_Manual_Metain_Busy_Exception $e) {
+            return self::metain_busy_response();
+        }
     }
 
     public static function disable_fake(\WP_REST_Request $request)
     {
         update_option('fifu_fake_stop', true, 'no');
-        return json_encode([]);
+        return new WP_REST_Response(Fifu_Manual_Metain_Service::pause(), 200);
+    }
+
+    public static function metain_status(\WP_REST_Request $request)
+    {
+        return new WP_REST_Response(Fifu_Manual_Metain_Service::status(), 200);
+    }
+
+    public static function metain_batch(\WP_REST_Request $request)
+    {
+        try {
+            return new WP_REST_Response(Fifu_Manual_Metain_Service::process_next_batch(), 200);
+        } catch (Fifu_Manual_Metain_Busy_Exception $e) {
+            return self::metain_busy_response();
+        }
+    }
+
+    public static function metaout_status(
+        \WP_REST_Request $request
+    ) {
+        try {
+            return new WP_REST_Response(
+                Fifu_Manual_Metaout_Service::status(),
+                200
+            );
+        } catch (
+            Fifu_Manual_Metaout_Busy_Exception $e
+        ) {
+            return self::metaout_busy_response();
+        }
+    }
+
+    public static function metaout_batch(
+        \WP_REST_Request $request
+    ) {
+        try {
+            return new WP_REST_Response(
+                Fifu_Manual_Metaout_Service::
+                    process_next_batch(),
+                200
+            );
+        } catch (
+            Fifu_Manual_Metaout_Busy_Exception $e
+        ) {
+            return self::metaout_busy_response();
+        }
     }
 
     public static function data_clean(\WP_REST_Request $request)
     {
-        Fifu_Meta_Maintenance_Controller::enable_clean();
-        update_option('fifu_data_clean', 'toggleoff', 'no');
-        Fifu_Options_Utils::set_author();
-        if (method_exists('Fifu_Options_Utils', 'maybe_upgrade_author_after_metadata_cleanup')) {
-            Fifu_Options_Utils::maybe_upgrade_author_after_metadata_cleanup();
+        try {
+            return new WP_REST_Response(
+                Fifu_Manual_Metaout_Service::start(),
+                200
+            );
+        } catch (
+            Fifu_Manual_Metaout_Busy_Exception $e
+        ) {
+            return self::metaout_busy_response();
         }
-        return json_encode([]);
     }
 
     public static function run_delete_all(\WP_REST_Request $request)
@@ -109,6 +165,32 @@ final class Fifu_Rest_Migration_Controller
     {
         self::send_deactivation_feedback($request, null);
         return json_encode([]);
+    }
+
+    private static function metain_busy_response(): WP_REST_Response
+    {
+        return new WP_REST_Response(
+            [
+                'success' => false,
+                'code' => 'fifu_manual_metain_busy',
+                'message' => 'Image Metadata is being processed by another request.',
+            ],
+            409
+        );
+    }
+
+    private static function metaout_busy_response(): WP_REST_Response
+    {
+        return new WP_REST_Response(
+            [
+                'success' => false,
+                'code' =>
+                    'fifu_manual_metaout_busy',
+                'message' =>
+                    'Clear Metadata is busy. Please try again after the current metadata operation finishes.',
+            ],
+            409
+        );
     }
 
     private static function free_plugin_basename(): string

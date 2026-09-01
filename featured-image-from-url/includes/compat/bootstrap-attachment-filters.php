@@ -104,14 +104,6 @@ add_filter(
     2
 );
 
-// Legacy: facetwp_filtered_post_ids handling via fifu_add_parameters_single_post.
-add_filter(
-    'facetwp_filtered_post_ids',
-    [Fifu_Local_Media_Renderer::class, 'register_for_facetwp'],
-    10,
-    2
-);
-
 // Legacy: wp_footer attachment/export rendering.
 
 // Legacy: wp_ajax_get-attachment handler.

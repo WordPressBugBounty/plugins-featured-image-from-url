@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, woocommerce, remote
 Requires at least: 5.6
 Tested up to: 7.1
-Stable tag: 6.0.5
+Stable tag: 6.0.6
 Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -221,6 +221,16 @@ Search engines can index remote images. As with local images, image accessibilit
 
 == Changelog ==
 
+= 6.0.6 =
+* Enhancement: Manual metadata generation and cleanup now use a faster browser-driven workflow.
+* Fix: Improved the Clear Metadata tool with more reliable processing and progress reporting.
+* Performance: Improved compatibility with FacetWP to avoid unnecessary image processing.
+* Fix: Remote product images are now handled correctly when duplicating WooCommerce products.
+* Fix: Improved compatibility with themes and plugins that provide WordPress object IDs as numeric strings.
+* Fix: Signed CDN image URLs now work correctly with Unicode characters.
+* Fix: Improved compatibility with block-based editors by preventing conflicting WordPress editor scripts from being loaded.
+* Fix: Improved WoodMart compatibility by preventing remote FIFU images from being processed as local thumbnails.
+
 = 6.0.5 =
 * Fix: Featured images are now synchronized correctly with third-party plugins that process posts immediately after they are saved.
 * Fix: WooCommerce product featured images no longer disappear after changing a product permalink.
@@ -285,6 +295,9 @@ Search engines can index remote images. As with local images, image accessibilit
 * [more](https://fifu.app/changelog)
 
 == Upgrade Notice ==
+
+= 6.0.6 =
+* Improves metadata tools, CDN URLs, WooCommerce duplication, FacetWP, block editor and WoodMart compatibility.
 
 = 6.0.5 =
 * Fixes featured image compatibility with third-party plugins and WooCommerce product images after permalink changes.

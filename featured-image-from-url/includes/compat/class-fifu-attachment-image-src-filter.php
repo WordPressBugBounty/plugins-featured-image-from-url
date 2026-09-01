@@ -58,7 +58,10 @@ final class Fifu_Attachment_Image_Src_Filter
         $FIFU_SESSION['att_img_src'] = $FIFU_SESSION['att_img_src'] ?? [];
         $image[0] = Fifu_Attachment_File_Filters::filter_attachment_url($image[0] ?? '', $att_id);
 
-        $original_url = Fifu_Post_Main_Image_Resolver::get_main_image_url(get_queried_object_id(), true);
+        $original_url = Fifu_Post_Main_Image_Resolver::get_main_image_url(
+            absint(get_queried_object_id()),
+            true
+        );
         if (
             Fifu_Image_Display_Policy::should_hide_featured_media()
             && (

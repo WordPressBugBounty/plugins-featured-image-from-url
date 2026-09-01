@@ -2266,34 +2266,6 @@
                 <div class="fifubox">
                     <h2><i class="fa-regular fa-envelope"></i> <?php $fifu['title']['support']() ?></h2>
                     <div class="greybox">
-                        <div class="notice notice-warning inline">
-                            <p>
-                                <strong><?php $fifu['support']['release']['title']() ?></strong>
-                            </p>
-
-                            <p>
-                                <?php $fifu['support']['release']['refactor']() ?>
-                            </p>
-
-                            <p>
-                                <?php $fifu['support']['release']['edge-cases']() ?>
-                            </p>
-
-                            <p>
-                                <?php $fifu['support']['release']['rollback']() ?>
-                                <a
-                                    href="https://downloads.wordpress.org/plugin/featured-image-from-url.5.3.3.zip"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >FIFU 5.3.3</a>
-                            </p>
-
-                            <p>
-                                <?php $fifu['support']['release']['report']() ?>
-                            </p>
-                        </div>
-
-                        <br>
                         <?php $fifu['support']['email']() ?> <b> support@fifu.app</b> (<?php $fifu['support']['with']() ?> <a href="admin.php?page=fifu-support-data"><button id="opener" onclick="jQuery('#tabs-top').block({message: '<?php $fifu['message']['wait']() ?>', css: {backgroundColor: 'none', border: 'none', color: 'white'}});"><?php $fifu['support']['status']() ?></button></a>).
 
                     </div>
@@ -3366,7 +3338,14 @@
             <div id="tabs-j">
                 <div class="fifubox">
 
-                    <h2><span class="dashicons dashicons-database-add"></span> <?php $fifu['title']['metadata']() ?></h2>
+                    <h2 class="fifu-metadata-title">
+                        <span class="dashicons dashicons-database-add"></span>
+                        <?php $fifu['title']['metadata']() ?>
+                        <span id="fifu_image_metadata_progress_wrap" class="fifu-metadata-progress-wrap" style="display:none">
+                            <progress id="fifu_image_metadata_progress" max="100" value="0" aria-label="Image Metadata progress"></progress>
+                            <span id="fifu_image_metadata_progress_percent">0%</span>
+                        </span>
+                    </h2>
 
                     <div class="greybox">
 
@@ -3414,7 +3393,17 @@
                 </div>
                 <div class="fifubox">
 
-                    <h2><span class="dashicons dashicons-database-remove"></span> <?php $fifu['title']['clean']() ?></h2>
+                    <h2 class="fifu-metadata-title"><span class="dashicons dashicons-database-remove"></span> <?php $fifu['title']['clean']() ?><span id="fifu_clear_metadata_progress_wrap" class="fifu-metadata-progress-wrap">
+                        <span id="fifu_clear_metadata_progress_label" class="screen-reader-text">Clear Metadata</span>
+                        <progress
+                            id="fifu_clear_metadata_progress"
+                            class="fifu-metadata-progress"
+                            max="1"
+                            value="0"
+                            aria-labelledby="fifu_clear_metadata_progress_label"
+                        ></progress>
+                        <span id="fifu_clear_metadata_progress_percent">0%</span>
+                    </span></h2>
 
                     <div class="greybox">
 
@@ -3592,9 +3581,9 @@
                 <div class="fifubox">
 
                     <h2>
-                        <span class="fifu-pro-inline">
-                            <span class="dashicons dashicons-lock fifu-pro-icon"></span>
-                        </span>
+                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/" target="_blank" rel="noopener" aria-label="FIFU PRO">
+                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
+                        </a>
                         <i class="fa-solid fa-images"></i> <?php $fifu['title']['slider']() ?>
                     </h2>
 
@@ -4016,9 +4005,9 @@
 
                 <div class="fifubox">
                     <h2>
-                        <span class="fifu-pro-inline">
-                            <span class="dashicons dashicons-lock fifu-pro-icon"></span>
-                        </span>
+                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/" target="_blank" rel="noopener" aria-label="FIFU PRO">
+                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
+                        </a>
                         <i class="fa-solid fa-file-import"></i> <?php $fifu['title']['import']() ?>
                     </h2>
                     <div class="greybox">
@@ -4147,9 +4136,9 @@
                 <div class="fifubox">
 
                     <h2>
-                        <span class="fifu-pro-inline">
-                            <span class="dashicons dashicons-lock fifu-pro-icon"></span>
-                        </span>
+                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/" target="_blank" rel="noopener" aria-label="FIFU PRO">
+                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
+                        </a>
                         <span class="dashicons dashicons-category"></span> <?php $fifu['title']['category']() ?>
                     </h2>
 
@@ -4195,9 +4184,9 @@
                 <div class="fifubox">
 
                     <h2>
-                        <span class="fifu-pro-inline">
-                            <span class="dashicons dashicons-lock fifu-pro-icon"></span>
-                        </span>
+                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/" target="_blank" rel="noopener" aria-label="FIFU PRO">
+                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
+                        </a>
                         <i class="fa-solid fa-photo-film"></i> <?php $fifu['title']['gallery']() ?>
                     </h2>
 
@@ -4347,9 +4336,9 @@
                 <div class="fifubox">
 
                     <h2>
-                        <span class="fifu-pro-inline">
-                            <span class="dashicons dashicons-lock fifu-pro-icon"></span>
-                        </span>
+                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/" target="_blank" rel="noopener" aria-label="FIFU PRO">
+                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
+                        </a>
                         <i class="fa-solid fa-cash-register"></i> <?php $fifu['title']['buy']() ?>
                     </h2>
 
@@ -4454,9 +4443,9 @@
                 <div class="fifubox">
 
                     <h2>
-                        <span class="fifu-pro-inline">
-                            <span class="dashicons dashicons-lock fifu-pro-icon"></span>
-                        </span>
+                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/" target="_blank" rel="noopener" aria-label="FIFU PRO">
+                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
+                        </a>
                         <i class="fa-solid fa-envelope-open-text"></i> <?php $fifu['title']['order-email']() ?>
                     </h2>
 
@@ -4502,9 +4491,9 @@
                 <div class="fifubox">
 
                     <h2>
-                        <span class="fifu-pro-inline">
-                            <span class="dashicons dashicons-lock fifu-pro-icon"></span>
-                        </span>
+                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/" target="_blank" rel="noopener" aria-label="FIFU PRO">
+                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
+                        </a>
                         <i class="fa-solid fa-puzzle-piece"></i> <?php $fifu['title']['addon']() ?>
                     </h2>
 
@@ -4760,9 +4749,9 @@
                 <div class="fifubox">
 
                     <h2>
-                        <span class="fifu-pro-inline">
-                            <span class="dashicons dashicons-lock fifu-pro-icon"></span>
-                        </span>
+                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/" target="_blank" rel="noopener" aria-label="FIFU PRO">
+                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
+                        </a>
                         <span class="dashicons dashicons-rest-api"></span> <?php $fifu['title']['api']() ?>
                     </h2>
 
@@ -5066,9 +5055,9 @@
                 <div class="fifubox">
 
                     <h2>
-                        <span class="fifu-pro-inline">
-                            <span class="dashicons dashicons-lock fifu-pro-icon"></span>
-                        </span>
+                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/" target="_blank" rel="noopener" aria-label="FIFU PRO">
+                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
+                        </a>
                         <span class="dashicons dashicons-shortcode"></span> <?php $fifu['title']['shortcodes']() ?>
                     </h2>
 
@@ -5160,9 +5149,9 @@
                 <div class="fifubox">
 
                     <h2>
-                        <span class="fifu-pro-inline">
-                            <span class="dashicons dashicons-lock fifu-pro-icon"></span>
-                        </span>
+                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/" target="_blank" rel="noopener" aria-label="FIFU PRO">
+                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
+                        </a>
                         <span class="dashicons dashicons-category"></span> <?php $fifu['title']['taxonomy']() ?>
                     </h2>
 

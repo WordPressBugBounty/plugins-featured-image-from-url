@@ -172,6 +172,46 @@ class Fifu_Migration_Stats {
      *
      * Mirrors get_count_metadata_operations().
      */
+    public function count_meta_in_operations(): int {
+        $sql = "
+            SELECT
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN post_ids IS NULL OR post_ids = '' THEN 0
+                            ELSE CHAR_LENGTH(post_ids)
+                                - CHAR_LENGTH(REPLACE(post_ids, ',', ''))
+                                + 1
+                        END
+                    ),
+                    0
+                ) AS total_amount
+            FROM {$this->fifu_meta_in_table}
+        ";
+
+        return (int) $this->wpdb->get_var($sql);
+    }
+
+    public function count_meta_out_operations(): int {
+        $sql = "
+            SELECT
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN post_ids IS NULL OR post_ids = '' THEN 0
+                            ELSE CHAR_LENGTH(post_ids)
+                                - CHAR_LENGTH(REPLACE(post_ids, ',', ''))
+                                + 1
+                        END
+                    ),
+                    0
+                ) AS total_amount
+            FROM {$this->fifu_meta_out_table}
+        ";
+
+        return (int) $this->wpdb->get_var($sql);
+    }
+
     public function count_metadata_operations(): int {
         $sql = "
             SELECT 

@@ -38,12 +38,19 @@ final class Fifu_Pubcdn_Url_Service
         }
 
         $decoded_string = urldecode($slug);
+        $normalized_slug = $decoded_string;
+
         if (function_exists('transliterator_transliterate')) {
-            $post_slug = sanitize_title(transliterator_transliterate('Any-Latin; Latin-ASCII', $decoded_string));
-        } else {
-            $fallback_slug = preg_replace('/[^\x20-\x7E]/u', '', $decoded_string);
-            $post_slug = sanitize_title($fallback_slug);
+            $transliterated = transliterator_transliterate('Any-Latin; Latin-ASCII', $decoded_string);
+
+            if (is_string($transliterated)) {
+                $normalized_slug = $transliterated;
+            }
         }
+
+        $ascii_slug = preg_replace('/[^\x20-\x7E]/u', '', $normalized_slug);
+        $normalized_slug = is_string($ascii_slug) ? $ascii_slug : '';
+        $post_slug = sanitize_title($normalized_slug);
 
         $main_domain = trim((string) get_option('fifu_main_domain'));
         if ($main_domain === '') {

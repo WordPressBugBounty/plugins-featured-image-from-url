@@ -4,7 +4,7 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use remote media as the featured image and beyond.
- * Version: 6.0.5
+ * Version: 6.0.6
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * Requires at least: 5.6
@@ -104,6 +104,8 @@ $helper_includes = [
     FIFU_INCLUDES_DIR . '/meta/class-fifu-meta-gap-repository.php',
     FIFU_INCLUDES_DIR . '/meta/class-fifu-metadata-queue-service.php',
     FIFU_INCLUDES_DIR . '/meta/class-fifu-metadata-import-service.php',
+    FIFU_INCLUDES_DIR . '/meta/class-fifu-manual-metain-service.php',
+    FIFU_INCLUDES_DIR . '/meta/class-fifu-manual-metaout-service.php',
     FIFU_INCLUDES_DIR . '/meta/class-fifu-media-maintenance-service.php',
     FIFU_INCLUDES_DIR . '/meta/class-fifu-meta-debug-controller.php',
     FIFU_INCLUDES_DIR . '/meta/class-fifu-attachment-file-filters.php',
@@ -121,6 +123,7 @@ $helper_includes = [
     FIFU_INCLUDES_DIR . '/compat/class-fifu-plugin-info.php',
     FIFU_INCLUDES_DIR . '/compat/class-fifu-attachment-legacy-fixer.php',
     FIFU_INCLUDES_DIR . '/compat/class-fifu-attachment-compat-filters.php',
+    FIFU_INCLUDES_DIR . '/compat/themes/class-fifu-woodmart-otf-compat.php',
     FIFU_INCLUDES_DIR . '/integrations/class-fifu-woocommerce-context.php',
     FIFU_INCLUDES_DIR . '/integrations/class-fifu-rss-image-namespace.php',
     FIFU_INCLUDES_DIR . '/integrations/class-fifu-home-social-tags.php',
@@ -201,6 +204,7 @@ foreach ($required_includes as $file) {
 }
 
 Fifu_Cloud_Cron_Service::register_hooks();
+Fifu_Woodmart_Otf_Compat::register();
 
 // Comments must be in English.
 $post_attachment_sync_bootstrap = FIFU_INCLUDES_DIR . '/meta/bootstrap-post-attachment-sync.php';
@@ -963,7 +967,7 @@ add_filter( 'the_content', [ Fifu_Content_Image_Controller::class, 'remove_dupli
 add_action( 'pre_rss2_ns', [ Fifu_Rss_Image_Namespace::class, 'start_buffer' ], 1 );
 add_action( 'rss2_ns', [ Fifu_Rss_Image_Namespace::class, 'inject_media_namespace' ], 9999 );
 add_filter( 'woocommerce_product_get_image', [ Fifu_Woocommerce_Gallery_Integration::class, 'filter_product_image' ], 10, 5 );
-add_action( 'woocommerce_product_duplicate', [ Fifu_Woocommerce_Gallery_Integration::class, 'on_product_duplicate' ], 10, 1 );
+add_action( 'woocommerce_product_duplicate', [ Fifu_Woocommerce_Gallery_Integration::class, 'on_product_duplicate' ], 10, 2 );
 add_action(
     'plugins_loaded',
     [ Fifu_Wp_Force_Plugin_Integration::class, 'register_hooks' ]
