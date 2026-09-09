@@ -45,7 +45,9 @@ class Fifu_Schema_Manager {
 	/**
 	 * Runs every SQL file inside the schema directory in order.
 	 */
-	public function run_all(): void {
+	public function run_all(): bool {
+		$success = true;
+
 		foreach ( $this->get_schema_files() as $file ) {
 			$this->current_file = $file;
 			$sql = $this->load_sql_from_file( $file );
@@ -58,24 +60,31 @@ class Fifu_Schema_Manager {
 				continue;
 			}
 
-			$this->execute_sql( $prepared );
+			$file_success = $this->execute_sql( $prepared );
+			$success = $file_success && $success;
 		}
 
 		if ( $this->uses_default_schema_dir ) {
-			$this->repair_timestamp_columns();
+			$repair_success = $this->repair_timestamp_columns();
+			$success = $repair_success && $success;
 		}
+
+		return $success;
 	}
 
 	/**
 	 * Runs only the requested schema files without the full timestamp repair pass.
 	 *
 	 * @param string[] $filenames
-	 * @return void
+	 * @return bool True when every requested schema operation succeeds.
 	 */
-	public function run_files( array $filenames ): void {
+	public function run_files( array $filenames ): bool {
+		$success = true;
+
 		foreach ( $filenames as $filename ) {
 			$file = $this->schema_dir . '/' . basename( $filename );
 			if ( ! is_file( $file ) ) {
+				$success = false;
 				continue;
 			}
 
@@ -87,9 +96,12 @@ class Fifu_Schema_Manager {
 
 			$prepared = $this->prepare_sql( $sql );
 			if ( '' !== trim( $prepared ) ) {
-				$this->execute_sql( $prepared );
+				$file_success = $this->execute_sql( $prepared );
+				$success = $file_success && $success;
 			}
 		}
+
+		return $success;
 	}
 
 	/**
@@ -138,7 +150,8 @@ class Fifu_Schema_Manager {
 	/**
 	 * @param string $sql
 	 */
-	protected function execute_sql( string $sql ): void {
+	protected function execute_sql( string $sql ): bool {
+		$success = true;
 		$statements = array_filter(
 			array_map( 'trim', explode( ';', $sql ) )
 		);
@@ -152,6 +165,7 @@ class Fifu_Schema_Manager {
 
 			$result = $this->wpdb->query( $statement );
 			if ( false === $result ) {
+				$success = false;
 				$snippet = substr( $statement, 0, 200 );
 				error_log(
 					sprintf(
@@ -163,12 +177,15 @@ class Fifu_Schema_Manager {
 				);
 			}
 		}
+
+		return $success;
 	}
 
 	/**
 	 * Repairs timestamp columns that can be missing on upgraded installs.
 	 */
-	protected function repair_timestamp_columns(): void {
+	protected function repair_timestamp_columns(): bool {
+		$success = true;
 		$repairs = [
 			'fifu_url'  => [
 				'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
@@ -191,9 +208,12 @@ class Fifu_Schema_Manager {
 			}
 
 			foreach ( $columns as $column => $definition ) {
-				$this->add_column_if_missing( $table, $column, $definition );
+				$column_success = $this->add_column_if_missing( $table, $column, $definition );
+				$success = $column_success && $success;
 			}
 		}
+
+		return $success;
 	}
 
 	/**
@@ -203,9 +223,9 @@ class Fifu_Schema_Manager {
 	 * @param string $column
 	 * @param string $definition
 	 */
-	protected function add_column_if_missing( string $table, string $column, string $definition ): void {
+	protected function add_column_if_missing( string $table, string $column, string $definition ): bool {
 		if ( $this->column_exists( $table, $column ) ) {
-			return;
+			return true;
 		}
 
 		$result = $this->wpdb->query( "ALTER TABLE {$table} ADD COLUMN {$column} {$definition}" );
@@ -219,7 +239,11 @@ class Fifu_Schema_Manager {
 					$this->wpdb->last_error
 				)
 			);
+
+			return false;
 		}
+
+		return true;
 	}
 
 	/**

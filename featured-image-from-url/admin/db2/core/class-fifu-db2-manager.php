@@ -709,13 +709,18 @@ class Fifu_Db2_Manager {
         }
 
         if (!function_exists('fifu_run_schema_migrations_for_blog')) {
+            $this->runtimeSchemaReadinessChecked = false;
             return false;
         }
 
         try {
-            fifu_run_schema_migrations_for_blog();
+            if (!fifu_run_schema_migrations_for_blog()) {
+                $this->runtimeSchemaReadinessChecked = false;
+                return false;
+            }
         } catch (\Throwable $e) {
             error_log('Fifu_Db2_Manager runtime schema readiness failed: ' . $e->getMessage());
+            $this->runtimeSchemaReadinessChecked = false;
             return false;
         }
 
@@ -732,6 +737,7 @@ class Fifu_Db2_Manager {
         foreach ($requiredTables as $table) {
             $exists = $this->wpdb->get_var($this->wpdb->prepare('SHOW TABLES LIKE %s', $table));
             if ($exists !== $table) {
+                $this->runtimeSchemaReadinessChecked = false;
                 return false;
             }
         }
