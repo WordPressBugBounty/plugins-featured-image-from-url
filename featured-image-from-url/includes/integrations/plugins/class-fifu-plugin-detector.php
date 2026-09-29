@@ -149,6 +149,27 @@ class Fifu_Plugin_Detector {
     }
 
     /**
+     * Checks if WPAuto Pro is active.
+     *
+     * WPAuto Pro is a different plugin from WP Automatic.
+     *
+     * @return bool
+     */
+    public static function is_wpauto_pro_active(): bool {
+        if (!function_exists('is_plugin_active')) {
+            include_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        if (is_plugin_active('wpauto-pro/wpauto-pro.php')) {
+            return true;
+        }
+
+        return defined('WPAUTO_FILE')
+            || defined('WPAUTO_BASENAME')
+            || class_exists('PM_WPAuto', false);
+    }
+
+    /**
      * Checks if Rank Math SEO is active.
      *
      * @return bool

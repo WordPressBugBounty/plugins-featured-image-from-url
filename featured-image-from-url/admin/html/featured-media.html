@@ -1,0 +1,67 @@
+<div class="fifu-featured-media-content">
+    <?php if (Fifu_Options_Utils::is_on('fifu_debug') && isset($post->ID)) : ?>
+        <button id="fifu-copy-debug-data-editor-button"
+                class="fifu-quick-button fifu-copy-debug-data-button"
+                type="button"
+                onclick="fifu_copy_quick_edit_debug_data(<?php echo (int) $post->ID; ?>, this, false)">
+            <span class="dashicons dashicons-clipboard fifu-copy-debug-data-icon" aria-hidden="true"></span>
+            <span class="fifu-copy-debug-data-label"><?php echo esc_html($fifu['button']['copy_debug_data']()); ?></span>
+        </button>
+    <?php endif; ?>
+
+    <div class="fifu-featured-media-selector">
+        <select id="fifu-featured-media-type" class="widefat" aria-label="<?php echo esc_attr($fifu['common']['media_type']()); ?>" autocomplete="off">
+            <option value="image" selected><?php echo esc_html($fifu['title']['post']['image']()); ?></option>
+            <option value="video"><?php echo esc_html($fifu['title']['video']()); ?></option>
+            <option value="slider"><?php echo esc_html($fifu['title']['slider']()); ?></option>
+            <option value="audio"><?php echo esc_html($fifu['title']['audio']()); ?></option>
+        </select>
+    </div>
+
+    <section class="fifu-featured-media-panel" data-fifu-media-type="image">
+        <?php Fifu_Admin_Meta_Box_Renderer::render_featured_image_box($post); ?>
+    </section>
+
+    <section class="fifu-featured-media-panel fifu-free-locked-panel" data-fifu-media-type="video" hidden>
+        <div class="fifu-featured-media-icon-input fifu-free-pro-hover-target" title="<?php echo esc_attr($fifu['common']['upgrade']()); ?>">
+            <span class="dashicons dashicons-format-video" aria-hidden="true"></span>
+            <label class="screen-reader-text" for="fifu-free-video-url"><?php echo esc_html($fifu['url']['video']()); ?></label>
+            <input id="fifu-free-video-url" type="text" placeholder="<?php echo esc_attr($fifu['url']['video']()); ?>" disabled aria-disabled="true" />
+        </div>
+        <button id="fifu-free-video-preview" class="button" type="button" disabled aria-disabled="true" title="<?php echo esc_attr($fifu['common']['upgrade']()); ?>"><?php echo esc_html($fifu['button']['preview']()); ?></button>
+    </section>
+
+    <section class="fifu-featured-media-panel fifu-free-locked-panel" data-fifu-media-type="slider" hidden>
+        <div class="fifu-free-locked-slider-grid fifu-free-pro-grid" role="group" aria-label="<?php echo esc_attr($fifu['title']['slider']()); ?>" title="<?php echo esc_attr($fifu['common']['upgrade']()); ?>">
+            <div class="grid-square image" aria-hidden="true"></div>
+            <div class="grid-square image" aria-hidden="true"></div>
+            <div class="grid-square image" aria-hidden="true"></div>
+            <button class="grid-square image-add" type="button" disabled aria-disabled="true" aria-label="<?php echo esc_attr($fifu['button']['add_images_slider']()); ?>"></button>
+        </div>
+    </section>
+
+    <section class="fifu-featured-media-panel fifu-free-locked-panel" data-fifu-media-type="audio" hidden>
+        <div class="fifu-featured-media-icon-input fifu-free-pro-hover-target" title="<?php echo esc_attr($fifu['common']['upgrade']()); ?>">
+            <span class="dashicons dashicons-controls-volumeon" aria-hidden="true"></span>
+            <label class="screen-reader-text" for="fifu-free-audio-url"><?php echo esc_html($fifu['url']['audio']()); ?></label>
+            <input id="fifu-free-audio-url" type="text" placeholder="<?php echo esc_attr($fifu['url']['audio']()); ?>" disabled aria-disabled="true" />
+        </div>
+        <button id="fifu-free-audio-preview" class="button" type="button" disabled aria-disabled="true" title="<?php echo esc_attr($fifu['common']['upgrade']()); ?>"><?php echo esc_html($fifu['button']['preview']()); ?></button>
+    </section>
+
+    <?php if (isset($post->post_type) && $post->post_type === 'product') : ?>
+        <div class="fifu-featured-media-galleries">
+            <section class="fifu-featured-media-mixed-gallery fifu-free-locked-gallery" aria-labelledby="fifu-product-gallery-title">
+                <div class="fifu-featured-media-gallery-divider">
+                    <span id="fifu-product-gallery-title"><?php echo esc_html($fifu['title']['product_gallery']()); ?></span>
+                </div>
+                <div class="fifu-free-locked-mixed-gallery-grid fifu-free-pro-grid" role="group" aria-labelledby="fifu-product-gallery-title" title="<?php echo esc_attr($fifu['common']['upgrade']()); ?>">
+                    <div class="grid-square image" aria-hidden="true"></div>
+                    <div class="grid-square image" aria-hidden="true"></div>
+                    <div class="grid-square image" aria-hidden="true"></div>
+                    <button class="grid-square image-add" type="button" disabled aria-disabled="true" aria-label="<?php echo esc_attr($fifu['common']['add_media']()); ?>"></button>
+                </div>
+            </section>
+        </div>
+    <?php endif; ?>
+</div>

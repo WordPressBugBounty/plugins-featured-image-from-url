@@ -101,23 +101,11 @@ function fifu_get_fifu_author_candidates(): array {
         $candidates[] = (int) $option;
     }
 
-    if ( class_exists( 'Fifu_Options_Utils', false ) && method_exists( 'Fifu_Options_Utils', 'get_author' ) ) {
-        $author = (int) Fifu_Options_Utils::get_author();
-        if ( $author > 0 ) {
-            $candidates[] = $author;
-        }
-    }
-
     if ( defined( 'FIFU_AUTHOR' ) ) {
         $author = (int) FIFU_AUTHOR;
         if ( $author > 0 ) {
             $candidates[] = $author;
         }
-    }
-
-    $resolved = fifu_resolve_author();
-    if ( $resolved > 0 ) {
-        $candidates[] = $resolved;
     }
 
     $candidates[] = 7777777777;
@@ -184,6 +172,10 @@ function fifu_resolve_author(): int {
     $option = get_option( 'fifu_author', null );
     if ( $option !== null && $option !== false && trim( (string) $option ) !== '' ) {
         return (int) $option;
+    }
+
+    if ( class_exists( 'Fifu_Options_Utils', false ) && method_exists( 'Fifu_Options_Utils', 'get_author' ) ) {
+        return (int) Fifu_Options_Utils::get_author();
     }
 
     global $wpdb;

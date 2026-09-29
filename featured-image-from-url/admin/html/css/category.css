@@ -18,6 +18,48 @@
     color: #999;
 }
 
-#fifu_table_url tr td{
-    padding: 0;
+#fifu-category-featured-media {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 280px;
+    margin: 8px 0;
+    padding: 12px;
+    border: 1px solid #dcdcde;
+    background: #fff;
 }
+
+#fifu-category-featured-media *,
+#fifu-category-featured-media *::before,
+#fifu-category-featured-media *::after { box-sizing: border-box; }
+#fifu-category-featured-media .fifu-category-featured-media-header { display:flex; align-items:center; gap:4px; margin-bottom:10px; }
+#fifu-category-featured-media .fifu-category-featured-media-header strong { font-weight:600; }
+#fifu-category-featured-media .fifu-category-featured-media-header .dashicons { font-size:20px; }
+#fifu-category-featured-media .fifu-featured-media-selector { margin-bottom:8px; }
+#fifu-category-featured-media #fifu-category-featured-media-type { width:100%; max-width:100%; box-sizing:border-box; }
+#fifu-category-featured-media .fifu-featured-media-panel { margin:0; }
+#fifu-category-featured-media .fifu-featured-media-panel[hidden] { display:none !important; }
+#fifu-category-featured-media #fifu_meta_box,
+#fifu-category-featured-media .fifu-featured-image-ui { margin:0; padding:0; }
+#fifu-category-featured-media #fifu_meta_box,
+#fifu-category-featured-media #fifu_image,
+#fifu-category-featured-media #fifu_table_url,
+#fifu-category-featured-media #fifu_table_alt,
+#fifu-category-featured-media #fifu_input_url,
+#fifu-category-featured-media #fifu_input_alt { width:100%; max-width:100%; box-sizing:border-box; }
+#fifu-category-featured-media #fifu_table_url,
+#fifu-category-featured-media #fifu_table_alt { table-layout:fixed; border-spacing:0; margin:0; }
+#fifu-category-featured-media #fifu_table_url td,
+#fifu-category-featured-media #fifu_table_alt td { width:100%; padding:0 !important; }
+#fifu-category-featured-media .fifu-featured-media-icon-input { position:relative; width:100%; }
+#fifu-category-featured-media .fifu-featured-media-icon-input > .dashicons { position:absolute; left:8px; top:50%; transform:translateY(-50%); z-index:1; pointer-events:none; color:#646970; }
+#fifu-category-featured-media .fifu-featured-media-icon-control { display:block; position:absolute; left:8px; top:50%; transform:translateY(-50%); z-index:1; width:20px; height:20px; min-width:20px; margin:0; padding:0; border:0; background:transparent; box-shadow:none; color:#646970; cursor:pointer; }
+#fifu-category-featured-media .fifu-featured-media-icon-input > .fifu-featured-media-icon-control { pointer-events:auto; }
+#fifu-category-featured-media .fifu-featured-media-icon-input > input { width:100%; padding-left:34px; font-size:13px; }
+#fifu-category-featured-media #fifu_image { position:relative; width:100%; max-width:100%; height:150px; margin:0 0 -1px; border-radius:3px; background-position:center; background-repeat:no-repeat; background-size:cover; }
+#fifu-category-featured-media .fifu-featured-media-remove { position:absolute; top:6px; right:6px; z-index:10; display:flex; align-items:center; justify-content:center; width:24px; height:24px; min-width:24px; margin:0; padding:0; border:0; border-radius:50%; background:rgba(0,0,0,.65); color:#fff; }
+#fifu-category-featured-media #fifu-category-free-video-preview { display:block; width:100%; max-width:100%; box-sizing:border-box; margin:5px 0 0 !important; float:none !important; text-align:center; }
+#fifu-category-featured-media #fifu_button { display:block; width:100%; max-width:100%; box-sizing:border-box; margin:5px 0 0 !important; float:none !important; text-align:center !important; }
+#fifu-category-featured-media .fifu-free-pro-hover-target { cursor:not-allowed; }
+#fifu-category-featured-media .fifu-free-pro-hover-target > input:disabled { cursor:not-allowed !important; pointer-events:none; }
+#fifu-category-featured-media .fifu-free-locked-panel input:disabled { background:#fff !important; border-color:#949494 !important; box-shadow:0 0 0 transparent !important; color:#1e1e1e !important; opacity:1; cursor:text; }
+#fifu-category-featured-media .fifu-free-locked-panel .button:disabled { color:var(--wp-admin-theme-color,#3858e9) !important; border-color:var(--wp-admin-theme-color,#3858e9) !important; background:transparent !important; box-shadow:none !important; opacity:1; cursor:not-allowed; }

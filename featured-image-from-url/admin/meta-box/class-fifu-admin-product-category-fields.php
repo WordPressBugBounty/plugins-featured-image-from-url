@@ -16,8 +16,8 @@ class Fifu_Admin_Product_Category_Fields
     public static function register_hooks(): void
     {
         // UI.
-        add_action('product_cat_edit_form_fields', [self::class, 'render_image_edit_fields']);
-        add_action('product_cat_add_form_fields', [self::class, 'render_image_add_fields']);
+        add_action('product_cat_edit_form_fields', [self::class, 'render_featured_media_edit_fields']);
+        add_action('product_cat_add_form_fields', [self::class, 'render_featured_media_add_fields']);
 
         // Persistence (image only) for WooCommerce product categories.
         add_action('created_product_cat', [self::class, 'save_image_meta'], 10, 1);
@@ -38,21 +38,56 @@ class Fifu_Admin_Product_Category_Fields
      *
      * @param WP_Term $term
      */
-    public static function render_image_edit_fields($term): void
+    public static function render_image_edit_fields($term, bool $fifu_category_unified = false): void
+    {
+        self::render_category_image_edit_fields($term, $fifu_category_unified);
+    }
+
+    /**
+     * Render image fields on product category add form.
+     */
+    public static function render_image_add_fields(bool $fifu_category_unified = false): void
+    {
+        self::render_category_image_add_fields($fifu_category_unified);
+    }
+
+    /** Render the unified featured-media component on the category edit form. */
+    public static function render_featured_media_edit_fields($term): void
     {
         self::enqueue_assets();
+        $media = Fifu_Meta_Box_Php_Strings::get_strings();
+        $imageLabel = (string) $media['title']['post']['image']();
+        $videoLabel = (string) $media['title']['video']();
+        $upgradeLabel = (string) $media['common']['upgrade']();
+        echo '<tr class="fifu-category-featured-media-row"><th scope="row"></th><td>';
+        include FIFU_ADMIN_DIR . '/html/category.html';
+        echo '</td></tr>';
+    }
 
+    /** Render the unified featured-media component on the category add form. */
+    public static function render_featured_media_add_fields(): void
+    {
+        self::enqueue_assets();
+        $term = null;
+        $media = Fifu_Meta_Box_Php_Strings::get_strings();
+        $imageLabel = (string) $media['title']['post']['image']();
+        $videoLabel = (string) $media['title']['video']();
+        $upgradeLabel = (string) $media['common']['upgrade']();
+        echo '<div class="form-field fifu-category-featured-media-row">';
+        include FIFU_ADMIN_DIR . '/html/category.html';
+        echo '</div>';
+    }
+
+    private static function render_category_image_edit_fields($term, bool $unified): void
+    {
         $margin = 'margin-top:10px;';
-        $width = 'width:100%;';
-        $height = 'height:200px;';
+        $height = 'height:150px;';
         $align = 'text-align:left;';
         $url = $alt = null;
-
         if (is_object($term) && isset($term->term_id)) {
             $url = Fifu_Term_Image_Url_Read_Service::get_image_url((int) $term->term_id);
             $alt = Fifu_Term_Image_Alt_Read_Service::get_image_alt((int) $term->term_id);
         }
-
         if ($url) {
             $show_button = 'display:none;';
             $show_alt = $show_image = $show_link = '';
@@ -60,27 +95,35 @@ class Fifu_Admin_Product_Category_Fields
             $show_button = '';
             $show_alt = $show_image = $show_link = 'display:none;';
         }
-
         $fifu = Fifu_Meta_Box_Strings::get_featured_image_box_strings();
+        if ($unified) {
+            include FIFU_ADMIN_DIR . '/html/meta-box.html';
+            return;
+        }
+        $media = Fifu_Meta_Box_Php_Strings::get_strings();
+        $imageLabel = (string) $media['title']['post']['image']();
+        $videoLabel = (string) $media['title']['video']();
+        $upgradeLabel = (string) $media['common']['upgrade']();
         include FIFU_ADMIN_DIR . '/html/category.html';
     }
 
-    /**
-     * Render image fields on product category add form.
-     */
-    public static function render_image_add_fields(): void
+    private static function render_category_image_add_fields(bool $unified): void
     {
-        self::enqueue_assets();
-
         $margin = 'margin-top:10px;';
-        $width = 'width:100%;';
-        $height = 'height:200px;';
+        $height = 'height:150px;';
         $align = 'text-align:left;';
-
-        $show_button = $url = $alt = '';
+        $url = $alt = '';
+        $show_button = '';
         $show_alt = $show_image = $show_link = 'display:none;';
-
         $fifu = Fifu_Meta_Box_Strings::get_featured_image_box_strings();
+        if ($unified) {
+            include FIFU_ADMIN_DIR . '/html/meta-box.html';
+            return;
+        }
+        $media = Fifu_Meta_Box_Php_Strings::get_strings();
+        $imageLabel = (string) $media['title']['post']['image']();
+        $videoLabel = (string) $media['title']['video']();
+        $upgradeLabel = (string) $media['common']['upgrade']();
         include FIFU_ADMIN_DIR . '/html/category.html';
     }
 

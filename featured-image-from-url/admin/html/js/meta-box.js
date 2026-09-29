@@ -18,6 +18,18 @@ function fifu_begin_native_featured_image_sync() {
         return;
     }
 
+    if (
+            document.body.style &&
+            typeof document.body.style.setProperty === 'function' &&
+            typeof fifuMetaBoxVars !== 'undefined' &&
+            typeof fifuMetaBoxVars.updating_featured_image === 'string'
+            ) {
+        document.body.style.setProperty(
+                '--fifu-updating-featured-image-text',
+                JSON.stringify(fifuMetaBoxVars.updating_featured_image)
+                );
+    }
+
     document.body.classList.add(
             'fifu-native-featured-image-syncing'
     );
@@ -163,8 +175,6 @@ function runPreview($url) {
 
         fifu_get_sizes();
 
-        jQuery("#fifu_help").hide();
-
         if (fifuMetaBoxVars.is_sirv_active)
             jQuery("#fifu_sirv_button").hide();
 
@@ -173,6 +183,22 @@ function runPreview($url) {
 }
 
 jQuery(document).ready(function () {
+    // Free featured-media selector: presentation only; no selected type is saved.
+    [
+        { container: '#featuredMediaMetaBox', selector: '#fifu-featured-media-type' },
+        { container: '#fifu-category-featured-media', selector: '#fifu-category-featured-media-type' }
+    ].forEach(function (config) {
+        var $featuredMediaBox = jQuery(config.container);
+        var $featuredMediaSelector = $featuredMediaBox.find(config.selector);
+        if ($featuredMediaSelector.length) {
+            $featuredMediaSelector.val('image');
+            fifu_free_show_featured_media_panel($featuredMediaBox, 'image');
+            $featuredMediaSelector.on('change', function () {
+                fifu_free_show_featured_media_panel($featuredMediaBox, jQuery(this).val());
+            });
+        }
+    });
+
     // help
     fifu_register_help();
 
@@ -186,17 +212,7 @@ jQuery(document).ready(function () {
     fifu_type_url();
 
     // title
-    let text = jQuery("div#imageUrlMetaBox").find('h2').text();
-    jQuery("div#imageUrlMetaBox").find('h2.hndle').text('');
-    jQuery("div#imageUrlMetaBox").find('h2').append('<h4 style="left:-10px;position:relative;font-size:13px;font-weight:normal"><span class="dashicons dashicons-camera"></span> ' + text + '</h4>');
-    jQuery("div#imageUrlMetaBox").find('button.handle-order-higher').remove();
-    jQuery("div#imageUrlMetaBox").find('button.handle-order-lower').remove();
-
-    text = jQuery("div#urlMetaBox").find('h2').text();
-    jQuery("div#urlMetaBox").find('h2.hndle').text('');
-    jQuery("div#urlMetaBox").find('h2').append('<h4 style="left:-10px;position:relative;font-size:13px;font-weight:normal"><span class="dashicons dashicons-camera"></span> ' + text + '</h4>');
-    jQuery("div#urlMetaBox").find('button.handle-order-higher').remove();
-    jQuery("div#urlMetaBox").find('button.handle-order-lower').remove();
+    jQuery('#featuredMediaMetaBox').find('button.handle-order-higher, button.handle-order-lower').remove();
 
     // Add click handler for preview button to open lightbox
     jQuery("#fifu_button").on('click', function () {
@@ -464,6 +480,18 @@ jQuery(document).ready(function () {
     });
 });
 
+function fifu_free_show_featured_media_panel($featuredMediaBox, type) {
+    var selectedType = ['image', 'video', 'slider', 'audio'].indexOf(type) >= 0 ? type : 'image';
+    $featuredMediaBox.find('.fifu-featured-media-panel').each(function () {
+        var isSelected = jQuery(this).attr('data-fifu-media-type') === selectedType;
+        jQuery(this).prop('hidden', !isSelected);
+    });
+    $featuredMediaBox.find('.fifu-featured-media-galleries').prop(
+            'hidden',
+            selectedType === 'slider' || selectedType === 'audio'
+            );
+}
+
 function fifu_get_sizes() {
     var image_url = fifu_convert(jQuery("#fifu_input_url").val());
     image_url = fifu_cdn_adjust(image_url);
@@ -480,7 +508,6 @@ function fifu_get_sizes() {
             jQuery("#fifu_image").show();
             ensureImageFallback().hide();
             jQuery("#fifu_button").hide();
-            jQuery("#fifu_help").hide();
             return;
         }
 
@@ -520,7 +547,6 @@ function fifu_get_image(url) {
         jQuery("#fifu_image").show();
         ensureImageFallback().hide();
         jQuery("#fifu_button").hide();
-        jQuery("#fifu_help").hide(); // Hide help icon when valid image
     };
     image.onerror = function () {
         if (loadToken !== fifu_dimension_load.token || fifu_dimension_load.url !== url) {
@@ -541,6 +567,9 @@ function fifu_store_sizes($) {
 
 function fifu_open_lightbox() {
     jQuery("#fifu_image").on('click', function (evt) {
+        if (jQuery(evt.target).closest('#fifu_link').length) {
+            return;
+        }
         evt.stopImmediatePropagation();
 
         // Do not open lightbox if the error image is set as background
@@ -556,6 +585,16 @@ function fifu_open_lightbox() {
         }
         let adjustedUrl = fifu_cdn_adjust(url);
         jQuery.fancybox.open('<img loading="lazy" src="' + adjustedUrl + '" style="max-width:900px;width:100%;max-height:600px">');
+    });
+
+    jQuery("#fifu_image").on('keydown', function (evt) {
+        if (jQuery(evt.target).closest('#fifu_link').length) {
+            return;
+        }
+        if (evt.key === 'Enter' || evt.key === ' ') {
+            evt.preventDefault();
+            jQuery(this).trigger('click');
+        }
     });
 }
 

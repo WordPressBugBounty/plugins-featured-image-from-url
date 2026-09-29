@@ -6,6 +6,16 @@ if (!defined('ABSPATH')) {
 
 class Fifu_Admin_Meta_Box_Renderer {
 
+    public static function render_featured_media_box( $post ): void {
+        if (!$post instanceof WP_Post) {
+            return;
+        }
+
+        $fifu = Fifu_Meta_Box_Php_Strings::get_strings();
+        $is_debug_enabled = Fifu_Options_Utils::is_on('fifu_debug');
+        include __DIR__ . '/../html/featured-media.html';
+    }
+
     private static function get_attachment_alt(int $attachment_id): string {
         $alt = get_post_meta($attachment_id, '_wp_attachment_image_alt', true);
         return is_string($alt) ? $alt : '';
@@ -17,9 +27,8 @@ class Fifu_Admin_Meta_Box_Renderer {
         }
 
         $margin = 'margin-top:5px;margin-left:3px;';
-        $width = 'width:100%;';
-        $height = 'height:150px;';
         $align = 'text-align:left;';
+        $height = 'height:150px;';
 
         $url = esc_url(Fifu_Post_Image_Url_Read_Service::get_image_url((int) $post->ID) ?? '');
         $alt = esc_attr(Fifu_Post_Image_Alt_Read_Service::get_image_alt((int) $post->ID));

@@ -36,6 +36,12 @@ class Fifu_Meta_Box_Strings {
             $box['common']['preview'] = function () {
                 _e("Preview", FIFU_SLUG);
             };
+            $box['common']['preview_featured_image'] = function () {
+                return __("Preview featured image", FIFU_SLUG);
+            };
+            $box['common']['copy_debug_data'] = function () {
+                return __("Copy debug data", FIFU_SLUG);
+            };
             $box['common']['video'] = function () {
                 _e("Video URL", FIFU_SLUG);
             };
@@ -76,6 +82,12 @@ class Fifu_Meta_Box_Strings {
             };
             $box['image']['remove'] = function () {
                 _e("Remove remote image", FIFU_SLUG);
+            };
+            $box['image']['remove_featured_image'] = function () {
+                return __("Remove featured image", FIFU_SLUG);
+            };
+            $box['image']['url_help'] = function () {
+                return __("Image URL help", FIFU_SLUG);
             };
             $box['image']['sirv']['add'] = function () {
                 _e("Add image from Sirv", FIFU_SLUG);

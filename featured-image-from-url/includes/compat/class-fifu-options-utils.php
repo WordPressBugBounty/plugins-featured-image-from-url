@@ -26,7 +26,7 @@ class Fifu_Options_Utils {
             return;
         }
 
-        update_option( 'fifu_author', self::resolve_author_from_posts(), 'no' );
+        self::persist_author( self::resolve_author_from_posts() );
     }
 
     public static function get_author() {
@@ -35,7 +35,14 @@ class Fifu_Options_Utils {
             return $option;
         }
 
-        return self::resolve_author_from_posts();
+        $author = self::resolve_author_from_posts();
+        self::persist_author( $author );
+
+        return $author;
+    }
+
+    private static function persist_author( int $author ): void {
+        update_option( 'fifu_author', $author, 'no' );
     }
 
     private static function option_author(): ?int {

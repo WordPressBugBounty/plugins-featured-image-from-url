@@ -53,8 +53,14 @@ class Fifu_Rest_Quick_Edit_Controller {
         $is_ctgr = in_array($request->get_param('is_ctgr'), [true, 1, '1', 'true'], true);
         $request_params = $request->get_params();
         $has_image_url = array_key_exists('image_url', $request_params);
+        $has_image_alt = array_key_exists('image_alt', $request_params);
         $image_url_raw = $request->get_param('image_url');
         $image_url = is_string($image_url_raw) ? trim($image_url_raw) : trim((string) $image_url_raw);
+        $image_alt_raw = $request->get_param('image_alt');
+        if ($has_image_alt && !is_scalar($image_alt_raw)) {
+            return self::image_alt_save_error();
+        }
+        $image_alt = $has_image_alt ? trim(wp_strip_all_tags((string) $image_alt_raw)) : '';
         $gallery_length = (int) $request->get_param('gallery_length');
         $gallery_urls = $request->get_param('gallery_urls');
 
@@ -78,13 +84,11 @@ class Fifu_Rest_Quick_Edit_Controller {
                 $ok = Fifu_Developer_Media_Service::set_category_image($post_id, $image_url);
                 if ($ok && $image_url !== '') {
                     self::sync_category_image_dimensions($post_id, $request);
-                    self::sync_category_image_alt($post_id, $image_url);
                 }
             } else {
                 $ok = Fifu_Developer_Media_Service::set_image($post_id, $image_url);
                 if ($ok && $image_url !== '') {
                     self::sync_post_image_dimensions($post_id, $request);
-                    self::sync_post_image_alt($post_id, $image_url);
                 }
             }
 
@@ -93,6 +97,18 @@ class Fifu_Rest_Quick_Edit_Controller {
                     'code' => 'fifu_quick_edit_image_save_failed',
                     'message' => 'Unable to save featured image.',
                 ], 500);
+            }
+        }
+
+        if ($has_image_alt) {
+            if (!self::persist_quick_edit_image_alt($post_id, $is_ctgr, $image_alt)) {
+                return self::image_alt_save_error();
+            }
+        } elseif ($has_image_url && $image_url !== '') {
+            if ($is_ctgr) {
+                self::sync_category_image_alt($post_id, $image_url);
+            } else {
+                self::sync_post_image_alt($post_id, $image_url);
             }
         }
 
@@ -357,6 +373,62 @@ class Fifu_Rest_Quick_Edit_Controller {
 
             delete_post_meta($post_id, 'fifu_image_alt');
         }
+    }
+
+    private static function persist_quick_edit_image_alt(int $entity_id, bool $is_category, string $alt): bool {
+        if (!function_exists('fifu_db2_manager') || !class_exists('Fifu_Db2_Manager', false)) {
+            return false;
+        }
+
+        $manager = self::db2_manager();
+        if (!$manager instanceof Fifu_Db2_Manager) {
+            return false;
+        }
+
+        if ($is_category) {
+            if ($alt !== '') {
+                if (!$manager->saveTermAlt($entity_id, 'image', $alt)) {
+                    return false;
+                }
+                $mapping = $manager->getTermAltMapping($entity_id, 'image');
+                if (!is_array($mapping) || trim((string) ($mapping['alt'] ?? '')) !== $alt) {
+                    return false;
+                }
+            } else {
+                $manager->deleteTermAltMappings($entity_id, 'image');
+                if ($manager->getTermAltMapping($entity_id, 'image') !== null) {
+                    return false;
+                }
+            }
+
+            delete_term_meta($entity_id, 'fifu_image_alt');
+            return true;
+        }
+
+        if ($alt !== '') {
+            if (!$manager->savePostAlt($entity_id, 'image', 0, $alt)) {
+                return false;
+            }
+            $mapping = $manager->getPostAltMapping($entity_id, 'image', 0);
+            if (!is_array($mapping) || trim((string) ($mapping['alt'] ?? '')) !== $alt) {
+                return false;
+            }
+        } else {
+            $manager->deletePostAltMappings($entity_id, 'image', 0);
+            if ($manager->getPostAltMapping($entity_id, 'image', 0) !== null) {
+                return false;
+            }
+        }
+
+        delete_post_meta($entity_id, 'fifu_image_alt');
+        return true;
+    }
+
+    private static function image_alt_save_error(): WP_REST_Response {
+        return new WP_REST_Response([
+            'code' => 'fifu_quick_edit_image_alt_save_failed',
+            'message' => 'Unable to save featured image alternative text.',
+        ], 500);
     }
 
     private static function db2_manager(): Fifu_Db2_Manager

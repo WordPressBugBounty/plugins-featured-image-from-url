@@ -3,6 +3,7 @@ var WC_PLACEHOLDER_IMAGE_URL = window.location.origin + '/wp-content/uploads/woo
 
 jQuery(document).ready(function () {
     fifu_open_quick_lightbox();
+    fifu_register_quick_featured_media_selector();
     fifu_register_help_quick_edit();
 
     // Check all .fifu-quick thumbnails for invalid images
@@ -81,6 +82,26 @@ var fifuVariableProductInFlight = {};
 var fifuQuickEditItemCache = {};
 var fifuQuickEditItemInFlight = {};
 var fifuActiveQuickEditContext = null;
+
+function fifu_show_quick_featured_media_panel($modal, type) {
+    const selectedType = ['image', 'video', 'slider', 'audio'].indexOf(type) >= 0 ? type : 'image';
+    $modal.find('.fifu-quick-featured-media-panel').each(function () {
+        const isSelected = jQuery(this).attr('data-fifu-media-type') === selectedType;
+        jQuery(this).prop('hidden', !isSelected);
+    });
+    $modal.find('.fifu-quick-featured-media-galleries').prop('hidden', selectedType === 'slider' || selectedType === 'audio');
+}
+
+function fifu_register_quick_featured_media_selector() {
+    jQuery(document)
+            .off('change.fifuQuickMedia', '#fifu-quick-featured-media-type')
+            .on('change.fifuQuickMedia', '#fifu-quick-featured-media-type', function () {
+                fifu_show_quick_featured_media_panel(
+                        jQuery(this).closest('.fifu-quick-editor-layout'),
+                        jQuery(this).val()
+                        );
+            });
+}
 
 function fifu_get_quick_hidden_input_value(inputId) {
     const $input = jQuery('#' + inputId);
@@ -375,39 +396,100 @@ function fifu_open_quick_lightbox() {
 
         currentLightbox = post_id;
 
-        let url = image_url;
-        url = (url == 'about:invalid' ? '' : url);
+        const is_category = is_ctgr === '1';
         const fifuReadonlyAttr = is_readonly_variation ? 'disabled="disabled" readonly="readonly" aria-disabled="true"' : '';
         const fifuReadonlyButtonAttr = is_readonly_variation ? 'disabled="disabled" aria-disabled="true"' : '';
+        const fifuReadonlySelectorAttr = is_readonly_variation ? 'disabled="disabled" aria-disabled="true"' : '';
         const fifuReadonlyClass = is_readonly_variation ? ' fifu-quick-readonly-variation' : '';
-        const media = `<img loading="lazy" id="fifu-quick-preview" src="" post-id="${post_id}" style="max-height:600px; width:100%;">`;
-        const box = `
-            <div ${is_readonly_variation ? 'data-fifu-readonly-variation-modal="1"' : ''} class="fifu-quick-modal${fifuReadonlyClass}">
-            <table>
-                <tr>
-                    <td id="fifu-left-column">${media}</td>
-                    <td style="vertical-align:top; padding: 10px; background-color:#f6f7f7; width:250px; border-radius: 8px;">
-                        <div>
-                            <div style="padding-bottom:5px">
-                                <span class="dashicons dashicons-camera" style="font-size:20px;cursor:auto;" title="${fifuColumnVars.tipImage}"></span>
-                                ${fifuColumnVars.labelImage}
+        const imageAlt = is_ctgr
+            ? String((window.fifuQuickEditCtgrVars && fifuQuickEditCtgrVars.terms && fifuQuickEditCtgrVars.terms[post_id] && fifuQuickEditCtgrVars.terms[post_id].fifu_image_alt) || '')
+            : String((window.fifuQuickEditVars && fifuQuickEditVars.posts && fifuQuickEditVars.posts[post_id] && fifuQuickEditVars.posts[post_id].fifu_image_alt) || '');
+        const quickMediaTypeOptions = is_category
+            ? `<option value="image" selected>${fifu_escape_html(fifuColumnVars.labelImage)}</option>
+                                    <option value="video">${fifu_escape_html(fifuColumnVars.labelVideo)}</option>`
+            : `<option value="image" selected>${fifu_escape_html(fifuColumnVars.labelImage)}</option>
+                                    <option value="video">${fifu_escape_html(fifuColumnVars.labelVideo)}</option>
+                                    <option value="slider">${fifu_escape_html(fifuColumnVars.labelSlider)}</option>
+                                    <option value="audio">${fifu_escape_html(fifuColumnVars.labelAudio)}</option>`;
+        const quickAdditionalPanelMarkup = is_category ? '' : `
+                            <div class="fifu-quick-featured-media-panel fifu-quick-locked-pro-panel" data-fifu-media-type="slider" hidden>
+                                <div class="fifu-quick-pro-slider-grid fifu-quick-pro-grid" aria-label="${fifu_escape_html(fifuColumnVars.labelSlider)}" title="${fifu_escape_html(fifuColumnVars.buttonUpgrade)}">
+                                    <div class="grid-square image" aria-hidden="true"></div>
+                                    <div class="grid-square image" aria-hidden="true"></div>
+                                    <div class="grid-square image" aria-hidden="true"></div>
+                                    <button class="grid-square image-add" type="button" disabled aria-disabled="true" aria-label="${fifu_escape_html(fifuColumnVars.buttonAddImages)}"></button>
+                                </div>
+                                <br><br>
                             </div>
-                            <input id="fifu-quick-input-url" class="fifu-quick-input" type="text" placeholder="${fifuColumnVars.urlImage}" value="" style="width:98%" ${fifuReadonlyAttr}/>
-                            <br><br>
 
-                            <div style="padding-bottom:5px">
-                                <span class="dashicons dashicons-search" style="font-size:20px;cursor:auto" title="${fifuColumnVars.tipSearch}"></span>
-                                ${fifuColumnVars.labelSearch}
-                                <span id="fifu_help_quick_edit" class="dashicons dashicons-editor-help" style="font-size:20px;cursor:pointer;"></span>
-                            </div>
-                            <div>
-                                <input id="fifu-quick-search-input-keywords" class="fifu-quick-input" type="text" placeholder="${fifuColumnVars.keywords}" value="" style="width:75%" ${fifuReadonlyAttr}/>
-                                <button id="fifu-search-button" class="fifu-quick-button" type="button" style="width:50px;border-radius:5px;height:40px;position:absolute;background-color:#3c434a" ${fifuReadonlyButtonAttr}><span class="dashicons dashicons-search" style="font-size:21px"></span></button>
-                            </div>
-                            <br><br>
-                        </div>
-                        <div style="width:100%">
+                            <div class="fifu-quick-featured-media-panel fifu-quick-locked-pro-panel" data-fifu-media-type="audio" hidden>
+                                <div id="fifu-quick-pro-audio-preview-stack" class="fifu-quick-preview-stack">
+                                    <div class="fifu-featured-media-icon-input fifu-quick-featured-media-icon-input fifu-quick-pro-hover-target" title="${fifu_escape_html(fifuColumnVars.buttonUpgrade)}">
+                                        <span class="dashicons dashicons-controls-volumeon" aria-hidden="true"></span>
+                                        <input id="fifu-quick-pro-audio-input-url" type="text" placeholder="${fifu_escape_html(fifuColumnVars.urlAudio)}" disabled aria-disabled="true" />
+                                    </div>
+                                    <button id="fifu-quick-pro-audio-preview-button" class="button fifu-quick-audio-preview-button" type="button" disabled aria-disabled="true" title="${fifu_escape_html(fifuColumnVars.buttonUpgrade)}">${fifuColumnVars.buttonPreview}</button>
+                                </div>
+                                <br><br>
+                            </div>`;
+        const box = `
+            <table ${is_readonly_variation ? 'data-fifu-readonly-variation-modal="1"' : ''} class="fifu-quick-editor-layout${is_readonly_variation ? fifuReadonlyClass : ''}">
+                <tr>
+                    <td id="fifu-left-column" class="fifu-quick-editor-preview-column" style="display:none"></td>
+                    <td id="fifu-right-column" class="fifu-quick-editor-controls" style="vertical-align:top; padding:10px; background-color:#f6f7f7; width:250px; border-radius:8px;">
+                        <div>
                             ${fifuColumnVars.isDebugEnabled ? `<button id="fifu-copy-debug-data-button" class="fifu-quick-button fifu-copy-debug-data-button" type="button" onclick="fifu_copy_quick_edit_debug_data(${post_id}, this, '${is_ctgr}')"><span class="dashicons dashicons-clipboard fifu-copy-debug-data-icon" aria-hidden="true"></span><span class="fifu-copy-debug-data-label">${fifuColumnVars.buttonCopyDebugData}</span></button>` : ''}
+                            <div class="fifu-quick-featured-media-selector">
+                                <select id="fifu-quick-featured-media-type" class="fifu-quick-featured-media-selector-control" aria-label="${fifu_escape_html(fifuColumnVars.labelFeaturedMedia)}" ${fifuReadonlySelectorAttr}>
+                                    ${quickMediaTypeOptions}
+                            </select>
+                            </div>
+
+                            <div class="fifu-quick-featured-media-panel" data-fifu-media-type="image">
+                                <div id="fifu-quick-featured-image-state" class="fifu-quick-featured-image-state fifu-quick-preview-stack">
+                                    <div class="fifu-featured-media-icon-input fifu-quick-featured-media-icon-input">
+                                        <button id="fifu-quick-image-help" class="fifu-quick-image-help" type="button" title="${fifu_escape_html(fifuColumnVars.txt_title_examples)}" aria-label="${fifu_escape_html(fifuColumnVars.txt_title_examples)}" ${fifuReadonlyButtonAttr}>
+                                            <span class="dashicons dashicons-format-image" aria-hidden="true"></span>
+                                        </button>
+                                        <input id="fifu-quick-input-url" type="text" placeholder="${fifu_escape_html(fifuColumnVars.urlImageOrKeywords)}" value="" ${fifuReadonlyAttr}/>
+                                    </div>
+                                    <div id="fifu-quick-image-alt-state" class="fifu-featured-media-icon-input fifu-quick-featured-media-icon-input" style="display:none">
+                                        <span id="fifu-quick-image-alt-help" class="dashicons dashicons-media-text" title="${fifu_escape_html(fifuColumnVars.imageAltHelp)}" aria-hidden="true"></span>
+                                        <input id="fifu-quick-image-alt" type="text" placeholder="${fifu_escape_html(fifuColumnVars.imageAlt)}" value="${fifu_escape_html(imageAlt)}" ${fifuReadonlyAttr} />
+                                    </div>
+                                    <button id="fifu-quick-image-preview-button" class="button fifu-quick-image-preview-button" type="button" ${fifuReadonlyButtonAttr}>${fifuColumnVars.buttonPreview}</button>
+                                </div>
+                                <br><br>
+                            </div>
+
+                            <div class="fifu-quick-featured-media-panel fifu-quick-locked-pro-panel" data-fifu-media-type="video" hidden>
+                                <div id="fifu-quick-pro-video-preview-stack" class="fifu-quick-preview-stack">
+                                    <div class="fifu-featured-media-icon-input fifu-quick-featured-media-icon-input fifu-quick-pro-hover-target" title="${fifu_escape_html(fifuColumnVars.buttonUpgrade)}">
+                                        <span class="dashicons dashicons-format-video" aria-hidden="true"></span>
+                                        <input id="fifu-quick-pro-video-input-url" type="text" placeholder="${fifu_escape_html(fifuColumnVars.urlVideo)}" disabled aria-disabled="true" />
+                                    </div>
+                                    <button id="fifu-quick-pro-video-preview-button" class="button fifu-quick-video-preview-button" type="button" disabled aria-disabled="true" title="${fifu_escape_html(fifuColumnVars.buttonUpgrade)}">${fifuColumnVars.buttonPreview}</button>
+                                </div>
+                                <br><br>
+                            </div>
+
+                            ${quickAdditionalPanelMarkup}
+                        </div>
+                        ${fifuColumnVars.onProductsPage && !is_ctgr && !is_readonly_variation ? `
+                        <div class="fifu-featured-media-galleries fifu-quick-featured-media-galleries">
+                            <section class="fifu-featured-media-mixed-gallery fifu-quick-locked-pro-gallery" aria-labelledby="fifu-quick-product-gallery-title">
+                                <div class="fifu-featured-media-gallery-divider">
+                                    <span id="fifu-quick-product-gallery-title">${fifu_escape_html(fifuColumnVars.labelMixedGallery)}</span>
+                                </div>
+                                <div class="fifu-quick-pro-mixed-gallery-grid fifu-quick-pro-grid" role="group" aria-labelledby="fifu-quick-product-gallery-title" title="${fifu_escape_html(fifuColumnVars.buttonUpgrade)}">
+                                    <div class="grid-square image" aria-hidden="true"></div>
+                                    <div class="grid-square image" aria-hidden="true"></div>
+                                    <div class="grid-square image" aria-hidden="true"></div>
+                                    <button class="grid-square image-add" type="button" disabled aria-disabled="true" aria-label="${fifu_escape_html(fifuColumnVars.buttonAddMedia)}"></button>
+                                </div>
+                            </section>
+                        </div>` : ''}
+                        <div style="width:100%">
                             <button id="fifu-clean-button" class="fifu-quick-button" type="button" style="background-color: #e7e7e7; color: black;" ${fifuReadonlyButtonAttr}>${fifuColumnVars.buttonClean}</button>
                             <button id="fifu-save-button" post-id="${post_id}" is-ctgr="${is_ctgr}" class="fifu-quick-button" type="button" ${fifuReadonlyButtonAttr}>${fifuColumnVars.buttonSave}</button>
                             <br>
@@ -415,7 +497,6 @@ function fifu_open_quick_lightbox() {
                     </td>
                 </tr>
             </table>
-            </div>
         `;
 
         fifu_include_input_hidden(post_id);
@@ -429,22 +510,12 @@ function fifu_open_quick_lightbox() {
             },
             afterClose: function () {}
         });
-        jQuery('#fifu-left-column').css('display', url ? 'table-cell' : 'none');
         jQuery('#fifu-quick-input-url').select();
         fifu_change_image_event();
+        fifu_quick_image_preview_event();
         fifu_save_event();
         fifu_keypress_event();
-        fifu_toggle_search_controls();
-        fifu_search_event();
     });
-}
-
-function fifu_toggle_search_controls() {
-    if (fifu_is_readonly_variation_modal()) {
-        return;
-    }
-    jQuery('#fifu-quick-search-input-keywords').prop('disabled', false);
-    jQuery('#fifu-search-button').prop('disabled', false);
 }
 
 function fifu_is_readonly_variation_modal() {
@@ -452,30 +523,33 @@ function fifu_is_readonly_variation_modal() {
 }
 
 function fifu_change_image_event() {
-    // image
-    jQuery('#fifu-quick-input-url').on('input', function () {
+    jQuery('#fifu-quick-input-url').off('input.fifuQuickImage').on('input.fifuQuickImage', function () {
         if (fifu_is_readonly_variation_modal()) {
             return;
         }
-        url = jQuery('#fifu-quick-input-url').val();
-        post_id = jQuery('#fifu-save-button').attr('post-id');
-        jQuery('#fifu-left-column').css('display', url ? 'table-cell' : 'none');
-        jQuery('#fifu-quick-preview').remove();
-        let adjustedUrl = fifu_cdn_adjust(url);
-        jQuery('#fifu-left-column').append(
-                `<img loading="lazy" id="fifu-quick-preview" src="${adjustedUrl}" post-id="${post_id}" style="max-height:600px; width:100%;"
-                onerror="this.onerror=null;this.src='${FIFU_IMAGE_NOT_FOUND_URL}';">`
-                );
+        const imageUrl = String(jQuery('#fifu-quick-input-url').val() || '').trim();
+        if (fifu_is_quick_direct_image_url(imageUrl)) {
+            fifu_render_quick_image_preview(imageUrl, jQuery('#fifu-save-button').attr('post-id'));
+        } else {
+            fifu_clear_quick_image_preview();
+        }
     });
-    // clean
-    jQuery('#fifu-clean-button').on('click', function () {
+
+    jQuery(document).off('click.fifuQuickImage', '#fifu-quick-image-remove').on('click.fifuQuickImage', '#fifu-quick-image-remove', function () {
         if (fifu_is_readonly_variation_modal()) {
             return;
         }
-        jQuery('#fifu-left-column').css('display', 'none');
-        jQuery('#fifu-quick-preview').remove();
         jQuery('#fifu-quick-input-url').val('');
-        jQuery('#fifu-quick-search-input-keywords').val('');
+        fifu_clear_quick_image_preview();
+    });
+
+    jQuery('#fifu-clean-button').off('click.fifuQuickImage').on('click.fifuQuickImage', function () {
+        if (fifu_is_readonly_variation_modal()) {
+            return;
+        }
+        jQuery('#fifu-quick-input-url').val('');
+        jQuery('#fifu-quick-image-alt').val('');
+        fifu_clear_quick_image_preview();
 
         jQuery('[id^=fifu_input_]').each(function () {
             jQuery(this).val('');
@@ -488,6 +562,51 @@ function fifu_change_image_event() {
     });
 }
 
+function fifu_is_quick_direct_image_url(value) {
+    const normalizedValue = String(value || '').trim();
+    return normalizedValue.indexOf('http') === 0 || normalizedValue.indexOf('//') === 0;
+}
+
+function fifu_render_quick_image_preview(imageUrl, postId) {
+    const adjustedUrl = fifu_escape_html(fifu_cdn_adjust(imageUrl));
+    const escapedPostId = fifu_escape_html(postId);
+    const removeLabel = fifu_escape_html(fifuColumnVars.buttonRemoveImage);
+    const preview = `<div id="fifu-quick-image-preview-wrapper" class="fifu-quick-image-preview-wrapper"><div class="fifu-quick-image-preview-media"><img loading="lazy" id="fifu-quick-preview" src="${adjustedUrl}" alt="" post-id="${escapedPostId}" onerror="this.onerror=null;this.src='${FIFU_IMAGE_NOT_FOUND_URL}';"><button id="fifu-quick-image-remove" class="fifu-featured-media-remove" type="button" aria-label="${removeLabel}" title="${removeLabel}"><span class="dashicons dashicons-no-alt" aria-hidden="true"></span></button></div></div>`;
+
+    jQuery('#fifu-left-column').html(preview).css('display', 'table-cell');
+    jQuery('.fifu-quick-editor-layout').addClass('fifu-quick-editor-layout--preview');
+    jQuery('#fifu-quick-image-preview-button').hide();
+    jQuery('#fifu-quick-image-alt-state').show();
+}
+
+function fifu_clear_quick_image_preview() {
+    jQuery('#fifu-left-column').empty().css('display', 'none');
+    jQuery('.fifu-quick-editor-layout').removeClass('fifu-quick-editor-layout--preview');
+    jQuery('#fifu-quick-image-preview-button').show();
+    jQuery('#fifu-quick-image-alt-state').hide();
+}
+
+function fifu_quick_image_preview_event() {
+    jQuery('#fifu-quick-image-preview-button').off('click.fifuQuickImage').on('click.fifuQuickImage', function () {
+        if (fifu_is_readonly_variation_modal()) {
+            return;
+        }
+
+        const value = String(jQuery('#fifu-quick-input-url').val() || '').trim();
+        if (!value) {
+            return;
+        }
+
+        if (fifu_is_quick_direct_image_url(value)) {
+            jQuery('#fifu-quick-input-url').trigger('input');
+            return;
+        }
+
+        const keywords = value;
+        fifu_start_lightbox(keywords, 'quick-edit');
+    });
+}
+
 function fifu_save_event() {
     jQuery('#fifu-save-button').on('click', function () {
         if (fifu_is_readonly_variation_modal()) {
@@ -497,6 +616,10 @@ function fifu_save_event() {
         is_ctgr = jQuery(this).attr('is-ctgr');
 
         image_url = jQuery("#fifu-quick-input-url")[0].value;
+        const image_alt = String(jQuery('#fifu-quick-image-alt').val() || '').trim();
+        if (image_url && !fifu_is_quick_direct_image_url(image_url)) {
+            return;
+        }
 
         img = jQuery("img[post-id=" + post_id + "]")[0];
         width = height = null;
@@ -519,6 +642,7 @@ function fifu_save_event() {
                 "width": width,
                 "height": height,
                 "image_url": image_url,
+                "image_alt": image_alt,
             },
             async: true,
             beforeSend: function (xhr) {
@@ -533,6 +657,7 @@ function fifu_save_event() {
                     fifuQuickEditCtgrVars.terms[post_id]['fifu_image_alt'] = image_alt;
                 } else {
                     fifuQuickEditVars.posts[post_id]['fifu_image_url'] = image_url;
+                    fifuQuickEditVars.posts[post_id]['fifu_image_alt'] = image_alt;
 
                     if (fifuQuickEditVars.parent && fifuQuickEditVars.parent[post_id])
                         fifuQuickEditVars.parent[post_id]['image-url'] = image_url;
@@ -624,19 +749,8 @@ function fifu_keypress_event() {
             return;
         }
         switch (e.which) {
-            case 9:
-                // tab (keyword)
-                if (jQuery('#fifu-quick-search-input-keywords').val())
-                    jQuery('#fifu-search-button').click();
-                break;
             case 13:
                 jQuery(this).blur();
-                // enter (keyword)
-                if (jQuery('#fifu-quick-search-input-keywords').val()) {
-                    jQuery('#fifu-search-button').focus().click();
-                    break;
-                }
-                // enter (save)
                 jQuery('#fifu-save-button').focus().click();
                 break;
             case 27:
@@ -646,23 +760,6 @@ function fifu_keypress_event() {
             default:
                 break;
         }
-    });
-}
-
-function fifu_search_event() {
-    jQuery('#fifu-search-button').on('click', function () {
-        if (fifu_is_readonly_variation_modal()) {
-            return;
-        }
-        const keywords = jQuery('#fifu-quick-search-input-keywords')
-            .val()
-            .trim();
-
-        if (!keywords) {
-            return;
-        }
-
-        fifu_start_lightbox(keywords, 'quick-edit');
     });
 }
 
@@ -695,24 +792,24 @@ function fifu_get_image_info(post_id) {
         image_alt = fifuQuickEditCtgrVars.terms[post_id]['fifu_image_alt'];
     } else {
         image_url = fifuQuickEditVars.posts[post_id]['fifu_image_url'];
+        image_alt = fifuQuickEditVars.posts[post_id]['fifu_image_alt'] || '';
     }
 
     if (image_url) {
         jQuery('input#fifu-quick-input-url').val(image_url);
         jQuery('#fifu-quick-input-url').select();
-        let adjustedUrl = fifu_cdn_adjust(image_url);
-        jQuery('img#fifu-quick-preview')
-                .attr('src', adjustedUrl)
-                // Hide upload on error (not found)
-                .attr('onerror', `this.onerror=null;this.src='${FIFU_IMAGE_NOT_FOUND_URL}';`);
-        jQuery('#fifu-left-column').css('display', 'table-cell');
+        jQuery('#fifu-quick-image-alt').val(image_alt || '');
+        fifu_render_quick_image_preview(image_url, post_id);
     } else {
+        jQuery('#fifu-quick-input-url').val('');
+        jQuery('#fifu-quick-image-alt').val(image_alt || '');
+        fifu_clear_quick_image_preview();
     }
 
 }
 
 function fifu_register_help_quick_edit() {
-    jQuery(document).on('click', '#fifu_help_quick_edit', function () {
+    jQuery(document).off('click.fifuQuickImageHelp', '#fifu-quick-image-help').on('click.fifuQuickImageHelp', '#fifu-quick-image-help', function () {
         jQuery.fancybox.open(`
             <div style="color:#1e1e1e;width:50%">
                 <h1 style="background-color:whitesmoke;padding:20px;padding-left:0">${fifuColumnVars.txt_title_examples}</h1>                

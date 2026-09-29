@@ -110,12 +110,16 @@ class Fifu_Frontend_Hooks {
      */
     private static function register_seo_integrations(): void {
         add_filter('wp_get_attachment_image_attributes', [Fifu_Attachment_Image_Attributes_Filter::class, 'filter_attributes'], 10, 3);
+        add_filter('get_post_metadata', [Fifu_Rank_Math_Integration::class, 'filter_attachment_image_alt'], 10, 5);
         add_filter('post_thumbnail_html', [Fifu_Featured_Image_Filter::class, 'filter_post_thumbnail_html'], 10, 5);
         add_filter('the_content', [Fifu_Content_Image_Cdn_Optimizer::class, 'optimize']);
         add_action('rss2_item', [Fifu_Rss_Image_Item::class, 'render_media_content']);
         add_filter('wpseo_schema_graph', [Fifu_Yoast_Schema_Graph_Integration::class, 'filter_schema_graph'], 10, 2);
         add_filter('rank_math/opengraph/facebook/image', [Fifu_Rank_Math_Integration::class, 'filter_facebook_image']);
+        add_filter('rank_math/opengraph/facebook/og_image', [Fifu_Rank_Math_Integration::class, 'restore_facebook_image']);
+        add_filter('rank_math/opengraph/facebook/og_image_secure_url', [Fifu_Rank_Math_Integration::class, 'restore_facebook_image']);
         add_filter('rank_math/opengraph/twitter/image', [Fifu_Rank_Math_Integration::class, 'filter_twitter_image']);
+        add_filter('rank_math/opengraph/twitter/twitter_image', [Fifu_Rank_Math_Integration::class, 'restore_twitter_image']);
         add_filter('rank_math/sitemap/enable_caching', [Fifu_Rank_Math_Integration::class, 'filter_sitemap_caching'], 10, 1);
         add_filter('rank_math/sitemap/xml_img_src', [Fifu_Rank_Math_Integration::class, 'filter_sitemap_xml_img_src'], 10, 2);
     }

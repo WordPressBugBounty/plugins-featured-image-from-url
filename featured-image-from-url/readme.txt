@@ -3,8 +3,8 @@ Contributors: marceljm
 Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, woocommerce, remote
 Requires at least: 5.6
-Tested up to: 7.1
-Stable tag: 6.0.8
+Tested up to: 7.1.2
+Stable tag: 6.0.9
 Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -221,6 +221,16 @@ Search engines can index remote images. As with local images, image accessibilit
 
 == Changelog ==
 
+= 6.0.9 =
+* Enhancement: Unified the Featured Media editor with the new Premium-style layout and improved the Quick Editor experience.
+* Enhancement: Improved featured image preview, alternative text editing, and locked PRO media controls in the editor.
+* Enhancement: Unified the product category featured media editor.
+* Enhancement: Added WP Automatic Pro integration for FIFU remote featured images.
+* Fix: Rank Math now preserves query parameters in social image URLs.
+* Fix: Rank Math now detects FIFU alternative text correctly for featured images.
+* Fix: Eliminated repeated FIFU attachment-author database queries to improve performance.
+* Compatibility: Added support for WordPress 7.1.2 and WooCommerce 11.1.2.
+
 = 6.0.8 =
 * Fix: Security issue reported by the Patchstack team.
 
@@ -301,6 +311,9 @@ Search engines can index remote images. As with local images, image accessibilit
 * [more](https://fifu.app/changelog)
 
 == Upgrade Notice ==
+
+= 6.0.9 =
+* Improves featured media editing and compatibility with WordPress 7.1.2 and WooCommerce 11.1.2.
 
 = 6.0.8 =
 * Addresses a security issue reported by the Patchstack team.

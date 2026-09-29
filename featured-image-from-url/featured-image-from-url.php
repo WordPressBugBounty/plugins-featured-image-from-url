@@ -4,14 +4,14 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use remote media as the featured image and beyond.
- * Version: 6.0.8
+ * Version: 6.0.9
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * Requires at least: 5.6
- * Tested up to: 7.1
+ * Tested up to: 7.1.2
  * Requires PHP: 8.1
  * WC requires at least: 4.0
- * WC tested up to: 11.1.0
+ * WC tested up to: 11.1.2
  * Text Domain: featured-image-from-url
  * Domain Path: /languages
  * License: GPLv3
@@ -154,6 +154,7 @@ $helper_includes = [
     FIFU_INCLUDES_DIR . '/integrations/plugins/class-fifu-content-egg-integration.php',
     FIFU_INCLUDES_DIR . '/integrations/plugins/class-fifu-datafeedr-integration.php',
     FIFU_INCLUDES_DIR . '/integrations/plugins/class-fifu-polylang-integration.php',
+    FIFU_INCLUDES_DIR . '/integrations/plugins/class-fifu-wpauto-pro-integration.php',
     FIFU_INCLUDES_DIR . '/integrations/plugins/class-fifu-woobe-integration.php',
     FIFU_INCLUDES_DIR . '/integrations/plugins/class-fifu-yoast-image-integration.php',
     FIFU_INCLUDES_DIR . '/integrations/plugins/class-fifu-vg-sheet-editor-integration.php',
@@ -201,6 +202,10 @@ foreach ($required_includes as $file) {
     if (file_exists($file)) {
         require_once $file;
     }
+}
+
+if (class_exists('Fifu_Wpauto_Pro_Integration')) {
+    Fifu_Wpauto_Pro_Integration::register_hooks();
 }
 
 Fifu_Cloud_Cron_Service::register_hooks();
@@ -935,6 +940,7 @@ function fifu_upgrade($upgrader_object, $options) {
 }
 
 function fifu_upgrade_actions(): bool {
+    Fifu_Options_Utils::set_author();
     fifu_db_create_table_invalid_media_su();
     fifu_db_maybe_create_table_meta_in();
     fifu_db_maybe_create_table_meta_out();

@@ -149,10 +149,8 @@ function fifu_register_lightbox_click_event(context) {
                 previewImage();
             }
         } else if (context === 'quick-edit') {
-            if (jQuery('#fifu-quick-search-input-keywords').length) {
-                jQuery('#fifu-quick-input-url').val(src);
-                jQuery('#fifu-quick-search-input-keywords').val('');
-                jQuery('#fifu-save-button').click();
+            if (jQuery('#fifu-quick-input-url').length) {
+                jQuery('#fifu-quick-input-url').val(src).trigger('input');
             }
         }
 

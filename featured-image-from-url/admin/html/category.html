@@ -1,14 +1,28 @@
-<br>
-<br>
-<tr>
-    <td>
-        <span class="dashicons dashicons-camera" style="font-size:20px"></span>
-        <?php $fifu['title']['category']['image']() ?>
-    </td>
-    <td>
-        <div class="catbox" style="max-width: 240px;">
-            <?php include 'meta-box.html' ?>
+<div id="fifu-category-featured-media" class="fifu-category-featured-media">
+    <div class="fifu-category-featured-media-header">
+        <span class="dashicons dashicons-camera" aria-hidden="true"></span>
+        <strong>FIFU</strong>
+    </div>
+    <div class="fifu-featured-media-selector">
+        <label class="screen-reader-text" for="fifu-category-featured-media-type"><?php echo esc_html($media['common']['media_type']()); ?></label>
+        <select id="fifu-category-featured-media-type" class="widefat" aria-label="<?php echo esc_attr($media['common']['media_type']()); ?>" autocomplete="off">
+            <option value="image" selected><?php echo esc_html($imageLabel); ?></option>
+            <option value="video"><?php echo esc_html($videoLabel); ?></option>
+        </select>
+    </div>
+    <section class="fifu-featured-media-panel" data-fifu-media-type="image">
+        <?php if (isset($term) && is_object($term)) : ?>
+            <?php Fifu_Admin_Product_Category_Fields::render_image_edit_fields($term, true); ?>
+        <?php else : ?>
+            <?php Fifu_Admin_Product_Category_Fields::render_image_add_fields(true); ?>
+        <?php endif; ?>
+    </section>
+    <section class="fifu-featured-media-panel fifu-free-locked-panel" data-fifu-media-type="video" hidden>
+        <div class="fifu-featured-media-icon-input fifu-free-pro-hover-target" title="<?php echo esc_attr($upgradeLabel); ?>">
+            <span class="dashicons dashicons-format-video" aria-hidden="true"></span>
+            <label class="screen-reader-text" for="fifu-category-free-video-url"><?php echo esc_html($media['url']['video']()); ?></label>
+            <input id="fifu-category-free-video-url" type="text" placeholder="<?php echo esc_attr($media['url']['video']()); ?>" disabled aria-disabled="true" />
         </div>
-    </td>
-</tr>
-<br>
+        <button id="fifu-category-free-video-preview" class="button" type="button" disabled aria-disabled="true" title="<?php echo esc_attr($upgradeLabel); ?>"><?php echo esc_html($media['button']['preview']()); ?></button>
+    </section>
+</div>

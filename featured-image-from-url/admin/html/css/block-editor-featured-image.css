@@ -15,7 +15,7 @@ body.fifu-native-featured-image-syncing .editor-post-featured-image > * {
 }
 
 body.fifu-native-featured-image-syncing .editor-post-featured-image::after {
-    content: "Updating featured image...";
+    content: var(--fifu-updating-featured-image-text, "");
     position: absolute;
     inset: 0;
     display: flex;

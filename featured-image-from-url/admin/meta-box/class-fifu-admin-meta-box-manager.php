@@ -49,28 +49,15 @@ class Fifu_Admin_Meta_Box_Manager {
         $post_types = Fifu_Post_Type_Utils::get_post_types();
 
         foreach ($post_types as $post_type) {
-            if ($post_type == 'product') {
+            if ($post_type) {
                 add_meta_box(
-                    'urlMetaBox',
-                    $fifu['title']['product']['image'](),
-                    [ Fifu_Admin_Meta_Box_Renderer::class, 'render_featured_image_box' ],
+                    'featuredMediaMetaBox',
+                    '<span class="dashicons dashicons-camera" aria-hidden="true"></span> FIFU',
+                    [ Fifu_Admin_Meta_Box_Renderer::class, 'render_featured_media_box' ],
                     $post_type,
                     'side',
                     'default'
                 );
-
-            } else {
-                if ($post_type) {
-                    add_meta_box(
-                        'imageUrlMetaBox',
-                        $fifu['title']['post']['image'](),
-                        [ Fifu_Admin_Meta_Box_Renderer::class, 'render_featured_image_box' ],
-                        $post_type,
-                        'side',
-                        'default'
-                    );
-
-                }
             }
         }
     }
@@ -220,6 +207,7 @@ class Fifu_Admin_Meta_Box_Manager {
             'nonce' => wp_create_nonce('wp_rest'),
             'is_sirv_active' => Fifu_Plugin_Detector::is_sirv_active(),
             'wait' => $fifu['common']['wait'](),
+            'updating_featured_image' => $fifu['common']['updating_featured_image'](),
             'is_taxonomy' => $screen->taxonomy ?? null,
             'is_product' => $current_post_type === 'product',
             'is_gutenberg' => Fifu_Wp_Context::is_gutenberg_screen(),

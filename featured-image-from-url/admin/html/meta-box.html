@@ -3,105 +3,60 @@
      data-native-preview-url="<?php echo esc_attr($native_preview_url ?? ''); ?>"
      data-native-preview-alt="<?php echo esc_attr($native_preview_alt ?? ''); ?>">
 
-    <?php if (!empty($is_debug_enabled) && isset($post->ID)) : ?>
-        <button id="fifu-copy-debug-data-editor-button"
-                class="fifu-quick-button fifu-copy-debug-data-button"
-                type="button"
-                onclick="fifu_copy_quick_edit_debug_data(<?php echo (int) $post->ID; ?>, this, false)">
-            <span class="dashicons dashicons-clipboard fifu-copy-debug-data-icon" aria-hidden="true"></span>
-            <span class="fifu-copy-debug-data-label"><?php esc_html_e('Copy debug data', FIFU_SLUG); ?></span>
-        </button>
-    <?php endif; ?>
+    <div class="fifu-featured-image-ui">
+        <table id="fifu_table_alt" style="<?php echo $show_alt ?>">
+            <tr>
+                <td>
+                    <div class="fifu-featured-media-icon-input">
+                        <button id="fifu_help_alt" class="fifu-featured-media-icon-control dashicons dashicons-media-text" type="button" title="<?php echo esc_attr($fifu['alt']['help']()); ?>" aria-label="<?php echo esc_attr($fifu['alt']['help']()); ?>"></button>
+                        <label class="screen-reader-text" for="fifu_input_alt"><?php $fifu['common']['alt']() ?></label>
+                        <input id="fifu_input_alt"
+                               type="text"
+                               name="fifu_input_alt"
+                               placeholder="<?php $fifu['common']['alt']() ?>"
+                               value="<?php echo esc_attr($display_alt ?? $alt); ?>" />
+                    </div>
+                </td>
+            </tr>
+        </table>
 
-    <!-- show alt field, image and link if URL was already provided -->
+        <div id="fifu_image" role="group" tabindex="0" aria-label="<?php echo esc_attr($fifu['common']['preview_featured_image']()); ?>"
+             style="<?php echo $show_image . $height; ?>background-image:url('<?php echo esc_url($display_url ?? $url ?? ''); ?>');">
+            <button id="fifu_link" class="fifu-featured-media-remove" type="button" onclick="removeImage(false);" style="<?php echo $show_link ?>" aria-label="<?php echo esc_attr($fifu['image']['remove_featured_image']()); ?>" title="<?php echo esc_attr($fifu['image']['remove_featured_image']()); ?>">
+                <span class="dashicons dashicons-no-alt" aria-hidden="true"></span>
+            </button>
+        </div>
 
+        <table id="fifu_table_url">
+            <tr>
+                <td>
+                    <div class="fifu-featured-media-icon-input">
+                        <button id="fifu_help" class="fifu-featured-media-icon-control dashicons dashicons-format-image" type="button" title="<?php echo esc_attr($fifu['image']['url_help']()); ?>" aria-label="<?php echo esc_attr($fifu['image']['url_help']()); ?>"></button>
+                        <label class="screen-reader-text" for="fifu_input_url"><?php $fifu['common']['image']() ?></label>
+                        <input id="fifu_input_url"
+                               type="text"
+                               name="fifu_input_url"
+                               placeholder="<?php $fifu['image']['keywords']() ?>"
+                               value="<?php echo esc_attr($display_input_url ?? $url ?? ''); ?>" />
+                    </div>
+                </td>
+            </tr>
+        </table>
 
-    <table id="fifu_table_alt" style="width:100%;position:relative;<?php echo $show_alt ?>">
-        <tr>
-            <td style="width:100%;padding:unset !important;">
-                <input id="fifu_input_alt" 
-                       type="text" 
-                       name="fifu_input_alt" 
-                       placeholder="<?php $fifu['common']['alt']() ?>"
-                       value="<?php echo esc_attr($display_alt ?? $alt); ?>" 
-                       style="<?php echo $width ?>;font-size:13px;margin:0px 0px 0px 2px" />
-            </td>
-            <td style="padding:unset !important;">
-                <span id="fifu_help_alt" 
-                      class="dashicons dashicons-editor-help" 
-                      style="font-size:20px;cursor:help;"
-                      title="<?php $fifu['alt']['help']() ?>">
-                </span>
-            </td>
-        </tr>
-    </table>
+        <input type="hidden" id="fifu_input_image_width" name="fifu_input_image_width" value="" >
+        <input type="hidden" id="fifu_input_image_height" name="fifu_input_image_height" value="" >
+        <input type="hidden" id="fifu_keywords" name="fifu_keywords" value="" >
 
-    <div id="fifu_image"
-         style="<?php echo $height, $show_image ?>
-         background:url('<?php echo esc_url($display_url ?? $url ?? ''); ?>') no-repeat center center;
-         background-size:cover;
-         cursor:zoom-in;
-         border-radius:3px;
-         margin:0px 6px -1px 4px;" >
+        <!-- show preview button if URL was not provided yet -->
+        <button id="fifu_button" class="button" type="button" onClick="previewImage();" style="<?php echo $align, $margin, $show_button ?>"><?php $fifu['common']['preview']() ?></button>
+
+        <div id="fifu_sirv_button" style="<?php echo 'float:left;padding-right:8px;' . $align, $margin, Fifu_Plugin_Detector::is_sirv_active() ? $show_button : 'display:none' ?>">
+            <div class="sirv-modal"></div>
+            <a id="sirv-add-featured-image"
+               data-input-anchor="#fifu_input_url"
+               href="#"
+               class="button sirv-add-image-modal-click"
+               title="<?php $fifu['image']['sirv']['add']() ?>"><?php $fifu['image']['sirv']['choose']() ?></a>
+        </div>
     </div>
-
-    <table id="fifu_table_url" style="width:100%;position:relative">
-        <tr>
-            <td style="width:100%">
-                <input id="fifu_input_url" 
-                       type="text" 
-                       name="fifu_input_url" 
-                       placeholder="<?php $fifu['image']['keywords']() ?>"
-                       value="<?php echo esc_attr($display_input_url ?? $url ?? ''); ?>"
-                       style="<?php echo $width ?>;font-size:13px;" />
-            </td>
-            <td>
-                <span id="fifu_help" 
-                      class="dashicons dashicons-editor-help" 
-                      style="<?php echo $show_button . ';font-size:20px;cursor:pointer;' ?>">
-                </span>
-            </td>
-        </tr>
-    </table>
-
-    <center>
-        <a id="fifu_link" 
-           onClick="removeImage(false);" 
-           style="<?php echo $show_link ?>; cursor:pointer" ><?php $fifu['image']['remove']() ?></a>
-    </center>
-
-    <input 
-        type="hidden" 
-        id="fifu_input_image_width" 
-        name="fifu_input_image_width" 
-        value="" >
-
-    <input 
-        type="hidden" 
-        id="fifu_input_image_height" 
-        name="fifu_input_image_height" 
-        value="" >
-
-    <input 
-        type="hidden" 
-        id="fifu_keywords" 
-        name="fifu_keywords" 
-        value="" >
-
-    <!-- show preview button if URL was not provided yet -->
-
-    <a id="fifu_button" 
-       class="button" 
-       onClick="previewImage();" 
-       style="<?php echo $align, $margin, $show_button ?>" ><?php $fifu['common']['preview']() ?></a>
-
-    <div id="fifu_sirv_button" style="<?php echo 'float:left;padding-right:8px;' . $align, $margin, Fifu_Plugin_Detector::is_sirv_active() ? $show_button : 'display:none' ?>">
-        <div class="sirv-modal"></div>
-        <a id="sirv-add-featured-image"
-           data-input-anchor="#fifu_input_url"
-           href="#"
-           class="button sirv-add-image-modal-click"
-           title="<?php $fifu['image']['sirv']['add']() ?>"><?php $fifu['image']['sirv']['choose']() ?></a>
-    </div>
-
 </div>
