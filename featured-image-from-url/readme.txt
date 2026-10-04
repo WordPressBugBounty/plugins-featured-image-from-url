@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, woocommerce, remote
 Requires at least: 5.6
 Tested up to: 7.1.2
-Stable tag: 6.0.9
+Stable tag: 6.1.0
 Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -221,6 +221,10 @@ Search engines can index remote images. As with local images, image accessibilit
 
 == Changelog ==
 
+= 6.1.0 =
+* Fix: Preserved query-dependent featured image URLs in Rank Math Facebook and Twitter social metadata.
+* Enhancement: Removed the outdated Troubleshooting page from the FIFU menu.
+
 = 6.0.9 =
 * Enhancement: Unified the Featured Media editor with the new Premium-style layout and improved the Quick Editor experience.
 * Enhancement: Improved featured image preview, alternative text editing, and locked PRO media controls in the editor.
@@ -274,64 +278,10 @@ Search engines can index remote images. As with local images, image accessibilit
 * Performance: Improved post and page saving performance by avoiding unnecessary featured image processing.
 * Compatibility: WooCommerce 11.0.1.
 
-= 6.0.0 =
-* Completely refactored version with an AI-integrated development workflow for faster development, maintenance, and troubleshooting; FIFU now stores remote image URLs in its own database tables instead of relying only on WordPress metadata, improving performance especially on websites with many posts or products; compatibility with PHP 8.1+, WordPress 7.0.3, and WooCommerce 11.0.0.
-
-= 5.3.3 =
-* Fix: Integration with WPML not working; Fix: Deprecated notices.
-
-= 5.3.2 =
-* Fix: vulnerability reported by Wordfence team.
-
-= 5.3.1 =
-* New feature: Auto-share on social media; Fix: Featured image might not be displaying on X.
-
-= 5.3.0 =
-* Enhancement: Quick Edit column (PRO feature) not displayed initially for new users to avoid confusion; Enhancement: bbPress and BuddyBoss Platform (can now add images to activities).
-
-= 5.2.9 =
-* New: multisite network menu; Enhancement: integration with the WPML Multilingual CMS plugin (when a post or product is duplicated, FIFU now duplicates its image data); Fix: Optimized Images (URLs not being included in structured data); Fix: possible syntax error on sites with very old PHP versions.
-
-= 5.2.8 =
-* Fixes: vulnerabilities reported by the Wordfence Security team.
-
-= 5.2.7 =
-* New: Notice to rate the plugin; Enhancement: Auto set featured media from post content (now supports local relative URLs); Fix: Incomplete product data generated for Rich Results.
-
-= 5.2.6 =
-* Enhancement: improved integration with Rich Results from Google; Enhancement: alternative text can now be displayed as captions at the bottom of the image; Fix: images defined by other plugins were being displayed on social media instead of the remote featured image; Fix: Elementor widget not working with newer Elementor versions.
-
-= 5.2.5 =
-* Enhancement: Improved translations and support for 40 new languages; Enhancement: Alternative Text field now opens in the lightbox for easier editing; Enhancement: Redirects to the plugin settings after activation; Fix: Quick Edit not working for variable products with multiple attributes; Fix: Google Drive images not displaying in the admin area.
-
-= 5.2.4 =
-* New: Optimized Images > Sizes > Make all images square; Enhancement: Collection of anonymous stats is not necessary for now and has been disabled; Fix: Resolved conflict with Rank Math SEO plugin (fatal error).
-
 = others =
 * [more](https://fifu.app/changelog)
 
 == Upgrade Notice ==
 
-= 6.0.9 =
-* Improves featured media editing and compatibility with WordPress 7.1.2 and WooCommerce 11.1.2.
-
-= 6.0.8 =
-* Addresses a security issue reported by the Patchstack team.
-
-= 6.0.7 =
-* Fixes an issue with database updates.
-
-= 6.0.6 =
-* Improves metadata tools, CDN URLs, WooCommerce duplication, FacetWP, block editor and WoodMart compatibility.
-
-= 6.0.5 =
-* Fixes featured image compatibility with third-party plugins and WooCommerce product images after permalink changes.
-
-= 6.0.4 =
-* Fixes remote featured image synchronization in the block editor when images are set, changed, or removed.
-
-= 6.0.3 =
-* Fixes Classic Editor featured images, Rank Math HTTPS social images, MariaDB 10.3 database upgrades, first-save image dimensions, improves Multisite upgrade performance, and adds WordPress 7.1 compatibility.
-
-= 6.0.2 =
-* Improves compatibility with third-party plugins and page builders, fixes remote featured image cloning, improves Multisite upgrades, and adds compatibility with WordPress 7.0.4.
+= 6.1.0 =
+* Improves Rank Math compatibility for remote featured images with query-dependent URLs and removes the outdated Troubleshooting page.

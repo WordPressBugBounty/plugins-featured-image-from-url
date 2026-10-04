@@ -121,9 +121,6 @@ class Fifu_Admin_Strings {
         $fifu['word']['status'] = function () {
             _e("Status", FIFU_SLUG);
         };
-        $fifu['word']['troubleshooting'] = function () {
-            _e("Troubleshooting", FIFU_SLUG);
-        };
         $fifu['word']['name'] = function () {
             _e("Name", FIFU_SLUG);
         };

@@ -61,14 +61,12 @@ final class Fifu_Admin_Menu
 
         $menu_callback = $is_network ? [ 'Fifu_Network_Utils', 'get_network_menu_html' ] : [ self::class, 'render_menu_page' ];
         $cloud_callback = $is_network ? [ 'Fifu_Network_Utils', 'cloud' ] : [ Fifu_Admin_Cloud_Page::class, 'render' ];
-        $troubleshooting_callback = $is_network ? [ 'Fifu_Network_Utils', 'troubleshooting' ] : [ Fifu_Admin_Troubleshooting_Page::class, 'render' ];
         $status_callback = $is_network ? [ 'Fifu_Network_Utils', 'support_data' ] : [ Fifu_Admin_Support_Data_Page::class, 'render' ];
 
         add_menu_page('Featured Image from URL', 'FIFU', $capability, FIFU_SLUG, $menu_callback, 'dashicons-camera', 57);
         add_submenu_page(FIFU_SLUG, 'FIFU Settings', $fifu['options']['settings'](), $capability, FIFU_SLUG, $menu_callback);
         if (!$is_network) {
             add_submenu_page(FIFU_SLUG, 'FIFU Cloud', $fifu['options']['cloud'](), $capability, 'fifu-cloud', $cloud_callback);
-            add_submenu_page(FIFU_SLUG, 'FIFU Troubleshooting', $fifu['options']['troubleshooting'](), $capability, 'fifu-troubleshooting', $troubleshooting_callback);
             add_submenu_page(FIFU_SLUG, 'FIFU Status', $fifu['options']['status'](), $capability, 'fifu-support-data', $status_callback);
         }
 
@@ -222,7 +220,6 @@ final class Fifu_Admin_Menu
         $allowed_pages = [
             FIFU_SLUG,
             'fifu-cloud',
-            'fifu-troubleshooting',
             'fifu-support-data',
         ];
 

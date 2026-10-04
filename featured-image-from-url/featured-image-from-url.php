@@ -4,7 +4,7 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Use remote media as the featured image and beyond.
- * Version: 6.0.9
+ * Version: 6.1.0
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * Requires at least: 5.6
@@ -242,7 +242,6 @@ require_once FIFU_INCLUDES_DIR . '/compat/class-fifu-transient-manager.php';
 require_once FIFU_INCLUDES_DIR . '/compat/class-fifu-file-logger.php';
 require_once FIFU_INCLUDES_DIR . '/compat/class-fifu-license-crypto.php';
 require_once FIFU_ADMIN_DIR . '/menu/class-fifu-admin-menu.php';
-require_once FIFU_ADMIN_DIR . '/menu/pages/class-fifu-admin-troubleshooting-page.php';
 require_once FIFU_ADMIN_DIR . '/menu/pages/class-fifu-admin-support-data-page.php';
 require_once FIFU_ADMIN_DIR . '/debug/class-fifu-debug-logs-package-service.php';
 require_once FIFU_ADMIN_DIR . '/debug/class-fifu-debug-logs-download-controller.php';

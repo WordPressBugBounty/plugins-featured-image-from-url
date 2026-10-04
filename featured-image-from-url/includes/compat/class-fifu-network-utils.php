@@ -54,13 +54,6 @@ class Fifu_Network_Utils {
     }
 
     /**
-     * Render the network troubleshooting interface.
-     */
-    public static function troubleshooting(): void {
-        self::with_main_site( [Fifu_Admin_Troubleshooting_Page::class, 'render'] );
-    }
-
-    /**
      * Collect and output network support data.
      */
     public static function support_data(): void {

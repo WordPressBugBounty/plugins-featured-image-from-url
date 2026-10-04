@@ -8,11 +8,21 @@ defined('ABSPATH') || exit;
 class Fifu_Rank_Math_Integration {
 
     /**
-     * Original query-bearing social image URLs, indexed by network and queryless URL.
+     * Original social image URLs indexed by network and queryless URL.
      *
      * @var array<string, array<string, string>>
      */
     private static $social_image_urls = [
+        'facebook' => [],
+        'twitter' => [],
+    ];
+
+    /**
+     * Temporary Rank Math URLs mapped back to their exact FIFU originals.
+     *
+     * @var array<string, array<string, string>>
+     */
+    private static $social_image_compatibility_urls = [
         'facebook' => [],
         'twitter' => [],
     ];
@@ -52,51 +62,38 @@ class Fifu_Rank_Math_Integration {
     }
 
     /**
-     * Preserves the Facebook OpenGraph image URL provided by Rank Math.
-     *
-     * @param mixed $image_url
-     * @return mixed
+     * Preserves FIFU's Facebook URL and skips Rank Math's destructive validation for it.
      */
     public static function filter_facebook_image($image_url) {
         self::capture_social_image_url('facebook', $image_url);
-        return $image_url;
+        return self::prepare_social_image_url('facebook', $image_url);
     }
 
     /**
-     * Preserves the Twitter card image URL provided by Rank Math.
-     *
-     * @param mixed $image_url
-     * @return mixed
+     * Preserves FIFU's Twitter URL and skips Rank Math's destructive validation for it.
      */
     public static function filter_twitter_image($image_url) {
         self::capture_social_image_url('twitter', $image_url);
-        return $image_url;
+        return self::prepare_social_image_url('twitter', $image_url);
     }
 
     /**
-     * Restore a captured Facebook image URL after Rank Math removes its query.
-     *
-     * @param mixed $image_url
-     * @return mixed
+     * Restores the original Facebook image URL when Rank Math removes its query.
      */
     public static function restore_facebook_image($image_url) {
         return self::restore_social_image_url('facebook', $image_url);
     }
 
     /**
-     * Restore a captured Twitter image URL after Rank Math removes its query.
-     *
-     * @param mixed $image_url
-     * @return mixed
+     * Restores the original Twitter image URL when Rank Math removes its query.
      */
     public static function restore_twitter_image($image_url) {
         return self::restore_social_image_url('twitter', $image_url);
     }
 
     /**
-     * Capture the first query-bearing URL for each network and queryless URL.
+     * Stores query-bearing URLs without changing their original representation.
      *
-     * @param string $network
      * @param mixed $image_url
      */
     private static function capture_social_image_url(string $network, $image_url): void {
@@ -116,15 +113,73 @@ class Fifu_Rank_Math_Integration {
     }
 
     /**
-     * Restore an exact captured URL when Rank Math supplies its queryless form.
+     * Makes a current FIFU featured URL look filter-provided to Rank Math 1.0.275.
      *
-     * @param string $network
+     * Rank Math strips the query and rejects extensionless URLs when its image
+     * filter returns the unchanged candidate. A fragment marker changes only
+     * Rank Math's internal string; fragments are not sent in HTTP requests, and
+     * the final output filters restore the exact source URL before rendering.
+     *
+     * @param mixed $image_url
+     * @return mixed
+     */
+    private static function prepare_social_image_url(string $network, $image_url) {
+        if (!is_string($image_url) || !self::is_current_fifu_featured_image($image_url)) {
+            return $image_url;
+        }
+
+        static $sequence = 0;
+        $sequence++;
+        $marker = 'fifu-rank-math=' . $network . '-' . $sequence . '-'
+            . substr(hash('sha256', $network . "\0" . $image_url . "\0" . $sequence), 0, 16);
+        $fragment_separator = strpos($image_url, '#') === false ? '#' : '&';
+        $compatibility_url = $image_url . $fragment_separator . $marker;
+
+        self::$social_image_compatibility_urls[$network][$compatibility_url] = $image_url;
+
+        return $compatibility_url;
+    }
+
+    /**
+     * Limits the validation bypass to the exact URL of the current FIFU featured attachment.
+     */
+    private static function is_current_fifu_featured_image(string $image_url): bool {
+        if (!function_exists('get_queried_object_id') || !class_exists('Fifu_Attachment_Update_Service')) {
+            return false;
+        }
+
+        $post_id = (int) get_queried_object_id();
+        if ($post_id <= 0) {
+            return false;
+        }
+
+        $attachment_id = (int) get_post_thumbnail_id($post_id);
+        if ($attachment_id <= 0 || !Fifu_Attachment_Update_Service::is_fifu_owned($attachment_id)) {
+            return false;
+        }
+
+        $featured_url = Fifu_Attachment_Update_Service::get_attachment_remote_url($attachment_id);
+        if (preg_match('~^(?:https?:)?//~i', $featured_url) !== 1) {
+            return false;
+        }
+
+        return $image_url === $featured_url
+            || htmlspecialchars_decode($image_url, ENT_QUOTES) === $featured_url;
+    }
+
+    /**
+     * Restores a previously captured URL only when its queryless form matches.
+     *
      * @param mixed $image_url
      * @return mixed
      */
     private static function restore_social_image_url(string $network, $image_url) {
         if (!is_string($image_url)) {
             return $image_url;
+        }
+
+        if (isset(self::$social_image_compatibility_urls[$network][$image_url])) {
+            return self::$social_image_compatibility_urls[$network][$image_url];
         }
 
         return self::$social_image_urls[$network][$image_url] ?? $image_url;

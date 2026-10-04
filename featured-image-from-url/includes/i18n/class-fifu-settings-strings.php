@@ -73,9 +73,6 @@ class Fifu_Settings_Strings {
             $options['cloud'] = function () {
                 return __("Cloud", FIFU_SLUG);
             };
-            $options['troubleshooting'] = function () {
-                return __("Troubleshooting", FIFU_SLUG);
-            };
             $options['status'] = function () {
                 return __("Status", FIFU_SLUG);
             };
@@ -95,7 +92,7 @@ class Fifu_Settings_Strings {
 
         // support
             $help['support']['email'] = function () {
-                _e("If you need help, refer to the troubleshooting or send an email to", FIFU_SLUG);
+                _e("If you need help, send an email to", FIFU_SLUG);
             };
             $help['support']['with'] = function () {
                 _e("with this", FIFU_SLUG);
