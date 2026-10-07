@@ -51,11 +51,16 @@ final class Fifu_Content_Egg_Integration
             || !is_scalar($image)
             || empty($image)
         ) {
-            remove_action(
-                'content_egg_save_data',
-                [\ContentEgg\application\components\ExternalFeaturedImage::class, 'setImage'],
-                13
-            );
+            self::remove_legacy_external_featured_image_callback();
+
+            return;
+        }
+
+        if (
+            class_exists(Fifu_Post_Save_Service::class, false)
+            && Fifu_Post_Save_Service::has_explicit_featured_image_change($postId)
+        ) {
+            self::remove_legacy_external_featured_image_callback();
 
             return;
         }
@@ -65,6 +70,11 @@ final class Fifu_Content_Egg_Integration
             (string) $image
         );
 
+        self::remove_legacy_external_featured_image_callback();
+    }
+
+    private static function remove_legacy_external_featured_image_callback(): void
+    {
         remove_action(
             'content_egg_save_data',
             [\ContentEgg\application\components\ExternalFeaturedImage::class, 'setImage'],

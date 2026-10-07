@@ -135,7 +135,6 @@ final class Fifu_Admin_Menu
         $enable_amazon_finder = 'toggleoff';
         $enable_screenshot = 'toggleoff';
         $enable_debug = get_option('fifu_debug');
-        $enable_audio = 'toggleoff';
         $enable_photon = get_option('fifu_photon');
         $enable_cdn_content = get_option('fifu_cdn_content');
         $enable_reset = get_option('fifu_reset');
@@ -293,7 +292,9 @@ final class Fifu_Admin_Menu
     public static function get_last_meta_entries_summary(string $meta_key, int $limit = 3): string
     {
         $list = '';
-        $rows = Fifu_Meta_Stats_Utils::get_last_meta_entries((string) $meta_key, $limit);
+        $rows = $meta_key === 'fifu_image_url'
+            ? Fifu_Meta_Stats_Utils::get_last_image_entries($limit)
+            : Fifu_Meta_Stats_Utils::get_last_meta_entries((string) $meta_key, $limit);
         foreach ($rows as $row) {
             $aux = $row->meta_value . "\n → " . get_permalink($row->id);
             $list .= "\n - " . $aux;

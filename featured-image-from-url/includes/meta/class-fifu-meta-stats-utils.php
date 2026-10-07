@@ -48,6 +48,23 @@ class Fifu_Meta_Stats_Utils {
     }
 
     /**
+     * Returns the latest featured-image entries present in FIFU storage.
+     *
+     * @param int $limit
+     * @return array<object>
+     */
+    public static function get_last_image_entries(int $limit = 3): array {
+        // Featured-image writes can be authoritative in DB2 even when the
+        // configured read mode is legacy, so this diagnostic checks storage.
+        $db2 = self::get_last_image_entries_db2($limit);
+        if ($db2 !== null && !empty($db2)) {
+            return $db2;
+        }
+
+        return self::get_last_meta_entries('fifu_image_url', $limit);
+    }
+
+    /**
      * Returns the most recent 'fifu_image_url' value.
      *
      * Mirrors get_last_image().
@@ -152,6 +169,44 @@ class Fifu_Meta_Stats_Utils {
             ORDER BY u.created_at DESC
             LIMIT 1
         ";
+
+        $results = $wpdb->get_results($sql);
+        if ($results === false) {
+            return null;
+        }
+
+        return $results;
+    }
+
+    /**
+     * DB2 query for recent featured-image entries ordered by their post date.
+     *
+     * @param int $limit
+     * @return array<object>|null Null indicates DB2 is unavailable or failed.
+     */
+    private static function get_last_image_entries_db2(int $limit): ?array {
+        $wpdb = self::get_wpdb();
+        $posts_table = $wpdb->posts;
+        $map_table = $wpdb->prefix . 'fifu_map';
+        $key_table = $wpdb->prefix . 'fifu_key';
+        $url_table = $wpdb->prefix . 'fifu_url';
+
+        if (!self::has_last_image_db2_tables($map_table, $key_table, $url_table)) {
+            return null;
+        }
+
+        $sql = $wpdb->prepare(
+            "SELECT p.ID AS id, u.url AS meta_value
+            FROM {$posts_table} p
+            INNER JOIN {$map_table} m ON m.post_id = p.ID
+            INNER JOIN {$key_table} k ON k.key_id = m.key_id
+            INNER JOIN {$url_table} u ON u.hash = m.hash
+            WHERE k.key_type = 'image'
+              AND m.key_index = 0
+            ORDER BY p.post_date DESC
+            LIMIT %d",
+            $limit
+        );
 
         $results = $wpdb->get_results($sql);
         if ($results === false) {

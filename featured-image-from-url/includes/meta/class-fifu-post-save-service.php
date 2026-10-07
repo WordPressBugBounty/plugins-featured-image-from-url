@@ -9,6 +9,9 @@ if (!defined('ABSPATH')) {
  */
 final class Fifu_Post_Save_Service
 {
+    /** @var array<int,true> */
+    private static array $explicitFeaturedImageChanges = [];
+
     private static function has_non_empty_media_url($value): bool
     {
         if ($value === null || $value === false || is_array($value)) {
@@ -304,6 +307,32 @@ final class Fifu_Post_Save_Service
         );
     }
 
+    private static function record_explicit_featured_image_change(
+        int $postId,
+        string $submittedUrl
+    ): void {
+        $currentState = self::get_db2_featured_state($postId, 'url');
+        $currentUrl = $currentState['known'] && $currentState['value'] !== ''
+            ? $currentState['value']
+            : self::normalize_featured_media_value(
+                (string) get_post_meta($postId, 'fifu_image_url', true),
+                'url'
+            );
+        $submittedUrl = self::normalize_featured_media_value(
+            $submittedUrl,
+            'url'
+        );
+
+        if ($currentUrl !== $submittedUrl) {
+            self::$explicitFeaturedImageChanges[$postId] = true;
+        }
+    }
+
+    public static function has_explicit_featured_image_change(int $postId): bool
+    {
+        return isset(self::$explicitFeaturedImageChanges[$postId]);
+    }
+
     private static function featured_media_needs_write(
         int $postId,
         string $value,
@@ -488,6 +517,13 @@ final class Fifu_Post_Save_Service
         $raw_fifu_input_url = $has_fifu_input_url ? wp_unslash((string) $_POST['fifu_input_url']) : '';
         $fifu_input_url = trim($raw_fifu_input_url);
         $is_empty_fifu_input_url = $has_fifu_input_url && $fifu_input_url === '';
+
+        if ($has_fifu_input_url) {
+            self::record_explicit_featured_image_change(
+                $postId,
+                $raw_fifu_input_url
+            );
+        }
 
         if ($is_empty_fifu_input_url) {
             if (

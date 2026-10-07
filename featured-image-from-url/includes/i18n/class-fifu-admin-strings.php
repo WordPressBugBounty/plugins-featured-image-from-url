@@ -316,7 +316,7 @@ class Fifu_Admin_Strings {
             _e("Taxonomy Image", FIFU_SLUG);
         };
         $fifu['title']['video'] = function () {
-            _e("Featured Video", FIFU_SLUG);
+            _e("Featured Video / Audio", FIFU_SLUG);
         };
         $fifu['title']['thumbnail'] = function () {
             _e("Video Thumbnail", FIFU_SLUG);
@@ -421,6 +421,9 @@ class Fifu_Admin_Strings {
         };
         $fifu['cli']['tab']['fields'] = function () {
             _e("FIFU custom fields", FIFU_SLUG);
+        };
+        $fifu['cli']['tab']['audio'] = function () {
+            _e("Audio", FIFU_SLUG);
         };
         $fifu['cli']['documentation']['site'] = function () {
             _e("WP-CLI", FIFU_SLUG);
@@ -941,14 +944,6 @@ class Fifu_Admin_Strings {
             _e("To serve remote images with your site domain, simply create a DNS record for your domain with the following details:", FIFU_SLUG);
         };
 
-        // audio
-        $fifu['audio']['desc'] = function () {
-            _e("This feature enables the featured audio field, where you can set the URL of an audio file, such as MP3 or OGG. Player controls will then be added to the remote featured image, allowing visitors to play the audio. You can configure the behavior of the audio using the audio-related settings available in this panel.", FIFU_SLUG);
-        };
-        $fifu['audio']['requirement'] = function () {
-            _e("you must set a remote featured image.", FIFU_SLUG);
-        };
-
         // debug
         $fifu['debug']['desc'] = function () {
             _e("When FIFU is in debug mode, JavaScript and CSS files are not cached.", FIFU_SLUG);
@@ -1151,7 +1146,7 @@ class Fifu_Admin_Strings {
             _e("FIFU supports videos and audios from YouTube, Vimeo, Twitter, 9GAG, Cloudinary, Tumblr, Publitio, JW Player, VideoPress, Sprout, Odysee, Rumble, Dailymotion, Cloudflare Stream, Bunny Stream, Amazon, BitChute, Brighteon, Google Drive, Spotify and SoundCloud. It also supports remote and local video files.", FIFU_SLUG);
         };
         $fifu['video']['tab']['video'] = function () {
-            _e("Featured video", FIFU_SLUG);
+            _e("Featured video / audio", FIFU_SLUG);
         };
         $fifu['video']['tab']['local'] = function () {
             _e("Video files", FIFU_SLUG);

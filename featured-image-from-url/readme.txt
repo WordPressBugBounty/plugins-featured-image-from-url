@@ -3,8 +3,8 @@ Contributors: marceljm
 Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, woocommerce, remote
 Requires at least: 5.6
-Tested up to: 7.1.2
-Stable tag: 6.1.0
+Tested up to: 7.1.3
+Stable tag: 6.1.1
 Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -221,6 +221,12 @@ Search engines can index remote images. As with local images, image accessibilit
 
 == Changelog ==
 
+= 6.1.1 =
+* Fix: Explicit FIFU featured image removals and replacements are no longer overwritten by later Content Egg synchronization.
+* Fix: The Status page now shows DB2-backed featured image URLs correctly even when the site is using legacy mode.
+* Enhancement: Combined the PRO Featured Video and Featured Audio settings preview into a single Video / Audio section.
+* Compatibility: Added support for WordPress 7.1.3.
+
 = 6.1.0 =
 * Fix: Preserved query-dependent featured image URLs in Rank Math Facebook and Twitter social metadata.
 * Enhancement: Removed the outdated Troubleshooting page from the FIFU menu.
@@ -272,16 +278,10 @@ Search engines can index remote images. As with local images, image accessibilit
 * Performance: Improved database upgrade performance and fixed database initialization on WordPress Multisite installations.
 * Compatibility: WordPress 7.0.4.
 
-= 6.0.1 =
-* Fix: Improved compatibility with third-party plugins and page builders, including cases that could prevent editors such as Divi from loading.
-* Fix: Fixed an upgrade issue from FIFU 6.0.0 that could cause featured images to stop updating or disappear in some cases.
-* Performance: Improved post and page saving performance by avoiding unnecessary featured image processing.
-* Compatibility: WooCommerce 11.0.1.
-
 = others =
 * [more](https://fifu.app/changelog)
 
 == Upgrade Notice ==
 
-= 6.1.0 =
-* Improves Rank Math compatibility for remote featured images with query-dependent URLs and removes the outdated Troubleshooting page.
+= 6.1.1 =
+* Fixes Content Egg featured image synchronization and DB2-backed Status output, simplifies the PRO Video / Audio settings preview, and adds compatibility with WordPress 7.1.3.

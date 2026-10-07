@@ -40,11 +40,8 @@ class Fifu_Settings_Strings {
             $tabs['slider'] = function () {
                 _e("Slider", FIFU_SLUG);
             };
-            $tabs['audio'] = function () {
-                _e("Audio", FIFU_SLUG);
-            };
             $tabs['video'] = function () {
-                _e("Video", FIFU_SLUG);
+                _e("Video / Audio", FIFU_SLUG);
             };
             $tabs['trouble'] = function () {
                 _e("Troubleshooting", FIFU_SLUG);

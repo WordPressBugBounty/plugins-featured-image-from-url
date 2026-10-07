@@ -17,7 +17,6 @@
             <li><a href="#tabs-g"><i class="fas fa-image"></i> <?php $fifu['tab']['image']() ?></a></li>
             <li><a href="#tabs-c"><i class="fas fa-play"></i> <?php $fifu['tab']['video']() ?></a></li>
             <li><a href="#tabs-m"><i class="fas fa-images"></i> <?php $fifu['tab']['slider']() ?></a></li>
-            <li><a href="#tabs-e"><i class="fas fa-volume-high"></i> <?php $fifu['tab']['audio']() ?></a></li>
             <li><a href="#tabs-b"><i class="fas fa-robot"></i> <?php $fifu['tab']['auto']() ?></a></li>
             <li><a href="#tabs-o"><i class="fas fa-shopping-cart"></i> WooCommerce</a></li>
             <li><a href="#tabs-p"><i class="fas fa-file-export"></i> WP All Import</a></li>
@@ -2271,40 +2270,6 @@
                     </div>
                 </div>
 
-            </div>
-
-            <div id="tabs-e">
-                <div class="fifubox">
-
-                    <h2><a href="https://fifu.app/" target="_blank" class="fifu-pro-link fifu-pro-inline" aria-label="FIFU PRO"><span class="dashicons dashicons-lock fifu-pro-icon"></span></a><i class="fa-solid fa-volume-high"></i> <?php $fifu['title']['audio']() ?></h2>
-
-                    <div class="greybox">
-
-                        <?php $fifu['audio']['desc']() ?><br><br>
-
-                        <div class="polaroid" style="background-color: #f9f9f9">
-                            <img src="https://storage.googleapis.com/featuredimagefromurl/featured-audio-1.jpg" style="width:97%">
-                        </div>
-
-                        <br>
-
-                        <b><?php $fifu['detail']['requirement']() ?></b>: <?php $fifu['audio']['requirement']() ?>
-
-                    </div>
-
-                    <br>
-
-                    <input
-                        type="button"
-                        id="fifu_toggle_audio"
-                        name="fifu_toggle_audio"
-                        class="toggleoff"
-                        value=""
-                        onclick="return false;"
-                        aria-disabled="true"
-                        tabindex="-1"
-                        style="display:block;border:none">
-                </div>
             </div>
 
             <div id="tabs-g">
@@ -5714,7 +5679,7 @@
                                     </tr>
                                     <tr class="color">
                                         <th>
-                                            <?php $fifu['tab']['audio']() ?>
+                                            <?php $fifu['cli']['tab']['audio']() ?>
                                         </th>
                                         <th>
                                             <?php $fifu['title']['audio']() ?>
