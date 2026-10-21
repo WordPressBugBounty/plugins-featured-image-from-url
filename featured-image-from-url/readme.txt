@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured, image, url, woocommerce, remote
 Requires at least: 5.6
 Tested up to: 7.1.3
-Stable tag: 6.1.1
+Stable tag: 6.1.2
 Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -35,7 +35,7 @@ Use a remote image as the featured image of your post, page, custom post type, o
 * Featured image column
 * Quick Edit
 * **[PRO]** Image search with a search engine
-* **[PRO]** Disable right-click
+* Disable right-click
 * **[PRO]** Save in the media library
 * **[PRO]** Replace not found image
 * **[PRO]** Custom popup
@@ -221,6 +221,11 @@ Search engines can index remote images. As with local images, image accessibilit
 
 == Changelog ==
 
+= 6.1.2 =
+* New: Disable right-click on frontend images from FIFU settings.
+* Fix: Resolved PHP 8.5 and newer deprecation warnings during remote image URL validation.
+* Compatibility: Improved compatibility with PHP 8.5 and PHP 8.6.
+
 = 6.1.1 =
 * Fix: Explicit FIFU featured image removals and replacements are no longer overwritten by later Content Egg synchronization.
 * Fix: The Status page now shows DB2-backed featured image URLs correctly even when the site is using legacy mode.
@@ -272,16 +277,8 @@ Search engines can index remote images. As with local images, image accessibilit
 * Performance: Prevented repeated database upgrade work on WordPress Multisite installations.
 * Compatibility: WordPress 7.1.
 
-= 6.0.2 =
-* Fix: Improved compatibility with page builders and third-party plugins by safely handling unexpected data passed through WordPress hooks.
-* Fix: Fixed remote featured images when cloning posts with Yoast Duplicate Post.
-* Performance: Improved database upgrade performance and fixed database initialization on WordPress Multisite installations.
-* Compatibility: WordPress 7.0.4.
-
-= others =
-* [more](https://fifu.app/changelog)
-
 == Upgrade Notice ==
 
-= 6.1.1 =
-* Fixes Content Egg featured image synchronization and DB2-backed Status output, simplifies the PRO Video / Audio settings preview, and adds compatibility with WordPress 7.1.3.
+= 6.1.2 =
+* Fixes PHP deprecation warnings and improves compatibility with newer PHP versions.
+* Adds the option to disable right-click on frontend images.

@@ -139,6 +139,9 @@ final class Fifu_Admin_Menu
         $enable_cdn_content = get_option('fifu_cdn_content');
         $enable_reset = get_option('fifu_reset');
         $enable_fake = get_option('fifu_fake');
+        $enable_block = get_option('fifu_block') === 'toggleon'
+            ? 'toggleon'
+            : 'toggleoff';
         $enable_order_email = 'toggleoff';
         $enable_gallery = 'toggleoff';
         $enable_adaptive_height = 'toggleoff';

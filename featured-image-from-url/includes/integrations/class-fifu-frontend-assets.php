@@ -38,9 +38,10 @@ class Fifu_Frontend_Assets {
         $main_image_url = Fifu_Post_Main_Image_Resolver::get_main_image_url(get_queried_object_id(), true);
         $base64_main_image_url = null;
 
-        if (Fifu_Theme_Detector::is_flatsome_active() || (!Fifu_Woocommerce_Display_Configuration::is_lightbox_enabled() && $is_product)) {
+        if (Fifu_Options_Utils::is_on('fifu_block') || Fifu_Theme_Detector::is_flatsome_active() || (!Fifu_Woocommerce_Display_Configuration::is_lightbox_enabled() && $is_product)) {
             wp_enqueue_script('fifu-image-js', plugins_url('/includes/html/js/image.js', FIFU_PLUGIN_FILE), array('jquery'), Fifu_Plugin_Info::get_enqueue_version());
             wp_localize_script('fifu-image-js', 'fifuImageVars', [
+                'fifu_block' => Fifu_Options_Utils::is_on('fifu_block'),
                 'fifu_is_front_page' => is_front_page() || is_home(),
                 'fifu_woo_lbox_enabled' => Fifu_Woocommerce_Display_Configuration::is_lightbox_enabled(),
                 'fifu_is_flatsome_active' => Fifu_Theme_Detector::is_flatsome_active(),

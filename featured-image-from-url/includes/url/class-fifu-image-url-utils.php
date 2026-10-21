@@ -79,7 +79,7 @@ class Fifu_Image_Url_Utils {
         );
 
         $header = explode( "\n", curl_exec( $curl ) ?? '' );
-        curl_close( $curl );
+        unset( $curl );
 
         $status_line = $header[0] ?? '';
 

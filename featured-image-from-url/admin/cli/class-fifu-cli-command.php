@@ -303,7 +303,18 @@ class Fifu_CLI_Command extends \WP_CLI_Command {
             return;
         }
         if (array_key_exists('block', $assoc_args)) {
-            self::warn('Disable right-click is available in FIFU PRO.');
+            $blockToggle = (string) $assoc_args['block'];
+
+            switch ($blockToggle) {
+                case 'on':
+                    update_option('fifu_block', 'toggleon', 'no');
+                    break;
+
+                case 'off':
+                    update_option('fifu_block', 'toggleoff', 'no');
+                    break;
+            }
+
             return;
         }
         if (array_key_exists('popup', $assoc_args)) {

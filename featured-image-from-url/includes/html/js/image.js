@@ -1,4 +1,10 @@
 jQuery(document).ready(function ($) {
+    if (fifuImageVars.fifu_block) {
+        jQuery('body').on('contextmenu', 'img', function (e) {
+            return false;
+        });
+    }
+
     // woocommerce lightbox/zoom
     disableClick($);
     disableLink($);

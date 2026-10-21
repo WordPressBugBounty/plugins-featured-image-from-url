@@ -2935,7 +2935,7 @@
                     <div class="fifu-cloud-details"><span class="dashicons dashicons-cloud fifu-cloud-details-icon" title="<?php $fifu['cloud']['details']['click']() ?>"></span></div>
 
                     <h2>
-                        <a href="https://fifu.app/" target="_blank" class="fifu-pro-link fifu-pro-inline" aria-label="FIFU PRO"><span class="dashicons dashicons-lock fifu-pro-icon"></span></a><i class="fa-solid fa-arrow-pointer"></i> <?php $fifu['title']['block']() ?>
+                        <i class="fa-solid fa-arrow-pointer"></i> <?php $fifu['title']['block']() ?>
                     </h2>
 
                     <div class="greybox">
@@ -2950,20 +2950,28 @@
                         <tr>
                             <th>
                                 <form
-                                    id="fifu_form_block_pro"
+                                    id="fifu_form_block"
                                     action="javascript:void(0)"
-                                    method="post"
-                                    onsubmit="return false;">
+                                    method="post">
+                                    <?php
+                                    wp_nonce_field(
+                                        Fifu_Admin_Menu::ACTION_SETTINGS,
+                                        'nonce_fifu_form_block'
+                                    );
+                                    ?>
                                     <input
-                                        type="button"
-                                        href="javascript:void(0)"
-                                        id="fifu_toggle_block_pro"
-                                        onclick="return false;"
-                                        class="toggleoff"
+                                        type="submit"
+                                        id="fifu_toggle_block"
+                                        onclick="invert('block')"
+                                        name="fifu_toggle_block"
+                                        class="<?php echo esc_attr($enable_block); ?>"
                                         value=""
-                                        style="display:block;border:none"
-                                        aria-disabled="true"
-                                        tabindex="-1">
+                                        style="display:block;border:none">
+                                    <input
+                                        type="hidden"
+                                        id="fifu_input_block"
+                                        name="fifu_input_block"
+                                        value="">
                                 </form>
                             </th>
                         </tr>

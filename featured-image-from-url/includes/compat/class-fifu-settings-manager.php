@@ -20,6 +20,7 @@ class Fifu_Settings_Manager {
      * @var string[]
      */
     private const MENU_SETTINGS = [
+        'fifu_block',
         'fifu_skip',
         'fifu_html_cpt',
         'fifu_square_mobile',
@@ -124,7 +125,6 @@ class Fifu_Settings_Manager {
     ];
 
     private const OBSOLETE_FREE_BLOCK_UPLOAD_OPTIONS = [
-        'fifu_block',
         'fifu_upload_show',
         'fifu_upload_job',
         'fifu_upload_proxy',
@@ -257,6 +257,10 @@ class Fifu_Settings_Manager {
      * @return array<string,mixed> Structured data returned by the legacy update handler.
      */
     public static function update_from_request(): array {
+        if ( self::is_valid_nonce( 'nonce_fifu_form_block' ) ) {
+            self::update_single_option( 'fifu_input_block', 'fifu_block' );
+        }
+
         if ( self::is_valid_nonce( 'nonce_fifu_form_skip' ) ) {
             self::update_single_option( 'fifu_input_skip', 'fifu_skip' );
         }
@@ -412,6 +416,7 @@ class Fifu_Settings_Manager {
         $value = $_POST[ $input_name ] ?? '';
 
         $arr_boolean = array(
+            'fifu_block',
             'fifu_cdn_content',
             'fifu_data_clean',
             'fifu_enable_default_url',
