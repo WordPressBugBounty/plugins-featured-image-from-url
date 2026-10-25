@@ -1,19 +1,23 @@
 === Featured Image from URL (FIFU) ===
 Contributors: marceljm
 Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
-Tags: featured, image, url, woocommerce, remote
+Tags: featured, image, remote, url, product image
 Requires at least: 5.6
 Tested up to: 7.1.3
-Stable tag: 6.1.2
+Stable tag: 6.1.3
 Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Use remote media as the featured image and beyond.
+Add remote featured images and WooCommerce product images from external URLs. Save storage, speed up imports, and use featured videos with FIFU PRO.
 
 == Description ==
 
-### WordPress plugin for remote featured images and more
+### Remote featured images from external URLs
+
+FIFU (Featured Image from URL) lets you use a remote or external image URL as the featured image for WordPress posts, pages, custom post types, and WooCommerce products — without downloading the original image to the Media Library.
+
+Use remote featured images, external featured images, WooCommerce product images, category images, and post thumbnails directly from their source URLs.
 
 FIFU has helped thousands of websites worldwide save storage, processing resources, and time since 2015.
 
@@ -34,10 +38,10 @@ Use a remote image as the featured image of your post, page, custom post type, o
 * Auto set image title
 * Featured image column
 * Quick Edit
-* **[PRO]** Image search with a search engine
 * Disable right-click
+* Replace not found image
+* **[PRO]** Image search with a search engine
 * **[PRO]** Save in the media library
-* **[PRO]** Replace not found image
 * **[PRO]** Custom popup
 * **[PRO]** bbPress and BuddyBoss Platform integration
 * **[PRO]** Page redirection
@@ -162,6 +166,18 @@ The PRO version supports featured videos from services and external video files.
 
 == Frequently Asked Questions ==
 
+= Can I use an external image URL as the featured image? =
+
+Yes. FIFU lets you use a remote or external image URL as the featured image for posts, pages, custom post types, and WooCommerce products without downloading the original image to the WordPress Media Library.
+
+= Can I use a remote image as a WooCommerce product image? =
+
+Yes. FIFU supports remote product images and remote product category images for WooCommerce. Additional product gallery and advanced media features are available in FIFU PRO.
+
+= Is a post thumbnail the same as a featured image? =
+
+In WordPress, the post thumbnail API is used for featured images. FIFU integrates remote featured images with WordPress components and supported themes and plugins.
+
 = Why isn't the preview button working? =
 
 Your image URL may be invalid. Check Settings → Getting started.
@@ -204,22 +220,30 @@ Search engines can index remote images. As with local images, image accessibilit
 
 == Screenshots ==
 
-1. Featured image
-2. Image search
-3. Featured image settings
-4. WooCommerce remote product image
-5. Quick Edit
-6. Elementor integration
-7. Category image
-8. Settings → Help
-9. Settings → Image
-10. Settings → Automatic
-11. Settings → WooCommerce
-12. Settings → Metadata
-13. Settings → Developers
-14. FIFU Cloud
+1. Remote featured image
+2. Remote image search
+3. Remote featured video (Premium-only feature screenshot)
+4. Remote product gallery
+5. Remote variable product images
+6. Quick editor for remote featured media
+7. Settings → Help
+8. Settings → Image
+9. Settings → Video / Audio
+10. Settings → Slider
+11. Settings → Automatic
+12. Settings → WooCommerce
+13. Settings → WP All Import
+14. Settings → Metadata
+15. Settings → Developers
 
 == Changelog ==
+
+= 6.1.3 =
+* New free feature: Replace Not Found Image to display a fallback image when a remote image fails to load.
+* Enhancement: Improved Quick Editor image preview sizing for a more compact and responsive dialog.
+* Fix: Improved remote image attachment cleanup to protect local media and images still in use.
+* Fix: Improved remote image synchronization and recovery.
+* Enhancement: Refreshed the FIFU administration interface.
 
 = 6.1.2 =
 * New: Disable right-click on frontend images from FIFU settings.
@@ -269,16 +293,8 @@ Search engines can index remote images. As with local images, image accessibilit
 = 6.0.4 =
 * Fix: Fixed featured image synchronization in the block editor (Gutenberg) when setting, changing, or removing a remote featured image.
 
-= 6.0.3 =
-* Fix: Restored remote featured images correctly in the Classic Editor, including when changing or removing an existing featured image.
-* Fix: Rank Math social image URLs now remain secure HTTPS URLs instead of being changed to HTTP.
-* Fix: Fixed database setup and upgrade compatibility with MariaDB 10.3.
-* Fix: Featured image width and height are now saved correctly on the first editor save.
-* Performance: Prevented repeated database upgrade work on WordPress Multisite installations.
-* Compatibility: WordPress 7.1.
-
 == Upgrade Notice ==
 
-= 6.1.2 =
-* Fixes PHP deprecation warnings and improves compatibility with newer PHP versions.
-* Adds the option to disable right-click on frontend images.
+= 6.1.3 =
+* Adds replacement images for broken remote image URLs and improves Quick Editor previews.
+* Improves the safety and reliability of remote image synchronization and cleanup.

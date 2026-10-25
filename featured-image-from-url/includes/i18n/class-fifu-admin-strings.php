@@ -24,7 +24,7 @@ class Fifu_Admin_Strings {
 
         // description (not used)
         $fifu['plugins']['description'] = function () {
-            return __("Use remote media as the featured image and beyond.", FIFU_SLUG);
+            return __("Add remote featured images and WooCommerce product images from external URLs. Save storage, speed up imports, and use featured videos with FIFU PRO.", FIFU_SLUG);
         };
 
         // options
@@ -292,7 +292,7 @@ class Fifu_Admin_Strings {
             _e("Delete All URLs", FIFU_SLUG);
         };
         $fifu['title']['audio'] = function () {
-            _e("Featured Audio", FIFU_SLUG);
+            _e("Featured audio", FIFU_SLUG);
         };
         $fifu['title']['debug'] = function () {
             _e("Debug Mode", FIFU_SLUG);

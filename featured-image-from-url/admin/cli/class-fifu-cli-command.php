@@ -299,7 +299,11 @@ class Fifu_CLI_Command extends \WP_CLI_Command {
             return;
         }
         if (array_key_exists('replace', $assoc_args)) {
-            self::warn('Replace Not Found Image is available in FIFU PRO.');
+            $replace = Fifu_Settings_Manager::sanitize_error_url($assoc_args['replace']);
+            if ($replace !== null) {
+                update_option('fifu_error_url', $replace, 'no');
+            }
+
             return;
         }
         if (array_key_exists('block', $assoc_args)) {

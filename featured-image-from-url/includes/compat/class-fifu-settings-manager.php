@@ -31,6 +31,7 @@ class Fifu_Settings_Manager {
         'fifu_reset',
         'fifu_fake',
         'fifu_default_url',
+        'fifu_error_url',
         'fifu_default_cpt',
         'fifu_pcontent_types',
         'fifu_hide_format',
@@ -137,7 +138,6 @@ class Fifu_Settings_Manager {
     ];
 
     private const OBSOLETE_FREE_REPLACE_BBPRESS_OPTIONS = [
-        'fifu_error_url',
         'fifu_bbpress_fields',
     ];
 
@@ -219,7 +219,8 @@ class Fifu_Settings_Manager {
 
         $arrEmpty = array(
             'fifu_default_url',
-                                    'fifu_square_mobile',
+            'fifu_error_url',
+            'fifu_square_mobile',
             'fifu_square_desktop',
             'fifu_skip',
             'fifu_html_cpt',
@@ -291,6 +292,10 @@ class Fifu_Settings_Manager {
 
         if ( self::is_valid_nonce( 'nonce_fifu_form_fake' ) ) {
             self::update_single_option( 'fifu_input_fake', 'fifu_fake' );
+        }
+
+        if ( self::is_valid_nonce( 'nonce_fifu_form_error_url' ) ) {
+            self::update_single_option( 'fifu_input_error_url', 'fifu_error_url' );
         }
 
         if ( self::is_valid_nonce( 'nonce_fifu_form_default_url' ) ) {
@@ -453,6 +458,15 @@ class Fifu_Settings_Manager {
             return;
         }
 
+        if ( $option_name === 'fifu_error_url' ) {
+            $safe_url = self::sanitize_error_url( $value );
+            if ( $safe_url !== null ) {
+                update_option( $option_name, $safe_url );
+            }
+
+            return;
+        }
+
         $arr_url = array( 'fifu_default_url' );
         if ( in_array( $option_name, $arr_url, true ) ) {
             if ( ! is_scalar( $value ) ) {
@@ -527,6 +541,45 @@ class Fifu_Settings_Manager {
 
     private static function is_free_pro_only_persistence_blocked_option( string $option_name ): bool {
         return in_array( $option_name, self::FREE_PRO_ONLY_PERSISTENCE_BLOCKED_OPTIONS, true );
+    }
+
+    /**
+     * Validate and normalize the image failure replacement URL.
+     *
+     * @param mixed $value Submitted value.
+     * @return string|null Normalized URL, empty string to clear, or null if invalid.
+     */
+    public static function sanitize_error_url( $value ): ?string {
+        if ( ! is_scalar( $value ) ) {
+            return null;
+        }
+
+        $raw_value = (string) $value;
+        if ( $raw_value === '' ) {
+            return '';
+        }
+
+        $value = trim( $raw_value );
+        if ( $value === '' ) {
+            return null;
+        }
+
+        if ( ! filter_var( $value, FILTER_VALIDATE_URL ) ) {
+            return null;
+        }
+
+        $scheme = strtolower( (string) wp_parse_url( $value, PHP_URL_SCHEME ) );
+        if ( ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
+            return null;
+        }
+
+        $safe_url = esc_url_raw( $value, array( 'http', 'https' ) );
+        if ( ! $safe_url || ! filter_var( $safe_url, FILTER_VALIDATE_URL ) ) {
+            return null;
+        }
+
+        $safe_scheme = strtolower( (string) wp_parse_url( $safe_url, PHP_URL_SCHEME ) );
+        return in_array( $safe_scheme, array( 'http', 'https' ), true ) ? $safe_url : null;
     }
 
     /**

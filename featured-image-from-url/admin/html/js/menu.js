@@ -72,6 +72,16 @@ var FIFU_FREE_PRO_ONLY_FORM_IDS = [
 ];
 
 jQuery(document).ready(function () {
+    var $startAccordion = jQuery('#fifu-start-accordion');
+    if ($startAccordion.length) {
+        $startAccordion.accordion({
+            active: 0,
+            collapsible: true,
+            heightStyle: 'content',
+            icons: false
+        });
+    }
+
     jQuery('link[href*="jquery-ui.css"]').attr("disabled", "true");
     jQuery('div.wrap div.header-box div.notice').hide();
     jQuery('div.wrap div.header-box div#message').hide();

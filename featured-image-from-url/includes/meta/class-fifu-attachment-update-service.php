@@ -5,6 +5,26 @@ defined('ABSPATH') || exit;
 
 final class Fifu_Attachment_Update_Service
 {
+    public static function is_valid_remote_attachment_url(string $value): bool
+    {
+        $value = trim(htmlspecialchars_decode($value));
+        if ($value === '' || preg_match('/[\x00-\x20\\\\]/', $value)) {
+            return false;
+        }
+
+        if (preg_match('~^(https?://|//)~i', $value) !== 1) {
+            return false;
+        }
+
+        $parts = wp_parse_url($value);
+        if (!is_array($parts) || empty($parts['host'])) {
+            return false;
+        }
+
+        return !isset($parts['scheme'])
+            || in_array(strtolower((string) $parts['scheme']), ['http', 'https'], true);
+    }
+
     public static function get_attachment_remote_url(int $attachment_id): string
     {
         if ($attachment_id <= 0) {
@@ -18,6 +38,73 @@ final class Fifu_Attachment_Update_Service
 
         $content_filtered = trim((string) get_post_field('post_content_filtered', $attachment_id));
         return $content_filtered !== '' ? htmlspecialchars_decode($content_filtered) : '';
+    }
+
+    /**
+     * Virtual attachments have no local derivatives or image-editor backups.
+     * Preserve contradictory records instead of allowing core to delete files.
+     */
+    public static function is_safe_to_delete_remote_attachment(int $attachment_id): bool
+    {
+        if (get_post_type($attachment_id) !== 'attachment' || !self::is_fifu_owned($attachment_id)) {
+            return false;
+        }
+
+        $primary = (string) get_post_meta($attachment_id, '_wp_attached_file', true);
+        $recovery = trim((string) get_post_field('post_content_filtered', $attachment_id));
+        if (
+            !self::is_valid_remote_attachment_url($primary)
+            || ($recovery !== '' && !self::is_valid_remote_attachment_url($recovery))
+            || !self::is_valid_remote_attachment_url((string) get_attached_file($attachment_id))
+        ) {
+            return false;
+        }
+
+        // Core resolves backups independently of the primary URL, using the
+        // directory in metadata['file']. Virtual records must have no backups.
+        $backup_sizes = get_post_meta($attachment_id, '_wp_attachment_backup_sizes', true);
+        if (is_array($backup_sizes) || !empty($backup_sizes)) {
+            return false;
+        }
+
+        foreach ([
+            get_post_meta($attachment_id, '_wp_attachment_metadata', true),
+            wp_get_attachment_metadata($attachment_id),
+        ] as $metadata) {
+            if ($metadata === '' || $metadata === false || $metadata === []) {
+                continue;
+            }
+            if (!is_array($metadata)) {
+                return false;
+            }
+            if (
+                isset($metadata['file'])
+                && (!is_string($metadata['file']) || !self::is_valid_remote_attachment_url($metadata['file']))
+            ) {
+                return false;
+            }
+            foreach (['thumb', 'sizes', 'original_image', 'source_image', 'animated_video', 'animated_video_poster'] as $key) {
+                if (!empty($metadata[$key])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static function has_remote_file_metadata(int $attachment_id, string $expected_url): bool
+    {
+        if ($attachment_id <= 0) {
+            return false;
+        }
+
+        $expected_url = trim(htmlspecialchars_decode($expected_url));
+        $attached_file = trim(htmlspecialchars_decode((string) get_post_meta($attachment_id, '_wp_attached_file', true)));
+
+        return $expected_url !== ''
+            && $attached_file !== ''
+            && $attached_file === $expected_url;
     }
 
     public static function is_fifu_owned(int $attachment_id): bool

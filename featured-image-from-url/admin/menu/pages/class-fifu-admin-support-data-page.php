@@ -30,6 +30,7 @@ final class Fifu_Admin_Support_Data_Page
         $enable_reset = get_option('fifu_reset');
         $enable_fake = get_option('fifu_fake');
         $default_url = self::opt_string('fifu_default_url');
+        $error_url = self::opt_string('fifu_error_url');
         $default_cpt = self::opt_string('fifu_default_cpt');
         $pcontent_types = self::opt_string('fifu_pcontent_types');
         $hide_format = self::opt_string('fifu_hide_format');

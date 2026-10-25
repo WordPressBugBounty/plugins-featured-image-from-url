@@ -50,8 +50,15 @@ tr.color:nth-child(even) {
 }
 
 .fifu-quick-editor-layout--preview {
-    width: 100%;
-    table-layout: fixed;
+    width: auto;
+    max-width: 100%;
+    table-layout: auto;
+}
+
+.fifu-quick-editor-layout--image-preview {
+    width: auto;
+    max-width: 100%;
+    table-layout: auto;
 }
 
 .fifu-quick-editor-preview-column {
@@ -188,7 +195,7 @@ tr.color:nth-child(even) {
     display: block;
     width: auto;
     height: auto;
-    max-width: 100%;
+    max-width: min(100%, calc(100vw - 290px));
     max-height: 600px;
     box-sizing: border-box;
 }
@@ -320,6 +327,35 @@ tr.color:nth-child(even) {
     background-size: 100% 100%;
     cursor: not-allowed;
     opacity: 0.3;
+}
+
+@media (max-width: 680px) {
+    .fifu-quick-editor-layout--image-preview,
+    .fifu-quick-editor-layout--image-preview > tbody {
+        display: block;
+        width: auto;
+        max-width: 100%;
+    }
+
+    .fifu-quick-editor-layout--image-preview > tbody > tr {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .fifu-quick-editor-layout--image-preview .fifu-quick-editor-preview-column,
+    .fifu-quick-editor-layout--image-preview .fifu-quick-editor-controls {
+        display: block !important;
+    }
+
+    .fifu-quick-editor-layout--image-preview .fifu-quick-editor-controls {
+        width: 250px;
+        min-width: min(250px, calc(100vw - 32px));
+        max-width: min(250px, calc(100vw - 32px));
+    }
+
+    .fifu-quick-image-preview-media > #fifu-quick-preview {
+        max-width: min(100%, calc(100vw - 32px));
+    }
 }
 
 #fifu-right-column .fifu-quick-featured-media-galleries {

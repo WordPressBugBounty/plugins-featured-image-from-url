@@ -31,6 +31,7 @@ fifu_data_clean:<?php echo $enable_data_clean ?>;
 fifu_debug:<?php echo $enable_debug ?>;
 fifu_default_cpt:<?php echo $default_cpt ?>;
 fifu_default_url:<?php echo $default_url ?>;
+fifu_error_url:<?php echo $error_url ?>;
 fifu_enable_default_url:<?php echo $enable_default_url ?>;
 fifu_fake:<?php echo $enable_fake ?>;
 fifu_get_first:<?php echo $enable_get_first ?>;

@@ -65,6 +65,42 @@ class Fifu_Attachment_Repository {
     }
 
     /**
+     * Find an incomplete FIFU attachment whose retained remote URL can be used for recovery.
+     */
+    public function find_incomplete_attachment_id(int $post_parent, string $url, bool $is_category): ?int
+    {
+        $ctgr_sql = $is_category ? "AND p.post_name LIKE 'fifu-category%'" : '';
+        if (!$is_category) {
+            $ctgr_sql = "AND p.post_name NOT LIKE 'fifu-category%'";
+        }
+
+        $sql = $this->wpdb->prepare(
+            "SELECT p.ID
+             FROM {$this->posts_table} p
+             WHERE p.post_parent = %d
+               AND p.post_author = %d
+               AND p.post_type = 'attachment'
+               {$ctgr_sql}
+               AND p.post_content_filtered = %s
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM {$this->postmeta_table} pm
+                   WHERE pm.post_id = p.ID
+                     AND pm.meta_key = '_wp_attached_file'
+                     AND TRIM(pm.meta_value) <> ''
+               )
+             ORDER BY p.ID ASC
+             LIMIT 1",
+            $post_parent,
+            $this->getAuthorId(),
+            trim(htmlspecialchars_decode($url))
+        );
+
+        $attachment_id = $this->wpdb->get_var($sql);
+        return $attachment_id ? (int) $attachment_id : null;
+    }
+
+    /**
      * Check whether the given attachment ID was created by FIFU.
      *
      * @param int $attachment_id
@@ -95,7 +131,7 @@ class Fifu_Attachment_Repository {
      */
     public function get_orphan_attachments_for_post(int $post_id): ?string {
         $sql = $this->wpdb->prepare(
-            "SELECT GROUP_CONCAT(p.ID) AS ids
+            "SELECT p.ID
             FROM {$this->posts_table} p
             WHERE p.post_parent = %d
               AND p.post_author = %d
@@ -108,12 +144,231 @@ class Fifu_Attachment_Repository {
                     AND pm2.meta_key = '_thumbnail_id'
                     AND pm2.meta_value <> ''
                     AND CAST(pm2.meta_value AS UNSIGNED) = p.ID
-              )",
+              )
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM {$this->postmeta_table} reference_meta
+                  WHERE reference_meta.post_id = p.post_parent
+                    AND (
+                        TRIM(reference_meta.meta_value) = CAST(p.ID AS CHAR)
+                        OR FIND_IN_SET(CAST(p.ID AS CHAR), REPLACE(reference_meta.meta_value, ' ', '')) > 0
+                    )
+              )
+            ORDER BY p.ID ASC",
             $post_id,
             $this->getAuthorId(),
             'fifu-category%'
         );
-        return $this->wpdb->get_var($sql) ?: null;
+        return $this->format_unreferenced_attachment_ids($this->wpdb->get_col($sql));
+    }
+
+    /**
+     * Find recoverable, incomplete FIFU attachments that are not active or referenced media.
+     *
+     * @param int[] $protected_ids Attachment IDs that must not be deleted.
+     */
+    public function get_incomplete_orphan_attachments_for_post(int $post_id, array $protected_ids = []): ?string
+    {
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $protected_ids),
+            static fn(int $id): bool => $id > 0
+        )));
+        $exclude_sql = $ids ? 'AND p.ID NOT IN (' . implode(',', $ids) . ')' : '';
+
+        $sql = $this->wpdb->prepare(
+             "SELECT p.ID
+             FROM {$this->posts_table} p
+             WHERE p.post_parent = %d
+               AND p.post_author = %d
+               AND p.post_name NOT LIKE %s
+               AND p.post_type = 'attachment'
+               AND (
+                   TRIM(p.post_content_filtered) <> ''
+                   OR TRIM(p.guid) = ''
+               )
+               {$exclude_sql}
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM {$this->postmeta_table} file_meta
+                   WHERE file_meta.post_id = p.ID
+                     AND file_meta.meta_key = '_wp_attached_file'
+                     AND TRIM(file_meta.meta_value) <> ''
+               )
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM {$this->postmeta_table} thumbnail_meta
+                   WHERE thumbnail_meta.post_id = p.post_parent
+                     AND thumbnail_meta.meta_key = '_thumbnail_id'
+                     AND CAST(thumbnail_meta.meta_value AS UNSIGNED) = p.ID
+               )
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM {$this->postmeta_table} reference_meta
+                   WHERE reference_meta.post_id = p.post_parent
+                     AND (
+                         TRIM(reference_meta.meta_value) = CAST(p.ID AS CHAR)
+                         OR FIND_IN_SET(CAST(p.ID AS CHAR), REPLACE(reference_meta.meta_value, ' ', '')) > 0
+                     )
+               )
+             ORDER BY p.ID ASC",
+            $post_id,
+            $this->getAuthorId(),
+            'fifu-category%'
+        );
+
+        return $this->format_unreferenced_attachment_ids($this->wpdb->get_col($sql));
+    }
+
+    /**
+     * Return candidate IDs not referenced by supported WordPress media fields.
+     *
+     * The candidate set is already scoped to one parent post. One additional
+     * query checks those IDs against references across posts, rather than
+     * scanning postmeta separately for each attachment.
+     *
+     * @param mixed $candidate_ids
+     */
+    private function format_unreferenced_attachment_ids($candidate_ids): ?string
+    {
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', (array) $candidate_ids),
+            static fn(int $id): bool => $id > 0
+        )));
+        if (!$ids) {
+            return null;
+        }
+
+        $referenced_ids = $this->get_referenced_attachment_ids($ids);
+        $orphan_ids = array_values(array_diff($ids, $referenced_ids));
+
+        return $orphan_ids ? implode(',', $orphan_ids) : null;
+    }
+
+    /**
+     * Find candidate attachment IDs referenced by supported post metadata.
+     *
+     * Supported forms are exact attachment IDs, WordPress product gallery
+     * lists, and serialized arrays with an explicit attachment_id key.
+     *
+     * @param int[] $attachment_ids
+     * @return int[]
+     */
+    public function get_referenced_attachment_ids(array $attachment_ids): array
+    {
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $attachment_ids),
+            static fn(int $id): bool => $id > 0
+        )));
+        if (!$ids) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '%s'));
+        $clauses = ["pm.meta_value IN ({$placeholders})"];
+        $args = array_map('strval', $ids);
+
+        foreach ($ids as $id) {
+            $clauses[] = "(
+                pm.meta_key IN ('_product_image_gallery', '_wc_additional_variation_images')
+                AND FIND_IN_SET(%s, REPLACE(pm.meta_value, ' ', '')) > 0
+            )";
+            $args[] = (string) $id;
+
+            $serialized_integer_needle = '"attachment_id";i:' . $id . ';';
+            $clauses[] = 'pm.meta_value LIKE %s';
+            $args[] = '%' . $this->wpdb->esc_like($serialized_integer_needle) . '%';
+
+            $serialized_string_needle = '"attachment_id";s:' . strlen((string) $id) . ':"' . $id . '";';
+            $clauses[] = 'pm.meta_value LIKE %s';
+            $args[] = '%' . $this->wpdb->esc_like($serialized_string_needle) . '%';
+        }
+
+        $sql = "SELECT pm.meta_key, pm.meta_value
+                FROM {$this->postmeta_table} pm
+                WHERE " . implode(' OR ', $clauses);
+        $rows = $this->wpdb->get_results($this->wpdb->prepare($sql, $args));
+
+        $referenced = [];
+        foreach ((array) $rows as $row) {
+            $meta_key = is_object($row) ? (string) ($row->meta_key ?? '') : (string) ($row['meta_key'] ?? '');
+            $meta_value = is_object($row) ? (string) ($row->meta_value ?? '') : (string) ($row['meta_value'] ?? '');
+            $serialized_references = $this->serialized_value_attachment_ids($meta_value, $ids);
+
+            foreach ($ids as $id) {
+                if (trim($meta_value) === (string) $id) {
+                    $referenced[$id] = true;
+                    continue;
+                }
+
+                if (
+                    in_array($meta_key, ['_product_image_gallery', '_wc_additional_variation_images'], true)
+                    && in_array((string) $id, array_map('trim', explode(',', $meta_value)), true)
+                ) {
+                    $referenced[$id] = true;
+                    continue;
+                }
+
+                if (isset($serialized_references[$id])) {
+                    $referenced[$id] = true;
+                }
+            }
+        }
+
+        return array_map('intval', array_keys($referenced));
+    }
+
+    /**
+     * Decode each candidate metadata value once, without instantiating objects.
+     *
+     * @param int[] $candidate_ids
+     * @return array<int, true>
+     */
+    private function serialized_value_attachment_ids(string $value, array $candidate_ids): array
+    {
+        if ($value === '' || strpos($value, 'attachment_id') === false) {
+            return [];
+        }
+
+        $value = trim($value);
+        if (function_exists('is_serialized') && !is_serialized($value)) {
+            return [];
+        }
+
+        $decoded = @unserialize($value, [
+            'allowed_classes' => false,
+            'max_depth' => 128,
+        ]);
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $candidate_lookup = array_fill_keys($candidate_ids, true);
+        $references = [];
+        $this->collect_serialized_attachment_ids($decoded, $candidate_lookup, $references);
+
+        return $references;
+    }
+
+    /**
+     * @param array<int|string, mixed> $value
+     * @param array<int, true> $candidate_lookup
+     * @param array<int, true> $references
+     */
+    private function collect_serialized_attachment_ids(array $value, array $candidate_lookup, array &$references): void
+    {
+        foreach ($value as $key => $item) {
+            if (
+                $key === 'attachment_id'
+                && (is_int($item) || (is_string($item) && ctype_digit($item)))
+                && isset($candidate_lookup[(int) $item])
+            ) {
+                $references[(int) $item] = true;
+            }
+
+            if (is_array($item)) {
+                $this->collect_serialized_attachment_ids($item, $candidate_lookup, $references);
+            }
+        }
     }
 
     /**

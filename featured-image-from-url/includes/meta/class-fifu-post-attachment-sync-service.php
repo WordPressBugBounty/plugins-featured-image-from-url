@@ -95,6 +95,82 @@ class Fifu_Post_Attachment_Sync_Service
         }
     }
 
+    private static function initialize_post_attachment(int $attachment_id, string $url, ?string $alt): bool
+    {
+        if ($attachment_id <= 0) {
+            return false;
+        }
+
+        Fifu_Attachment_Update_Service::initialize_remote_attachment(
+            $attachment_id,
+            $url,
+            $alt,
+            null,
+            null,
+            true
+        );
+        self::persist_attachment_meta($attachment_id, $url, $alt);
+
+        return Fifu_Attachment_Update_Service::has_remote_file_metadata($attachment_id, $url);
+    }
+
+    private static function find_or_create_initialized_post_attachment(
+        Fifu_Attachment_Repository $attachment_repo,
+        int $post_id,
+        string $url,
+        ?string $alt
+    ): ?int {
+        $attachment_id = $attachment_repo->find_attachment_id($post_id, $url, false);
+        if (!$attachment_id) {
+            $attachment_id = $attachment_repo->find_incomplete_attachment_id($post_id, $url, false);
+        }
+        if (!$attachment_id) {
+            $attachment_id = (new Fifu_Attachment_Factory())->create_attachment_for_url($url, $alt, $post_id);
+        }
+
+        if (!$attachment_id || !self::initialize_post_attachment((int) $attachment_id, $url, $alt)) {
+            return null;
+        }
+
+        return (int) $attachment_id;
+    }
+
+    private static function delete_fifu_attachment_with_remote_metadata(int $attachment_id): void
+    {
+        $attached_file = trim(htmlspecialchars_decode((string) get_post_meta($attachment_id, '_wp_attached_file', true)));
+        $content_filtered = trim(htmlspecialchars_decode((string) get_post_field('post_content_filtered', $attachment_id)));
+
+        if ($attached_file !== '') {
+            if (
+                !Fifu_Attachment_Update_Service::is_valid_remote_attachment_url($attached_file)
+                || ($content_filtered !== '' && !Fifu_Attachment_Update_Service::is_valid_remote_attachment_url($content_filtered))
+            ) {
+                return;
+            }
+
+            $remote_url = $attached_file;
+        } else {
+            if (!Fifu_Attachment_Update_Service::is_valid_remote_attachment_url($content_filtered)) {
+                return;
+            }
+
+            $remote_url = $content_filtered;
+            Fifu_Attachment_Update_Service::initialize_remote_attachment($attachment_id, $remote_url);
+            if (
+                !Fifu_Attachment_Update_Service::has_remote_file_metadata($attachment_id, $remote_url)
+                || !Fifu_Attachment_Update_Service::is_valid_remote_attachment_url(
+                    (string) get_post_meta($attachment_id, '_wp_attached_file', true)
+                )
+            ) {
+                return;
+            }
+        }
+
+        if (Fifu_Attachment_Update_Service::is_safe_to_delete_remote_attachment($attachment_id)) {
+            wp_delete_attachment($attachment_id);
+        }
+    }
+
     /**
      * Sync the FIFU "fake" featured attachment for a given post ID.
      *
@@ -181,7 +257,7 @@ class Fifu_Post_Attachment_Sync_Service
                  * the default. The default-image service intentionally refuses
                  * to replace another active thumbnail.
                  */
-                wp_delete_attachment($att_id);
+                self::delete_fifu_attachment_with_remote_metadata($att_id);
                 delete_post_thumbnail($post_id);
             } else {
                 $attachment_ids = self::normalize_attachment_ids(
@@ -226,35 +302,17 @@ class Fifu_Post_Attachment_Sync_Service
                                 $alt
                             )
                     ) {
-                        Fifu_Attachment_Update_Service::
-                            initialize_remote_attachment(
-                                (int) $att_id,
-                                $url,
-                                $alt,
-                                null,
-                                null,
-                                true
-                            );
-
-                        self::persist_attachment_meta(
-                            (int) $att_id,
-                            $url,
-                            $alt
-                        );
-                    }
-                } else {
-                    $new_att_id = $attachment_repo->find_attachment_id($post_id, $url, false);
-                    if ($new_att_id) {
-                        Fifu_Attachment_Update_Service::initialize_remote_attachment((int) $new_att_id, $url, $alt, null, null, true);
-                        self::persist_attachment_meta((int) $new_att_id, $url, $alt);
-                    } else {
-                        $factory = new Fifu_Attachment_Factory();
-                        $new_att_id = $factory->create_attachment_for_url($url, $alt, $post_id);
-                        if ($new_att_id) {
-                            Fifu_Attachment_Update_Service::initialize_remote_attachment((int) $new_att_id, $url, $alt, null, null, true);
-                            self::persist_attachment_meta((int) $new_att_id, $url, $alt);
+                        if (!self::initialize_post_attachment((int) $att_id, $url, $alt)) {
+                            delete_post_thumbnail($post_id);
                         }
                     }
+                } else {
+                    $new_att_id = self::find_or_create_initialized_post_attachment(
+                        $attachment_repo,
+                        $post_id,
+                        $url,
+                        $alt
+                    );
 
                     if ($new_att_id) {
                         update_post_meta($post_id, '_thumbnail_id', (int) $new_att_id);
@@ -264,20 +322,14 @@ class Fifu_Post_Attachment_Sync_Service
                     }
                 }
             } else {
-                $new_att_id = 0;
-                $new_att_id = $attachment_repo->find_attachment_id($post_id, $url, false);
+                $new_att_id = self::find_or_create_initialized_post_attachment(
+                    $attachment_repo,
+                    $post_id,
+                    $url,
+                    $alt
+                );
                 if ($new_att_id) {
                     update_post_meta($post_id, '_thumbnail_id', $new_att_id);
-                    Fifu_Attachment_Update_Service::initialize_remote_attachment((int) $new_att_id, $url, $alt, null, null, true);
-                    self::persist_attachment_meta((int) $new_att_id, $url, $alt);
-                } else {
-                    $factory = new Fifu_Attachment_Factory();
-                    $new_att_id = $factory->create_attachment_for_url($url, $alt, $post_id);
-                    if ($new_att_id) {
-                        update_post_meta($post_id, '_thumbnail_id', $new_att_id);
-                        Fifu_Attachment_Update_Service::initialize_remote_attachment((int) $new_att_id, $url, $alt, null, null, true);
-                        self::persist_attachment_meta((int) $new_att_id, $url, $alt);
-                    }
                 }
 
                 $protected_attachment_ids = [];
@@ -289,15 +341,18 @@ class Fifu_Post_Attachment_Sync_Service
                 if ($current_thumbnail_id > 0) {
                     $protected_attachment_ids[] = $current_thumbnail_id;
                 }
+                if ($default_attach_id > 0) {
+                    $protected_attachment_ids[] = $default_attach_id;
+                }
 
                 $protected_attachment_ids = array_values(array_unique(array_filter(
                     array_map('intval', $protected_attachment_ids),
                     static fn(int $attachment_id): bool => $attachment_id > 0
                 )));
 
-                $attachment_ids = self::normalize_attachment_ids(
-                    $attachment_repo->get_orphan_attachments_for_post($post_id)
-                );
+                $attachment_ids = $new_att_id
+                    ? self::normalize_attachment_ids($attachment_repo->get_orphan_attachments_for_post($post_id))
+                    : [];
 
                 if ($protected_attachment_ids) {
                     $attachment_ids = array_values(array_filter(
@@ -309,6 +364,26 @@ class Fifu_Post_Attachment_Sync_Service
                 if ($attachment_ids) {
                     $cleanup->delete_attachments_and_meta($attachment_ids);
                 }
+            }
+        }
+
+        $active_attachment_id = (int) get_post_thumbnail_id($post_id);
+        if (
+            $active_attachment_id > 0
+            && $active_attachment_id !== $default_attach_id
+            && $attachment_repo->is_fifu_attachment($active_attachment_id)
+            && self::is_attachment_owned_by_post($active_attachment_id, $post_id)
+            && Fifu_Attachment_Update_Service::has_remote_file_metadata($active_attachment_id, $url)
+        ) {
+            $incomplete_orphans = self::normalize_attachment_ids(
+                $attachment_repo->get_incomplete_orphan_attachments_for_post(
+                    $post_id,
+                    [$active_attachment_id, $default_attach_id]
+                )
+            );
+
+            if ($incomplete_orphans) {
+                $cleanup->delete_attachments_and_meta($incomplete_orphans);
             }
         }
 
@@ -369,6 +444,10 @@ class Fifu_Post_Attachment_Sync_Service
         string $url,
         ?string $alt
     ): bool {
+        if (!Fifu_Attachment_Update_Service::has_remote_file_metadata($attachmentId, $url)) {
+            return false;
+        }
+
         $currentUrl =
             self::normalize_attachment_url(
                 Fifu_Attachment_Update_Service::
@@ -519,7 +598,20 @@ $is_wvs = Fifu_Woocommerce_Context::is_woo_variation_swatches_taxonomy($term_id)
 
         if (!$url) {
 if ($has_fifu_attachment && $att_id && Fifu_Attachment_Update_Service::is_fifu_owned((int) $att_id)) {
-                wp_delete_attachment($att_id);
+                // Preserve the established removal of an empty category record,
+                // which has no file data for WordPress to delete.
+                if (
+                    Fifu_Attachment_Update_Service::get_attachment_remote_url((int) $att_id) === ''
+                    && !metadata_exists('post', (int) $att_id, '_wp_attached_file')
+                    && !metadata_exists('post', (int) $att_id, '_wp_attachment_metadata')
+                    && !metadata_exists('post', (int) $att_id, '_wp_attachment_backup_sizes')
+                    && !get_attached_file((int) $att_id)
+                    && !wp_get_attachment_metadata((int) $att_id)
+                ) {
+                    wp_delete_attachment($att_id);
+                } else {
+                    self::delete_fifu_attachment_with_remote_metadata((int) $att_id);
+                }
                 update_term_meta($term_id, 'thumbnail_id', 0);
                 if ($is_wvs) {
                     delete_term_meta($term_id, 'product_attribute_image');

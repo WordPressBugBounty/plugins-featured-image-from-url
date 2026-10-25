@@ -575,6 +575,7 @@ function fifu_render_quick_image_preview(imageUrl, postId) {
 
     jQuery('#fifu-left-column').html(preview).css('display', 'table-cell');
     jQuery('.fifu-quick-editor-layout').addClass('fifu-quick-editor-layout--preview');
+    fifu_update_quick_image_preview_layout(true);
     jQuery('#fifu-quick-image-preview-button').hide();
     jQuery('#fifu-quick-image-alt-state').show();
 }
@@ -582,8 +583,75 @@ function fifu_render_quick_image_preview(imageUrl, postId) {
 function fifu_clear_quick_image_preview() {
     jQuery('#fifu-left-column').empty().css('display', 'none');
     jQuery('.fifu-quick-editor-layout').removeClass('fifu-quick-editor-layout--preview');
+    fifu_update_quick_image_preview_layout(false);
     jQuery('#fifu-quick-image-preview-button').show();
     jQuery('#fifu-quick-image-alt-state').hide();
+}
+
+function fifu_get_quick_editor_fancybox_instance() {
+    if (
+        typeof jQuery === 'undefined'
+        || !jQuery.fancybox
+        || typeof jQuery.fancybox.getInstance !== 'function'
+    ) {
+        return null;
+    }
+
+    const instance = jQuery.fancybox.getInstance();
+    if (!instance || !instance.current || !instance.current.$content) {
+        return null;
+    }
+
+    const $content = instance.current.$content;
+    if (typeof $content.find !== 'function' || !$content.find('#fifu-save-button').length) {
+        return null;
+    }
+
+    return instance;
+}
+
+function fifu_update_quick_image_preview_layout(isVisible) {
+    const $left = jQuery('#fifu-left-column');
+    if (!$left.length) {
+        return;
+    }
+
+    const $layout = $left.closest('.fifu-quick-editor-layout');
+    if ($layout.length) {
+        $layout.toggleClass('fifu-quick-editor-layout--preview', !!isVisible);
+        $layout.toggleClass('fifu-quick-editor-layout--image-preview', !!isVisible);
+    }
+
+    if (isVisible) {
+        const $preview = $left.find('img#fifu-quick-preview');
+        if ($preview.length) {
+            const updateCurrentDialog = function () {
+                const $currentPreview = jQuery('#fifu-left-column').find('img#fifu-quick-preview');
+                if (!$currentPreview.length || $currentPreview[0] !== this) {
+                    return;
+                }
+
+                const instance = fifu_get_quick_editor_fancybox_instance();
+                if (instance && typeof instance.update === 'function') {
+                    instance.update();
+                }
+            };
+
+            $preview
+                .off('load.fifuQuickImageLayout error.fifuQuickImageLayout')
+                .on('load.fifuQuickImageLayout error.fifuQuickImageLayout', updateCurrentDialog);
+
+            const image = $preview[0];
+            if (image && image.complete) {
+                updateCurrentDialog.call(image);
+            }
+        }
+    }
+
+    const instance = fifu_get_quick_editor_fancybox_instance();
+    if (instance && typeof instance.update === 'function') {
+        instance.update();
+    }
 }
 
 function fifu_quick_image_preview_event() {

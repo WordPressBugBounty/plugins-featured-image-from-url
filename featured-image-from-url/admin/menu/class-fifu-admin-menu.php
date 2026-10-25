@@ -162,6 +162,7 @@ final class Fifu_Admin_Menu
         $slider_left = '';
         $slider_right = '';
         $default_url = esc_url(get_option('fifu_default_url'));
+        $error_url = esc_url(get_option('fifu_error_url'));
         $default_cpt = esc_attr(get_option('fifu_default_cpt'));
         $pcontent_types = esc_attr(get_option('fifu_pcontent_types'));
         $hide_format = esc_attr(get_option('fifu_hide_format'));

@@ -36,6 +36,22 @@
 .greybox p {
 }
 
+#fifu-start-accordion > .ui-accordion-header.ui-state-active {
+    border: 3px solid #3858e9;
+    background: #3858e9;
+    color: #ffffff;
+}
+
+.ui-tabs .ui-tabs-nav > li.ui-state-active {
+    border-color: #3858e9;
+    background: #3858e9;
+    color: #ffffff;
+}
+
+.ui-tabs .ui-tabs-nav > li.ui-state-active > a {
+    color: #ffffff;
+}
+
 #tabs-top{
     border-radius: 0px 0px 15px 15px;
 }
@@ -58,6 +74,7 @@
     width: 72px;
     height: 24px;
     background: url("../../images/onoff.jpg") 0 0 no-repeat;
+    filter: hue-rotate(275deg);
     text-align: center !important;
 }
 

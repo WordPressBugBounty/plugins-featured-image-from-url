@@ -1,3 +1,19 @@
+if (typeof document !== 'undefined' && typeof fifuImageVars !== 'undefined' && fifuImageVars.fifu_error_url) {
+    document.addEventListener('error', function (event) {
+        var image = event.target;
+        if (!image || image.tagName !== 'IMG' || !image.hasAttribute('data-fifu-managed-image') || image.getAttribute('data-fifu-error-replaced') === '1') {
+            return;
+        }
+
+        image.setAttribute('data-fifu-error-replaced', '1');
+        image.removeAttribute('srcset');
+        image.removeAttribute('sizes');
+        image.removeAttribute('data-srcset');
+        image.removeAttribute('data-sizes');
+        image.src = fifuImageVars.fifu_error_url;
+    }, true);
+}
+
 jQuery(document).ready(function ($) {
     if (fifuImageVars.fifu_block) {
         jQuery('body').on('contextmenu', 'img', function (e) {

@@ -63,6 +63,13 @@ class Fifu_Featured_Image_Filter {
             }
         }
 
+        if ( $url && preg_match( '~^https?://~i', (string) $url ) === 1 ) {
+            $fallback_url = Fifu_Settings_Manager::sanitize_error_url( get_option( 'fifu_error_url' ) );
+            if ( $fallback_url !== null && $fallback_url !== '' && strpos( $html, 'data-fifu-managed-image=' ) === false ) {
+                $html = preg_replace( '/<img\b/i', '<img data-fifu-managed-image="1"', $html, 1 );
+            }
+        }
+
         if ($url) {
             return $html;
         }
