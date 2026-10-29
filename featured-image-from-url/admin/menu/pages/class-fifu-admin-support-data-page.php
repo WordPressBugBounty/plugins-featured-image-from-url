@@ -38,6 +38,7 @@ final class Fifu_Admin_Support_Data_Page
         $enable_default_url = get_option('fifu_enable_default_url');
         $enable_wc_lbox = get_option('fifu_wc_lbox');
         $enable_wc_zoom = get_option('fifu_wc_zoom');
+        $enable_order_email = get_option('fifu_order_email');
         $enable_hide = get_option('fifu_hide');
         $enable_pcontent_add = get_option('fifu_pcontent_add');
         $enable_pcontent_remove = get_option('fifu_pcontent_remove');

@@ -4,11 +4,11 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Add remote featured images and WooCommerce product images from external URLs. Save storage, speed up imports, and use featured videos with FIFU PRO.
- * Version: 6.1.3
+ * Version: 6.1.4
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * Requires at least: 5.6
- * Tested up to: 7.1.3
+ * Tested up to: 7.2
  * Requires PHP: 8.1
  * WC requires at least: 4.0
  * WC tested up to: 11.1.2
@@ -130,6 +130,7 @@ $helper_includes = [
     FIFU_INCLUDES_DIR . '/integrations/class-fifu-category-social-tags.php',
     FIFU_INCLUDES_DIR . '/integrations/class-fifu-woocommerce-display-configuration.php',
     FIFU_INCLUDES_DIR . '/integrations/class-fifu-woocommerce-gallery-integration.php',
+    FIFU_INCLUDES_DIR . '/integrations/class-fifu-woocommerce-email-integration.php',
     FIFU_INCLUDES_DIR . '/integrations/class-fifu-amp-integration.php',
     FIFU_INCLUDES_DIR . '/integrations/class-fifu-web-stories-integration.php',
     FIFU_INCLUDES_DIR . '/integrations/class-fifu-search-filter-pro-integration.php',
@@ -1012,6 +1013,7 @@ add_action( 'pre_rss2_ns', [ Fifu_Rss_Image_Namespace::class, 'start_buffer' ], 
 add_action( 'rss2_ns', [ Fifu_Rss_Image_Namespace::class, 'inject_media_namespace' ], 9999 );
 add_filter( 'woocommerce_product_get_image', [ Fifu_Woocommerce_Gallery_Integration::class, 'filter_product_image' ], 10, 5 );
 add_action( 'woocommerce_product_duplicate', [ Fifu_Woocommerce_Gallery_Integration::class, 'on_product_duplicate' ], 10, 2 );
+add_filter( 'woocommerce_email_order_items_table', [ Fifu_Woocommerce_Email_Integration::class, 'filter_email_order_items_table' ], 10, 2 );
 add_action(
     'plugins_loaded',
     [ Fifu_Wp_Force_Plugin_Integration::class, 'register_hooks' ]

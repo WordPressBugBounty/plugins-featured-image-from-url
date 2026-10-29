@@ -142,7 +142,7 @@ final class Fifu_Admin_Menu
         $enable_block = get_option('fifu_block') === 'toggleon'
             ? 'toggleon'
             : 'toggleoff';
-        $enable_order_email = 'toggleoff';
+        $enable_order_email = get_option('fifu_order_email');
         $enable_gallery = 'toggleoff';
         $enable_adaptive_height = 'toggleoff';
         $enable_videos_before = 'toggleoff';

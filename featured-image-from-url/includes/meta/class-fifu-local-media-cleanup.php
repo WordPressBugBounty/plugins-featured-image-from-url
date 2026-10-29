@@ -614,8 +614,9 @@ class Fifu_Local_Media_Cleanup {
      * @param int[] $attachment_ids
      * @return void
      */
-    public function delete_fifu_attachments(array $attachment_ids): void
+    public function delete_fifu_attachments(array $attachment_ids, int $exclude_reference_post_id = 0): void
     {
+        $attachment_ids = $this->exclude_referenced_attachments($attachment_ids, $exclude_reference_post_id);
         $ids_csv = Fifu_Db2_Sql_Helper::sanitize_ids_csv($attachment_ids);
         if (!$ids_csv) {
             return;
@@ -673,8 +674,9 @@ class Fifu_Local_Media_Cleanup {
      * @param int[] $attachment_ids
      * @return void
      */
-    public function delete_attachment_file_and_alt(array $attachment_ids): void
+    public function delete_attachment_file_and_alt(array $attachment_ids, int $exclude_reference_post_id = 0): void
     {
+        $attachment_ids = $this->exclude_referenced_attachments($attachment_ids, $exclude_reference_post_id);
         $ids_csv = Fifu_Db2_Sql_Helper::sanitize_ids_csv($attachment_ids);
         if (!$ids_csv) {
             return;
@@ -731,13 +733,18 @@ class Fifu_Local_Media_Cleanup {
      * @param int[] $attachment_ids
      * @return void
      */
-    public function delete_attachments_and_meta(array $attachment_ids): void
+    public function delete_attachments_and_meta(array $attachment_ids, int $exclude_reference_post_id = 0): void
     {
         $ids = array_values(array_unique(array_filter(
             array_map('intval', $attachment_ids),
             static fn(int $id): bool => $id > 0
         )));
 
+        if (!$ids) {
+            return;
+        }
+
+        $ids = $this->exclude_referenced_attachments($ids, $exclude_reference_post_id);
         if (!$ids) {
             return;
         }
@@ -804,6 +811,32 @@ class Fifu_Local_Media_Cleanup {
     }
 
     /**
+     * Remove attachments that are still referenced by supported post media fields.
+     *
+     * @param int[] $attachment_ids
+     * @return int[]
+     */
+    private function exclude_referenced_attachments(array $attachment_ids, int $exclude_reference_post_id = 0): array
+    {
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $attachment_ids),
+            static fn(int $id): bool => $id > 0
+        )));
+        if (!$ids) {
+            return [];
+        }
+
+        if (!class_exists('Fifu_Attachment_Repository', false)) {
+            require_once __DIR__ . '/class-fifu-attachment-repository.php';
+        }
+
+        $referenced = (new Fifu_Attachment_Repository($this->wpdb))
+            ->get_referenced_attachment_ids($ids, $exclude_reference_post_id);
+
+        return array_values(array_diff($ids, $referenced));
+    }
+
+    /**
      * Find malformed virtual attachments whose record can be considered for
      * metadata-only cleanup. References are checked separately in one batch.
      *
@@ -834,7 +867,13 @@ class Fifu_Local_Media_Cleanup {
                AND NOT EXISTS (
                    SELECT 1 FROM {$this->postmeta_table} pm
                    WHERE pm.post_id = p.ID
-                     AND pm.meta_key IN ('_wp_attached_file', '_wp_attachment_metadata', '_wp_attachment_backup_sizes')
+                     AND (
+                         pm.meta_key IN ('_wp_attached_file', '_wp_attachment_backup_sizes')
+                         OR (
+                             pm.meta_key = '_wp_attachment_metadata'
+                             AND pm.meta_value <> 'a:0:{}'
+                         )
+                     )
                )"
         );
 
@@ -906,7 +945,13 @@ class Fifu_Local_Media_Cleanup {
                        AND NOT EXISTS (
                            SELECT 1 FROM {$this->postmeta_table} pm
                            WHERE pm.post_id = p.ID
-                             AND pm.meta_key IN ('_wp_attached_file', '_wp_attachment_metadata', '_wp_attachment_backup_sizes')
+                             AND (
+                                 pm.meta_key IN ('_wp_attached_file', '_wp_attachment_backup_sizes')
+                                 OR (
+                                     pm.meta_key = '_wp_attachment_metadata'
+                                     AND pm.meta_value <> 'a:0:{}'
+                                 )
+                             )
                        )",
                     $attachment_id,
                     $this->author_id
@@ -1069,7 +1114,13 @@ class Fifu_Local_Media_Cleanup {
                            AND NOT EXISTS (
                                SELECT 1 FROM {$this->postmeta_table} pm
                                WHERE pm.post_id = ID
-                                 AND pm.meta_key IN ('_wp_attached_file', '_wp_attachment_metadata', '_wp_attachment_backup_sizes')
+                                 AND (
+                                     pm.meta_key IN ('_wp_attached_file', '_wp_attachment_backup_sizes')
+                                     OR (
+                                         pm.meta_key = '_wp_attachment_metadata'
+                                         AND pm.meta_value <> 'a:0:{}'
+                                     )
+                                 )
                            )
                            AND NOT EXISTS (
                                SELECT 1 FROM {$this->postmeta_table} ref

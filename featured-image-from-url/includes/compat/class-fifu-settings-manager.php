@@ -49,13 +49,13 @@ class Fifu_Settings_Manager {
         'fifu_cloud_upload_auto',
         'fifu_cloud_delete_auto',
         'fifu_cloud_hotlink',
+        'fifu_order_email',
     ];
 
     private const FREE_PRO_ONLY_PERSISTENCE_BLOCKED_OPTIONS = [
         'fifu_taxonomy',
         'fifu_auto_category',
         'fifu_buy',
-        'fifu_order_email',
         'fifu_buy_text',
         'fifu_buy_disclaimer',
         'fifu_buy_cf',
@@ -331,6 +331,10 @@ class Fifu_Settings_Manager {
             self::update_single_option( 'fifu_input_wc_zoom', 'fifu_wc_zoom' );
         }
 
+        if ( self::is_valid_nonce( 'nonce_fifu_form_order_email' ) ) {
+            self::update_single_option( 'fifu_input_order_email', 'fifu_order_email' );
+        }
+
         if ( self::is_valid_nonce( 'nonce_fifu_form_hide' ) ) {
             self::update_single_option( 'fifu_input_hide', 'fifu_hide' );
         }
@@ -440,6 +444,7 @@ class Fifu_Settings_Manager {
             'fifu_cloud_upload_auto',
             'fifu_cloud_delete_auto',
             'fifu_cloud_hotlink',
+            'fifu_order_email',
         );
         if ( in_array( $option_name, $arr_boolean, true ) ) {
             if ( in_array( $value, array( 'on', 'off' ), true ) ) {

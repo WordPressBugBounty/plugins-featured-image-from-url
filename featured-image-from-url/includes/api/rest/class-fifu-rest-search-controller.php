@@ -7,11 +7,31 @@ class Fifu_Rest_Search_Controller
         register_rest_route(FIFU_REST_NAMESPACE_V2, '/unsplash_search/', [
             'methods' => 'POST',
             'callback' => [self::class, 'unsplash_search'],
-            'permission_callback' => [
-                Fifu_Rest_Permissions::class,
-                'private_data',
-            ],
+            'permission_callback' => [self::class, 'search_permission'],
         ]);
+    }
+
+    public static function search_permission(\WP_REST_Request $request)
+    {
+        if (!current_user_can('upload_files')) {
+            return self::authorization_error();
+        }
+
+        $nonce = (string) $request->get_header('X-WP-Nonce');
+        if ($nonce !== '' && !wp_verify_nonce($nonce, 'wp_rest')) {
+            return self::authorization_error();
+        }
+
+        return true;
+    }
+
+    private static function authorization_error(): \WP_Error
+    {
+        return new \WP_Error(
+            'rest_forbidden',
+            __('Sorry, you are not allowed to do that.'),
+            ['status' => rest_authorization_required_code()]
+        );
     }
 
     public static function unsplash_search(

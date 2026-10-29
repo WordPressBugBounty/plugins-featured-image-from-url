@@ -613,14 +613,9 @@ final class Fifu_Post_Save_Service
                 ]
             )
         ) {
-            $alt =
-                esc_html(
-                    wp_strip_all_tags(
-                        $_POST[
-                            'fifu_input_alt'
-                        ]
-                    )
-                );
+            $alt = sanitize_text_field(
+                wp_unslash((string) $_POST['fifu_input_alt'])
+            );
 
             if (
                 self::featured_media_needs_write(

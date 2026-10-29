@@ -4404,9 +4404,6 @@
                 <div class="fifubox">
 
                     <h2>
-                        <a class="fifu-pro-link fifu-pro-inline" href="https://fifu.app/#go-pricing" target="_blank" rel="noopener" aria-label="FIFU PRO">
-                            <span class="dashicons dashicons-lock fifu-pro-icon" aria-hidden="true"></span>
-                        </a>
                         <i class="fa-solid fa-envelope-open-text"></i> <?php $fifu['title']['order-email']() ?>
                     </h2>
 
@@ -4430,9 +4427,9 @@
                                         type="submit"
                                         href="javascript:void(0)"
                                         id="fifu_toggle_order_email"
-                                        onclick="return fifu_keep_pro_toggle_off('order_email')"
+                                        onclick="invert('order_email')"
                                         name="fifu_toggle_order_email"
-                                        class="toggleoff"
+                                        class="<?php echo $enable_order_email; ?>"
                                         value=""
                                         style="display:block;border:none" >
 
@@ -4440,7 +4437,7 @@
                                         type="hidden"
                                         id="fifu_input_order_email"
                                         name="fifu_input_order_email"
-                                        value="off" >
+                                        value="" >
                                 </form>
                             </th>
                         </tr>

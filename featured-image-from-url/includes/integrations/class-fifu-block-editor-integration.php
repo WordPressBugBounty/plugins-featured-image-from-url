@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 class Fifu_Block_Editor_Integration {
-    private static bool $is_rest_dispatching = false;
+    private static int $rest_dispatch_depth = 0;
 
     public static function register_hooks(): void {
         // Register hooks related to the FIFU Gutenberg block integration.
@@ -378,8 +378,8 @@ class Fifu_Block_Editor_Integration {
         return in_array($meta_key, array('fifu_image_url', 'fifu_image_alt'), true);
     }
 
-    private static function is_rest_request_context(): bool {
-        return (defined('REST_REQUEST') && REST_REQUEST) || self::$is_rest_dispatching;
+    public static function is_rest_request_context(): bool {
+        return (defined('REST_REQUEST') && REST_REQUEST) || self::$rest_dispatch_depth > 0;
     }
 
     private static function fifu_block_editor_has_fifu_image_block($post_content): bool {
@@ -451,12 +451,19 @@ class Fifu_Block_Editor_Integration {
     }
 
     public static function mark_rest_dispatching($response, $handler, $request) {
-        self::$is_rest_dispatching = true;
+        self::$rest_dispatch_depth++;
         return $response;
     }
 
     public static function unmark_rest_dispatching($response, $handler, $request) {
-        self::$is_rest_dispatching = false;
+        if ($request === null && $handler === null && $response === null) {
+            self::$rest_dispatch_depth = 0;
+            return $response;
+        }
+
+        if (self::$rest_dispatch_depth > 0) {
+            self::$rest_dispatch_depth--;
+        }
         return $response;
     }
 }

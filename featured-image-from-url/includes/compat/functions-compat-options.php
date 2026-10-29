@@ -20,7 +20,6 @@ if ( ! function_exists( 'fifu_free_pro_only_locked_options' ) ) {
     function fifu_free_pro_only_locked_options() {
         return array(
             'fifu_buy'                     => 'toggleoff',
-            'fifu_order_email'             => 'toggleoff',
         );
     }
 }
@@ -34,7 +33,6 @@ if ( ! function_exists( 'fifu_free_quick_buy_locked_options' ) ) {
             fifu_free_pro_only_locked_options(),
             array(
                 'fifu_buy'         => true,
-                'fifu_order_email' => true,
             )
         );
     }

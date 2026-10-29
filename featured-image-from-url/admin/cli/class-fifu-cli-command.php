@@ -680,6 +680,9 @@ class Fifu_CLI_Command extends \WP_CLI_Command {
      * [--category-auto=<on|off>]
      * : Toggles automatic category image creation.
      *
+     * [--order-email=<on|off>]
+     * : Toggles adding images to order emails.
+     *
      * [--gallery=<on|off>]
      * : Toggles product gallery mode.
      *
@@ -737,6 +740,18 @@ class Fifu_CLI_Command extends \WP_CLI_Command {
                     break;
                 case 'off':
                     update_option('fifu_auto_category', 'toggleoff', 'no');
+                    break;
+            }
+            return;
+        }
+        if (array_key_exists('order-email', $assoc_args)) {
+            $toggle = (string) $assoc_args['order-email'];
+            switch ($toggle) {
+                case 'on':
+                    update_option('fifu_order_email', 'toggleon', 'no');
+                    break;
+                case 'off':
+                    update_option('fifu_order_email', 'toggleoff', 'no');
                     break;
             }
             return;

@@ -253,7 +253,7 @@ class Fifu_Attachment_Repository {
      * @param int[] $attachment_ids
      * @return int[]
      */
-    public function get_referenced_attachment_ids(array $attachment_ids): array
+    public function get_referenced_attachment_ids(array $attachment_ids, int $exclude_post_id = 0): array
     {
         $ids = array_values(array_unique(array_filter(
             array_map('intval', $attachment_ids),
@@ -262,6 +262,155 @@ class Fifu_Attachment_Repository {
         if (!$ids) {
             return [];
         }
+
+        $rows = $this->get_attachment_reference_rows($ids, $exclude_post_id);
+        $referenced = [];
+        foreach ($rows as $row) {
+            $meta_key = is_object($row) ? (string) ($row->meta_key ?? '') : (string) ($row['meta_key'] ?? '');
+            $meta_value = is_object($row) ? (string) ($row->meta_value ?? '') : (string) ($row['meta_value'] ?? '');
+            $serialized_references = $this->serialized_value_attachment_ids($meta_value, $ids);
+
+            foreach ($ids as $id) {
+                if ($this->meta_value_references_attachment($meta_key, $meta_value, $id, $serialized_references)) {
+                    $referenced[$id] = true;
+                }
+            }
+        }
+
+        foreach ($this->get_attachment_term_reference_rows($ids) as $row) {
+            $meta_key = is_object($row) ? (string) ($row->meta_key ?? '') : (string) ($row['meta_key'] ?? '');
+            $meta_value = is_object($row) ? (string) ($row->meta_value ?? '') : (string) ($row['meta_value'] ?? '');
+            if (!in_array($meta_key, ['thumbnail_id', 'product_attribute_image'], true)) {
+                continue;
+            }
+
+            foreach ($ids as $id) {
+                if (trim($meta_value) === (string) $id) {
+                    $referenced[$id] = true;
+                }
+            }
+        }
+
+        return array_map('intval', array_keys($referenced));
+    }
+
+    /**
+     * Return term IDs that use an attachment through supported category media fields.
+     *
+     * Arbitrary numeric term metadata is deliberately excluded: only the standard
+     * category thumbnail and WooCommerce variation-swatches image fields represent
+     * supported term media references.
+     *
+     * @return int[]
+     */
+    public function get_attachment_reference_term_ids(int $attachment_id, int $exclude_term_id = 0): array
+    {
+        if ($attachment_id <= 0) {
+            return [];
+        }
+
+        $sql = "SELECT DISTINCT tm.term_id
+                FROM {$this->termmeta_table} tm
+                WHERE tm.meta_key IN ('thumbnail_id', 'product_attribute_image')
+                  AND tm.meta_value = %s";
+        $args = [(string) $attachment_id];
+        if ($exclude_term_id > 0) {
+            $sql .= ' AND tm.term_id <> %d';
+            $args[] = $exclude_term_id;
+        }
+        $sql = $this->wpdb->prepare($sql, $args);
+
+        return array_values(array_unique(array_filter(
+            array_map('intval', (array) $this->wpdb->get_col($sql)),
+            static fn(int $term_id): bool => $term_id > 0
+        )));
+    }
+
+    /**
+     * Return post IDs that refer to an attachment through supported media fields.
+     *
+     * @return int[]
+     */
+    public function get_attachment_reference_post_ids(int $attachment_id, int $exclude_post_id = 0): array
+    {
+        if ($attachment_id <= 0) {
+            return [];
+        }
+
+        $rows = $this->get_attachment_reference_rows([$attachment_id], $exclude_post_id);
+        $referencing_posts = [];
+        foreach ($rows as $row) {
+            $meta_key = is_object($row) ? (string) ($row->meta_key ?? '') : (string) ($row['meta_key'] ?? '');
+            $meta_value = is_object($row) ? (string) ($row->meta_value ?? '') : (string) ($row['meta_value'] ?? '');
+            $serialized_references = $this->serialized_value_attachment_ids($meta_value, [$attachment_id]);
+            if (!$this->meta_value_references_attachment($meta_key, $meta_value, $attachment_id, $serialized_references)) {
+                continue;
+            }
+
+            $post_id = is_object($row) ? (int) ($row->post_id ?? 0) : (int) ($row['post_id'] ?? 0);
+            if ($post_id > 0) {
+                $referencing_posts[$post_id] = true;
+            }
+        }
+
+        return array_map('intval', array_keys($referencing_posts));
+    }
+
+    /**
+     * Return posts with supported media references, ordered for ownership selection.
+     *
+     * Featured-image references take priority over galleries and explicit
+     * serialized attachment_id structures. Candidates at the same priority are
+     * ordered by post ID, making replacement ownership deterministic. Arbitrary
+     * exact numeric metadata remains available through the conservative reference
+     * APIs, but is not ownership evidence.
+     *
+     * @return int[]
+     */
+    public function get_media_reference_post_ids(int $attachment_id, int $exclude_post_id = 0): array
+    {
+        if ($attachment_id <= 0) {
+            return [];
+        }
+
+        $rows = $this->get_attachment_reference_rows([$attachment_id], $exclude_post_id);
+        $priorities = [];
+        foreach ($rows as $row) {
+            $meta_key = is_object($row) ? (string) ($row->meta_key ?? '') : (string) ($row['meta_key'] ?? '');
+            $meta_value = is_object($row) ? (string) ($row->meta_value ?? '') : (string) ($row['meta_value'] ?? '');
+            $post_id = is_object($row) ? (int) ($row->post_id ?? 0) : (int) ($row['post_id'] ?? 0);
+            if ($post_id <= 0) {
+                continue;
+            }
+
+            $priority = null;
+            if ($meta_key === '_thumbnail_id' && trim($meta_value) === (string) $attachment_id) {
+                $priority = 0;
+            } elseif (
+                in_array($meta_key, ['_product_image_gallery', '_wc_additional_variation_images'], true)
+                && $this->meta_value_references_attachment($meta_key, $meta_value, $attachment_id, [])
+            ) {
+                $priority = 1;
+            } elseif (isset($this->serialized_value_attachment_ids($meta_value, [$attachment_id])[$attachment_id])) {
+                $priority = 2;
+            }
+
+            if ($priority !== null && (!isset($priorities[$post_id]) || $priority < $priorities[$post_id])) {
+                $priorities[$post_id] = $priority;
+            }
+        }
+
+        uksort($priorities, static function (int $left, int $right) use ($priorities): int {
+            $priorityOrder = $priorities[$left] <=> $priorities[$right];
+            return $priorityOrder !== 0 ? $priorityOrder : ($left <=> $right);
+        });
+
+        return array_map('intval', array_keys($priorities));
+    }
+
+    /** @param int[] $ids @return array<int, object|array<string,mixed>> */
+    private function get_attachment_reference_rows(array $ids, int $exclude_post_id = 0): array
+    {
 
         $placeholders = implode(',', array_fill(0, count($ids), '%s'));
         $clauses = ["pm.meta_value IN ({$placeholders})"];
@@ -283,38 +432,46 @@ class Fifu_Attachment_Repository {
             $args[] = '%' . $this->wpdb->esc_like($serialized_string_needle) . '%';
         }
 
-        $sql = "SELECT pm.meta_key, pm.meta_value
+        $sql = "SELECT pm.post_id, pm.meta_key, pm.meta_value
                 FROM {$this->postmeta_table} pm
-                WHERE " . implode(' OR ', $clauses);
-        $rows = $this->wpdb->get_results($this->wpdb->prepare($sql, $args));
-
-        $referenced = [];
-        foreach ((array) $rows as $row) {
-            $meta_key = is_object($row) ? (string) ($row->meta_key ?? '') : (string) ($row['meta_key'] ?? '');
-            $meta_value = is_object($row) ? (string) ($row->meta_value ?? '') : (string) ($row['meta_value'] ?? '');
-            $serialized_references = $this->serialized_value_attachment_ids($meta_value, $ids);
-
-            foreach ($ids as $id) {
-                if (trim($meta_value) === (string) $id) {
-                    $referenced[$id] = true;
-                    continue;
-                }
-
-                if (
-                    in_array($meta_key, ['_product_image_gallery', '_wc_additional_variation_images'], true)
-                    && in_array((string) $id, array_map('trim', explode(',', $meta_value)), true)
-                ) {
-                    $referenced[$id] = true;
-                    continue;
-                }
-
-                if (isset($serialized_references[$id])) {
-                    $referenced[$id] = true;
-                }
-            }
+                WHERE (" . implode(' OR ', $clauses) . ')';
+        if ($exclude_post_id > 0) {
+            $sql .= ' AND pm.post_id <> %d';
+            $args[] = $exclude_post_id;
         }
 
-        return array_map('intval', array_keys($referenced));
+        return (array) $this->wpdb->get_results($this->wpdb->prepare($sql, $args));
+    }
+
+    /** @param int[] $ids @return array<int, object|array<string,mixed>> */
+    private function get_attachment_term_reference_rows(array $ids): array
+    {
+        $placeholders = implode(',', array_fill(0, count($ids), '%s'));
+        $sql = "SELECT tm.term_id, tm.meta_key, tm.meta_value
+                FROM {$this->termmeta_table} tm
+                WHERE tm.meta_key IN ('thumbnail_id', 'product_attribute_image')
+                  AND tm.meta_value IN ({$placeholders})";
+
+        return (array) $this->wpdb->get_results(
+            $this->wpdb->prepare($sql, array_map('strval', $ids))
+        );
+    }
+
+    /** @param array<int,true> $serialized_references */
+    private function meta_value_references_attachment(string $meta_key, string $meta_value, int $attachment_id, array $serialized_references): bool
+    {
+        if (trim($meta_value) === (string) $attachment_id) {
+            return true;
+        }
+
+        if (
+            in_array($meta_key, ['_product_image_gallery', '_wc_additional_variation_images'], true)
+            && in_array((string) $attachment_id, array_map('trim', explode(',', $meta_value)), true)
+        ) {
+            return true;
+        }
+
+        return isset($serialized_references[$attachment_id]);
     }
 
     /**

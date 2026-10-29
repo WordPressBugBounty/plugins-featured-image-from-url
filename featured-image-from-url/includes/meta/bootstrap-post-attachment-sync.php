@@ -213,6 +213,13 @@ add_action(
         $post,
         $update
     ) use ($fifuPostAttachmentSyncCallback): void {
+        if (
+            class_exists('Fifu_Block_Editor_Integration', false)
+            && Fifu_Block_Editor_Integration::is_rest_request_context()
+        ) {
+            return;
+        }
+
         $fifuPostAttachmentSyncCallback(
             $post_id,
             $post,

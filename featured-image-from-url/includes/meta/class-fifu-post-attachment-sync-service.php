@@ -135,8 +135,16 @@ class Fifu_Post_Attachment_Sync_Service
         return (int) $attachment_id;
     }
 
-    private static function delete_fifu_attachment_with_remote_metadata(int $attachment_id): void
+    private static function delete_fifu_attachment_with_remote_metadata(int $attachment_id, int $exclude_reference_post_id = 0): void
     {
+        $references = self::get_attachment_repository()->get_attachment_reference_post_ids(
+            $attachment_id,
+            $exclude_reference_post_id
+        );
+        if ($references) {
+            return;
+        }
+
         $attached_file = trim(htmlspecialchars_decode((string) get_post_meta($attachment_id, '_wp_attached_file', true)));
         $content_filtered = trim(htmlspecialchars_decode((string) get_post_field('post_content_filtered', $attachment_id)));
 
@@ -257,7 +265,7 @@ class Fifu_Post_Attachment_Sync_Service
                  * the default. The default-image service intentionally refuses
                  * to replace another active thumbnail.
                  */
-                self::delete_fifu_attachment_with_remote_metadata($att_id);
+                self::delete_fifu_attachment_with_remote_metadata($att_id, $post_id);
                 delete_post_thumbnail($post_id);
             } else {
                 $attachment_ids = self::normalize_attachment_ids(
@@ -471,12 +479,17 @@ class Fifu_Post_Attachment_Sync_Service
                 )
             );
 
+        $altMatches = $currentAlt === trim((string) $alt);
+        $titleMatches = $alt === null
+            || (string) get_post_field('post_title', $attachmentId) === trim($alt);
+        $excerptMatches = $alt === null
+            || (string) get_post_field('post_excerpt', $attachmentId) === trim($alt);
+
         return $currentUrl !== null
             && $currentUrl === $desiredUrl
-            && $currentAlt
-                === trim(
-                    (string) $alt
-                );
+            && $altMatches
+            && $titleMatches
+            && $excerptMatches;
     }
 
     /**
@@ -529,14 +542,110 @@ class Fifu_Post_Attachment_Sync_Service
             return;
         }
 
+        $referencingPostIds = $attachmentRepository->get_media_reference_post_ids(
+            $attachmentId,
+            $post_id
+        );
+        if ($referencingPostIds) {
+            $validReferencePostIds = [];
+            foreach ($referencingPostIds as $referencingPostId) {
+                if (get_post($referencingPostId)) {
+                    $validReferencePostIds[] = $referencingPostId;
+                }
+            }
+
+            $replacementParentId = $validReferencePostIds[0] ?? 0;
+            if ($replacementParentId > 0) {
+                global $wpdb;
+                $updatedRows = $wpdb->update(
+                    $wpdb->posts,
+                    ['post_parent' => $replacementParentId],
+                    ['ID' => $attachmentId],
+                    ['%d'],
+                    ['%d']
+                );
+                clean_post_cache($attachmentId);
+
+                $readPersistedParent = static function () use ($wpdb, $attachmentId): int {
+                    return (int) $wpdb->get_var(
+                        $wpdb->prepare(
+                            "SELECT post_parent FROM {$wpdb->posts} WHERE ID = %d",
+                            $attachmentId
+                        )
+                    );
+                };
+
+                $persistedParentId = $readPersistedParent();
+                $validReferenceParentLookup = array_fill_keys($validReferencePostIds, true);
+                if (
+                    $persistedParentId === $replacementParentId
+                    || $persistedParentId === 0
+                    || isset($validReferenceParentLookup[$persistedParentId])
+                ) {
+                    clean_post_cache($attachmentId);
+                    return;
+                }
+
+                $recoveryRows = null;
+                if ($persistedParentId === $post_id) {
+                    $recoverySql = $wpdb->prepare(
+                        "UPDATE {$wpdb->posts}
+                         SET post_parent = %d
+                         WHERE ID IN (%d)
+                           AND post_type = %s
+                           AND post_author = %d
+                           AND post_name NOT LIKE %s
+                           AND post_parent = %d",
+                        $replacementParentId,
+                        $attachmentId,
+                        'attachment',
+                        Fifu_Options_Utils::get_author(),
+                        'fifu-category-%',
+                        $post_id
+                    );
+                    $recoveryRows = $wpdb->query($recoverySql);
+                    $persistedParentId = $readPersistedParent();
+                }
+
+                if (
+                    $persistedParentId === $replacementParentId
+                    || $persistedParentId === 0
+                    || isset($validReferenceParentLookup[$persistedParentId])
+                ) {
+                    clean_post_cache($attachmentId);
+                    return;
+                }
+
+                $firstResult = $updatedRows === false ? 'false' : (string) $updatedRows;
+                $recoveryResult = $recoveryRows === null
+                    ? 'not attempted because the attachment parent changed'
+                    : ($recoveryRows === false ? 'false' : (string) $recoveryRows);
+                error_log(sprintf(
+                    'FIFU: Attachment %d remains attached to post %d after reassignment to post %d failed (initial update: %s; guarded recovery: %s; current parent: %d). The shared attachment was preserved.',
+                    $attachmentId,
+                    $post_id,
+                    $replacementParentId,
+                    $firstResult,
+                    $recoveryResult,
+                    $persistedParentId
+                ));
+
+                // Preserve shared media if both database writes fail. WordPress
+                // may still apply its native parent handling during deletion.
+                return;
+            }
+        }
+
         $cleanup = self::get_cleanup();
 
         $cleanup->delete_attachment_file_and_alt(
-            [$attachmentId]
+            [$attachmentId],
+            $post_id
         );
 
         $cleanup->delete_fifu_attachments(
-            [$attachmentId]
+            [$attachmentId],
+            $post_id
         );
     }
 
@@ -562,6 +671,28 @@ $cleanup = self::get_cleanup();
         $dimension_key_type = 'image';
         $url = Fifu_Term_Image_Url_Read_Service::get_image_url((int) $term_id);
 $is_wvs = Fifu_Woocommerce_Context::is_woo_variation_swatches_taxonomy($term_id);
+
+        $shared_attachment_id = null;
+        if (
+            $has_fifu_attachment
+            && $att_id
+            && self::is_category_attachment_owned_by_term((int) $att_id, (int) $term_id)
+            && $attachment_repo->get_attachment_reference_term_ids((int) $att_id, (int) $term_id)
+        ) {
+            /*
+             * A term-owned attachment may still be shared by other terms.
+             * Detach only the changing term and force it down the independent
+             * attachment path so neither URL/ALT updates nor cleanup can mutate
+             * the shared media record.
+             */
+            $shared_attachment_id = (int) $att_id;
+            update_term_meta($term_id, 'thumbnail_id', 0);
+            if ($is_wvs) {
+                delete_term_meta($term_id, 'product_attribute_image');
+            }
+            $att_id = null;
+            $has_fifu_attachment = false;
+        }
 
         if (
             $has_fifu_attachment
@@ -656,6 +787,9 @@ if ($has_fifu_attachment && $att_id && Fifu_Attachment_Update_Service::is_fifu_o
             }
         } else {
             $new_att_id = $attachment_repo->find_attachment_id($term_id, $url, true);
+            if ($shared_attachment_id && $new_att_id === $shared_attachment_id) {
+                $new_att_id = null;
+            }
             if ($new_att_id) {
                 update_term_meta($term_id, 'thumbnail_id', $new_att_id);
                 if ($is_wvs) {

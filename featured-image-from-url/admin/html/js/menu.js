@@ -11,7 +11,6 @@ var FIFU_FREE_PRO_ONLY_TOGGLE_IDS = [
     'adaptive_height',
     'videos_before',
     'variations_merge',
-    'order_email',
     'screenshot',
     'auto_set',
     'finder',
