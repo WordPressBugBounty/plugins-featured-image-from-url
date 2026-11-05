@@ -4,7 +4,7 @@
  * Plugin Name: Featured Image from URL (FIFU)
  * Plugin URI: https://fifu.app/
  * Description: Add remote featured images and WooCommerce product images from external URLs. Save storage, speed up imports, and use featured videos with FIFU PRO.
- * Version: 6.1.4
+ * Version: 6.1.5
  * Author: fifu.app
  * Author URI: https://fifu.app/
  * Requires at least: 5.6
@@ -74,6 +74,11 @@ $helper_includes = [
     FIFU_INCLUDES_DIR . '/url/class-fifu-upload-dir-utils.php',
     FIFU_INCLUDES_DIR . '/url/class-fifu-url-resolver.php',
     FIFU_INCLUDES_DIR . '/url/class-fifu-content-url-scanner.php',
+    FIFU_INCLUDES_DIR . '/url/class-fifu-url-validation-policy.php',
+    FIFU_INCLUDES_DIR . '/url/class-fifu-url-validation-repository.php',
+    FIFU_INCLUDES_DIR . '/url/class-fifu-url-validation-checker.php',
+    FIFU_INCLUDES_DIR . '/url/class-fifu-url-validation-queue.php',
+    FIFU_INCLUDES_DIR . '/url/class-fifu-url-validation-worker.php',
     FIFU_INCLUDES_DIR . '/url/cdn/bootstrap-cdn.php',
     FIFU_INCLUDES_DIR . '/meta/class-fifu-post-type-utils.php',
     FIFU_INCLUDES_DIR . '/meta/class-fifu-post-meta-utils.php',
@@ -210,6 +215,9 @@ if (class_exists('Fifu_Wpauto_Pro_Integration')) {
 }
 
 Fifu_Cloud_Cron_Service::register_hooks();
+Fifu_Url_Validation_Worker::register_hooks();
+require_once FIFU_ADMIN_DIR . '/menu/class-fifu-broken-links-ajax-controller.php';
+Fifu_Broken_Links_Ajax_Controller::register_hooks();
 Fifu_Woodmart_Otf_Compat::register();
 
 // Comments must be in English.

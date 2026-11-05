@@ -45,6 +45,7 @@ fifu_pcontent_add:<?php echo $enable_pcontent_add ?>;
 fifu_pcontent_remove:<?php echo $enable_pcontent_remove ?>;
 fifu_pcontent_types:<?php echo $pcontent_types ?>;
 fifu_photon:<?php echo $enable_photon ?>;
+fifu_validate_featured_image_urls:<?php echo $enable_validate_featured_image_urls ?>;
 fifu_reset:<?php echo $enable_reset ?>;
 fifu_run_delete_all:<?php echo $enable_run_delete_all ?>;
 fifu_run_delete_all_time:<?php echo $enable_run_delete_all_time ?>;

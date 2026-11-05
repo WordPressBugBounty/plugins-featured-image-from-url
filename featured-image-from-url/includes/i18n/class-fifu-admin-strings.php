@@ -228,6 +228,15 @@ class Fifu_Admin_Strings {
         $fifu['title']['support'] = function () {
             _e("Technical support", FIFU_SLUG);
         };
+        $fifu['broken-links']['desc'] = function () {
+            _e("Posts with broken featured image links will be listed below. Select a post to open its editor.", FIFU_SLUG);
+        };
+        $fifu['broken-links']['post'] = function () {
+            _e("Post", FIFU_SLUG);
+        };
+        $fifu['broken-links']['url'] = function () {
+            _e("Broken Image URL", FIFU_SLUG);
+        };
         $fifu['title']['start'] = function () {
             _e("Getting started", FIFU_SLUG);
         };
@@ -260,6 +269,18 @@ class Fifu_Admin_Strings {
         };
         $fifu['title']['replace'] = function () {
             _e("Replace Not Found Image", FIFU_SLUG);
+        };
+        $fifu['title']['link_checker'] = function () {
+            _e("Broken Link Checker", FIFU_SLUG);
+        };
+        $fifu['link_checker']['desc'] = function () {
+            _e("Check featured image URLs and flag broken links.", FIFU_SLUG);
+        };
+        $fifu['link_checker']['tab']['settings'] = function () {
+            _e("Settings", FIFU_SLUG);
+        };
+        $fifu['link_checker']['tab']['broken-links'] = function () {
+            _e("Broken Links", FIFU_SLUG);
         };
         $fifu['title']['default'] = function () {
             _e("Default Featured Image", FIFU_SLUG);

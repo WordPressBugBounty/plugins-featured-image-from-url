@@ -74,7 +74,7 @@ class Fifu_Db2_Post_Repository {
      *
      * @param array<int, string> $hashes
      *
-     * @return array<string, array{hash:string,url:string|null,width:int|null,height:int|null,is_valid:bool|null,validation_attempts:int,validation_last_attempt:string|null}>
+     * @return array<string, array{hash:string,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}>
      */
     public function getUrlsByHashes(array $hashes): array {
         $normalizedHashes = [];
@@ -98,7 +98,7 @@ class Fifu_Db2_Post_Repository {
         $placeholders = implode(',', array_fill(0, count($normalizedHashes), '%s'));
 
         $query = $this->wpdb->prepare(
-            "SELECT hash, url, w, h, is_valid, validation_attempts, validation_last_attempt FROM {$this->tableUrl} WHERE hash IN ({$placeholders})",
+            "SELECT hash, url, w, h, validation_failures, validation_checked_at, validation_queued_at FROM {$this->tableUrl} WHERE hash IN ({$placeholders})",
             ...$normalizedHashes
         );
 
@@ -308,7 +308,7 @@ class Fifu_Db2_Post_Repository {
     /**
      * Returns all mappings for a post/key pair.
      *
-     * @return array<int, array{hash:string,key_index:int,url:string|null,width:int|null,height:int|null,is_valid:bool|null,validation_attempts:int,validation_last_attempt:string|null}>
+     * @return array<int, array{hash:string,key_index:int,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}>
      */
     public function findPostMappings(int $postId, int $keyId): array {
         if ($postId <= 0) {
@@ -332,9 +332,9 @@ class Fifu_Db2_Post_Repository {
                 u.url,
                 u.w,
                 u.h,
-                u.is_valid,
-                u.validation_attempts,
-                u.validation_last_attempt
+                u.validation_failures,
+                u.validation_checked_at,
+                u.validation_queued_at
             FROM {$this->tableMap} m
             LEFT JOIN {$this->tableUrl} u ON u.hash = m.hash
             WHERE m.post_id = %d AND m.key_id = %d
@@ -417,7 +417,7 @@ class Fifu_Db2_Post_Repository {
     /**
      * Returns a single mapping for a post/key/key-index tuple.
      *
-     * @return array{hash:string,key_index:int,url:string|null,width:int|null,height:int|null,is_valid:bool|null,validation_attempts:int,validation_last_attempt:string|null}|null
+     * @return array{hash:string,key_index:int,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}|null
      */
     public function findPostMapping(int $postId, int $keyId, int $keyIndex): ?array {
         if ($postId <= 0) {
@@ -445,9 +445,9 @@ class Fifu_Db2_Post_Repository {
                 u.url,
                 u.w,
                 u.h,
-                u.is_valid,
-                u.validation_attempts,
-                u.validation_last_attempt
+                u.validation_failures,
+                u.validation_checked_at,
+                u.validation_queued_at
             FROM {$this->tableMap} m
             LEFT JOIN {$this->tableUrl} u ON u.hash = m.hash
             WHERE m.post_id = %d AND m.key_id = %d AND m.key_index = %d
@@ -687,11 +687,11 @@ class Fifu_Db2_Post_Repository {
     /**
      * Returns the normalized URL record for a hash.
      *
-     * @return array{hash:string,url:string|null,width:int|null,height:int|null,is_valid:bool|null,validation_attempts:int,validation_last_attempt:string|null}|null
+     * @return array{hash:string,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}|null
      */
     public function getUrlByHash(string $hash): ?array {
         $query = $this->wpdb->prepare(
-            "SELECT hash, url, w, h, is_valid, validation_attempts, validation_last_attempt FROM {$this->tableUrl} WHERE hash = %s LIMIT 1",
+            "SELECT hash, url, w, h, validation_failures, validation_checked_at, validation_queued_at FROM {$this->tableUrl} WHERE hash = %s LIMIT 1",
             $hash
         );
 
@@ -884,7 +884,7 @@ class Fifu_Db2_Post_Repository {
      *
      * @param array<string, mixed> $row
      *
-     * @return array{hash:string,key_index:int,url:string|null,width:int|null,height:int|null,is_valid:bool|null,validation_attempts:int,validation_last_attempt:string|null}
+     * @return array{hash:string,key_index:int,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}
      */
     private function normalizeMappingRow(array $row): array {
         return [
@@ -893,9 +893,9 @@ class Fifu_Db2_Post_Repository {
             'url' => isset($row['url']) ? (string) $row['url'] : null,
             'width' => isset($row['w']) ? ((string) $row['w'] === '' ? null : (int) $row['w']) : null,
             'height' => isset($row['h']) ? ((string) $row['h'] === '' ? null : (int) $row['h']) : null,
-            'is_valid' => $this->normalizeNullableBool($row['is_valid'] ?? null),
-            'validation_attempts' => $this->normalizeValidationAttempts($row['validation_attempts'] ?? null),
-            'validation_last_attempt' => $this->normalizeNullableDatetime($row['validation_last_attempt'] ?? null),
+            'validation_failures' => max(0, (int) ($row['validation_failures'] ?? 0)),
+            'validation_checked_at' => $this->normalizeNullableDatetime($row['validation_checked_at'] ?? null),
+            'validation_queued_at' => $this->normalizeNullableDatetime($row['validation_queued_at'] ?? null),
         ];
     }
 
@@ -919,7 +919,7 @@ class Fifu_Db2_Post_Repository {
      *
      * @param array<string, mixed> $row
      *
-     * @return array{hash:string,url:string|null,width:int|null,height:int|null,is_valid:bool|null,validation_attempts:int,validation_last_attempt:string|null}
+     * @return array{hash:string,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}
      */
     private function normalizeUrlRow(array $row): array {
         return [
@@ -927,26 +927,10 @@ class Fifu_Db2_Post_Repository {
             'url' => isset($row['url']) ? (string) $row['url'] : null,
             'width' => isset($row['w']) ? ((string) $row['w'] === '' ? null : (int) $row['w']) : null,
             'height' => isset($row['h']) ? ((string) $row['h'] === '' ? null : (int) $row['h']) : null,
-            'is_valid' => $this->normalizeNullableBool($row['is_valid'] ?? null),
-            'validation_attempts' => $this->normalizeValidationAttempts($row['validation_attempts'] ?? null),
-            'validation_last_attempt' => $this->normalizeNullableDatetime($row['validation_last_attempt'] ?? null),
+            'validation_failures' => max(0, (int) ($row['validation_failures'] ?? 0)),
+            'validation_checked_at' => $this->normalizeNullableDatetime($row['validation_checked_at'] ?? null),
+            'validation_queued_at' => $this->normalizeNullableDatetime($row['validation_queued_at'] ?? null),
         ];
-    }
-
-    private function normalizeNullableBool($value): ?bool {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        return (bool) ((int) $value);
-    }
-
-    private function normalizeValidationAttempts($value): int {
-        if ($value === null || $value === '') {
-            return 0;
-        }
-
-        return (int) $value;
     }
 
     private function normalizeNullableDatetime($value): ?string {

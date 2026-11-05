@@ -33,7 +33,7 @@ This directory contains the database migration layer for the FIFU (Featured Imag
 
 ## New database schema (high level)
 
-- `fifu_url`: stores unique URLs, optional metadata (width/height), and validation tracking columns (`is_valid`, `validation_attempts`, `validation_last_attempt`).
+- `fifu_url`: stores unique URLs, optional metadata (width/height), and featured image validation state (`validation_failures`, `validation_checked_at`, `validation_queued_at`).
 - `fifu_alt`: stores unique ALT texts.
 - `fifu_key`: defines logical types such as `image`, `slider`, `video`, `audio`, `iframe`, `custom_video`, `finder`, `redirect`.
 - `fifu_map`: links WordPress objects (posts) to keys and URL hashes using `(post_id, key_id, key_index)`.

@@ -90,10 +90,13 @@ final class Fifu_Admin_Menu
             'restUrl' => esc_url_raw(rest_url()),
             'homeUrl' => esc_url_raw(home_url()),
             'nonce' => wp_create_nonce('wp_rest'),
+            'adminAjaxUrl' => esc_url_raw(admin_url('admin-ajax.php')),
+            'brokenLinksNonce' => wp_create_nonce('fifu_broken_links'),
             'restNamespaceV1' => defined('FIFU_REST_NAMESPACE_V1') ? FIFU_REST_NAMESPACE_V1 : FIFU_SLUG . '/v1',
             'restNamespaceV2' => defined('FIFU_REST_NAMESPACE_V2') ? FIFU_REST_NAMESPACE_V2 : FIFU_SLUG . '/v2',
             'wait' => $fifu['php']['message']['wait'](),
             'wait1' => $fifu['php']['message']['wait1'](),
+            'noBrokenImageUrls' => __('No Broken Links', FIFU_SLUG),
             'saving' => $fifu['word']['saving'](),
             'saved' => $fifu['word']['saved'](),
             'error' => $fifu['word']['error'](),
@@ -163,6 +166,9 @@ final class Fifu_Admin_Menu
         $slider_right = '';
         $default_url = esc_url(get_option('fifu_default_url'));
         $error_url = esc_url(get_option('fifu_error_url'));
+        $enable_validate_featured_image_urls = get_option('fifu_validate_featured_image_urls') === 'toggleon'
+            ? 'toggleon'
+            : 'toggleoff';
         $default_cpt = esc_attr(get_option('fifu_default_cpt'));
         $pcontent_types = esc_attr(get_option('fifu_pcontent_types'));
         $hide_format = esc_attr(get_option('fifu_hide_format'));
@@ -231,10 +237,10 @@ final class Fifu_Admin_Menu
         }
 
         $fifu = Fifu_Admin_Strings::get_settings_strings();
-        self::enqueue_assets_if_needed($fifu);
+        self::enqueue_assets_if_needed($fifu, $page);
     }
 
-    private static function enqueue_assets_if_needed(array $fifu): void
+    private static function enqueue_assets_if_needed(array $fifu, string $page): void
     {
         wp_enqueue_script('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/js/all.min.js');
         wp_enqueue_style('jquery-ui-style1', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css');
@@ -247,12 +253,14 @@ final class Fifu_Admin_Menu
         wp_enqueue_style('fancy-box-css', 'https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.css');
         wp_enqueue_script('fancy-box-js', 'https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js');
 
-        wp_enqueue_style('datatable-css', '//cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css');
-        wp_enqueue_style('datatable-select-css', '//cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css');
-        wp_enqueue_style('datatable-buttons-css', '//cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css');
-        wp_enqueue_script('datatable-js', '//cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js');
-        wp_enqueue_script('datatable-select', '//cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js');
-        wp_enqueue_script('datatable-buttons', '//cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js');
+        if ('fifu-cloud' === $page) {
+            wp_enqueue_style('datatable-css', '//cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css');
+            wp_enqueue_style('datatable-select-css', '//cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css');
+            wp_enqueue_style('datatable-buttons-css', '//cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css');
+            wp_enqueue_script('datatable-js', '//cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js');
+            wp_enqueue_script('datatable-select', '//cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js');
+            wp_enqueue_script('datatable-buttons', '//cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js');
+        }
 
         wp_enqueue_script(
             'fifu-rest-route-js',

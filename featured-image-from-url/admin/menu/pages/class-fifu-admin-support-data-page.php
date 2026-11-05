@@ -23,6 +23,7 @@ final class Fifu_Admin_Support_Data_Page
         $square_desktop = self::opt_string('fifu_square_desktop');
         $enable_debug = get_option('fifu_debug');
         $enable_photon = get_option('fifu_photon');
+        $enable_validate_featured_image_urls = get_option('fifu_validate_featured_image_urls');
         $enable_cloud_hotlink = get_option('fifu_cloud_hotlink');
         $enable_cloud_delete_auto = get_option('fifu_cloud_delete_auto');
         $enable_cloud_upload_auto = get_option('fifu_cloud_upload_auto');

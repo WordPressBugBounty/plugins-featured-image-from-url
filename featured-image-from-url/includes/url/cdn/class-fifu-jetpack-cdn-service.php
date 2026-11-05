@@ -43,7 +43,6 @@ final class Fifu_Jetpack_Cdn_Service
      */
     private const CLOUDINARY_FETCH_HOSTS = [
         'bp.blogspot.com',
-        'staticflickr.com',
     ];
 
     private const PROXY_URL_PREFIXES = [

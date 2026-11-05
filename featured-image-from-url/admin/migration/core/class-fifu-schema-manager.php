@@ -190,6 +190,9 @@ class Fifu_Schema_Manager {
 			'fifu_url'  => [
 				'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
 				'updated_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
+				'validation_failures' => 'SMALLINT UNSIGNED NOT NULL DEFAULT 0',
+				'validation_checked_at' => 'DATETIME NULL',
+				'validation_queued_at' => 'DATETIME NULL',
 			],
 			'fifu_alt'  => [
 				'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
@@ -210,6 +213,16 @@ class Fifu_Schema_Manager {
 			foreach ( $columns as $column => $definition ) {
 				$column_success = $this->add_column_if_missing( $table, $column, $definition );
 				$success = $column_success && $success;
+			}
+
+			if ( 'fifu_url' === $table_suffix ) {
+				foreach ( [ 'is_valid', 'validation_attempts', 'validation_last_attempt' ] as $obsolete_column ) {
+					$drop_success = $this->drop_column_if_exists( $table, $obsolete_column );
+					$success = $drop_success && $success;
+				}
+
+				$index_success = $this->add_index_if_missing( $table, 'idx_validation_queued_at', '(validation_queued_at)' );
+				$success = $index_success && $success;
 			}
 		}
 
@@ -247,6 +260,47 @@ class Fifu_Schema_Manager {
 	}
 
 	/**
+	 * Drops an obsolete column when it exists.
+	 *
+	 * @param string $table
+	 * @param string $column
+	 */
+	protected function drop_column_if_exists( string $table, string $column ): bool {
+		if ( ! $this->column_exists( $table, $column ) ) {
+			return true;
+		}
+
+		$result = $this->wpdb->query( "ALTER TABLE {$table} DROP COLUMN {$column}" );
+		if ( false === $result ) {
+			error_log( sprintf( 'Fifu_Schema_Manager: failed to remove obsolete %s.%s (%s)', $table, $column, $this->wpdb->last_error ) );
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Adds an index when it is missing.
+	 *
+	 * @param string $table
+	 * @param string $index
+	 * @param string $columns
+	 */
+	protected function add_index_if_missing( string $table, string $index, string $columns ): bool {
+		if ( $this->index_exists( $table, $index ) ) {
+			return true;
+		}
+
+		$result = $this->wpdb->query( "ALTER TABLE {$table} ADD KEY {$index} {$columns}" );
+		if ( false === $result ) {
+			error_log( sprintf( 'Fifu_Schema_Manager: failed to add index %s on %s (%s)', $index, $table, $this->wpdb->last_error ) );
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Checks whether a table exists in the current database.
 	 *
 	 * @param string $table
@@ -270,6 +324,18 @@ class Fifu_Schema_Manager {
 	protected function column_exists( string $table, string $column ): bool {
 		$sql = $this->wpdb->prepare( "SHOW COLUMNS FROM {$table} LIKE %s", $column );
 
+		return null !== $this->wpdb->get_var( $sql );
+	}
+
+	/**
+	 * Checks whether an index exists in the current database.
+	 *
+	 * @param string $table
+	 * @param string $index
+	 * @return bool
+	 */
+	protected function index_exists( string $table, string $index ): bool {
+		$sql = $this->wpdb->prepare( "SHOW INDEX FROM {$table} WHERE Key_name = %s", $index );
 		return null !== $this->wpdb->get_var( $sql );
 	}
 }

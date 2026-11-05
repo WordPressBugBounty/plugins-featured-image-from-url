@@ -199,8 +199,22 @@ class Fifu_CLI_Command extends \WP_CLI_Command {
      * [--redirection=<on|off>]
      * : Toggles redirects from missing media URLs.
      *
+     * [--validate-featured-image-urls=<on|off>]
+     * : Enables or disables Broken Link Checker for featured image URLs.
+     *
      */
     public function image(array $args, array $assoc_args): void {
+        if (array_key_exists('validate-featured-image-urls', $assoc_args)) {
+            switch ((string) $assoc_args['validate-featured-image-urls']) {
+                case 'on':
+                    update_option('fifu_validate_featured_image_urls', 'toggleon', 'no');
+                    break;
+                case 'off':
+                    update_option('fifu_validate_featured_image_urls', 'toggleoff', 'no');
+                    break;
+            }
+            return;
+        }
         if (array_key_exists('pcontent-add', $assoc_args)) {
             $toggle = (string) $assoc_args['pcontent-add'];
             switch ($toggle) {

@@ -36,6 +36,10 @@
 .greybox p {
 }
 
+.dataTables_wrapper .dataTables_length select {
+    width: 60px;
+}
+
 #fifu-start-accordion > .ui-accordion-header.ui-state-active {
     border: 3px solid #3858e9;
     background: #3858e9;

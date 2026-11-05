@@ -41,6 +41,10 @@ class Fifu_Featured_Image_Filter {
 
         $directImageUrl = self::get_direct_image_url((int) $post_id);
 
+        if ($directImageUrl !== null && class_exists('Fifu_Url_Validation_Queue')) {
+            Fifu_Url_Validation_Queue::enqueue_featured_image_url($directImageUrl);
+        }
+
         $url = $directImageUrl;
 
         $title = null;

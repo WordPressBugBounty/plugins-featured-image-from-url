@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured image, image url, external image, remote image, product image
 Requires at least: 5.6
 Tested up to: 7.2
-Stable tag: 6.1.4
+Stable tag: 6.1.5
 Requires PHP: 8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -55,6 +55,7 @@ All features in this section are available in FIFU Free.
 * **Featured image from URL:** Set remote featured images for posts, pages, and custom post types.
 * **Quick Editor:** Manage remote featured images directly from WordPress content lists. Preview, replace, or remove images without opening individual posts.
 * **Replace Not Found Image:** Display a fallback if an external image fails, without changing the saved URL.
+* **Broken Link Checker:** Check featured image URLs in the background and list links that repeatedly fail in the Link Checker settings.
 * **Image alt text:** Set descriptive alternative text without uploading the original file.
 * **Unsplash image search:** Search Unsplash and select an image URL from the results.
 * **Default featured image:** Show a chosen image when no featured image is set.
@@ -79,6 +80,7 @@ Using external URLs for multiple-image product galleries, product video gallerie
 
 * **Featured image from post content:** Automatically assign featured images from post content, eliminating the need to set them manually for each post. Choose supported post types, exclude image-host domains, and control whether existing featured images can be replaced.
 * **WP-CLI:** Configure FIFU settings and manage featured images from the command line.
+  Enable or disable Broken Link Checker with `wp fifu image --validate-featured-image-urls=<on|off>`.
 * **FIFU Image block:** Add remote images with FIFU's image block in the WordPress block editor.
 * **FIFU Featured Media widget:** Display the current post's remote featured image in a WordPress widget area.
 
@@ -320,6 +322,11 @@ No. Featured videos, featured audio, featured sliders, and remote media gallerie
 
 == Changelog ==
 
+= 6.1.5 =
+* New free feature: Broken Link Checker for featured image URLs.
+* Fix: Resolved a security issue reported by Patchstack.
+* Fix: Fixed the optimized images feature so it serves Flickr-hosted images.
+
 = 6.1.4 =
 * New free feature: Add image to order email to display product images in WooCommerce order emails.
 * Fix: Improved remote image attachment cleanup to protect shared images and attachments still in use.
@@ -384,6 +391,11 @@ No. Featured videos, featured audio, featured sliders, and remote media gallerie
 * Fix: Fixed featured image synchronization in the block editor (Gutenberg) when setting, changing, or removing a remote featured image.
 
 == Upgrade Notice ==
+
+= 6.1.5 =
+* New free feature: Broken Link Checker for featured image URLs.
+* Fix: Resolved a security issue reported by Patchstack.
+* Fix: Fixed the optimized images feature so it serves Flickr-hosted images.
 
 = 6.1.4 =
 * New free feature: Add image to order email for WooCommerce.

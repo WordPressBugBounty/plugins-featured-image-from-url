@@ -123,7 +123,7 @@ class Fifu_Db2_Manager {
     /**
      * Returns all mappings for the given post/key type combination.
      *
-     * @return array<int, array{hash:string,key_index:int,url:string|null,width:int|null,height:int|null,is_valid:bool|null,validation_attempts:int,validation_last_attempt:string|null}>
+     * @return array<int, array{hash:string,key_index:int,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}>
      */
     public function getPostMappings(int $postId, string $keyType): array {
         $keyId = $this->resolveKeyId($keyType);
@@ -137,7 +137,7 @@ class Fifu_Db2_Manager {
     /**
      * Returns a single post mapping identified by key index.
      *
-     * @return array{hash:string,key_index:int,url:string|null,width:int|null,height:int|null,is_valid:bool|null,validation_attempts:int,validation_last_attempt:string|null}|null
+     * @return array{hash:string,key_index:int,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}|null
      */
     public function getPostMapping(int $postId, string $keyType, int $keyIndex): ?array {
         $keyId = $this->resolveKeyId($keyType);
@@ -215,7 +215,7 @@ class Fifu_Db2_Manager {
     /**
      * Returns the term mapping for the specified key type.
      *
-     * @return array{hash:string,url:string|null,width:int|null,height:int|null,is_valid:bool|null,validation_attempts:int,validation_last_attempt:string|null}|null
+     * @return array{hash:string,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}|null
      */
     public function getTermMapping(int $termId, string $keyType): ?array {
         $keyId = $this->resolveKeyId($keyType);
@@ -246,7 +246,7 @@ class Fifu_Db2_Manager {
     /**
      * Returns the normalized URL record for a hash if it exists.
      *
-     * @return array{hash:string,url:string|null,width:int|null,height:int|null,is_valid:bool|null,validation_attempts:int,validation_last_attempt:string|null}|null
+     * @return array{hash:string,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}|null
      */
     public function getUrlDetails(string $hash): ?array {
         return $this->postRepository->getUrlByHash($hash);

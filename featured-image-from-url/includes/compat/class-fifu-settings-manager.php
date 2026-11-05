@@ -32,6 +32,7 @@ class Fifu_Settings_Manager {
         'fifu_fake',
         'fifu_default_url',
         'fifu_error_url',
+        'fifu_validate_featured_image_urls',
         'fifu_default_cpt',
         'fifu_pcontent_types',
         'fifu_hide_format',
@@ -298,6 +299,10 @@ class Fifu_Settings_Manager {
             self::update_single_option( 'fifu_input_error_url', 'fifu_error_url' );
         }
 
+        if ( self::is_valid_nonce( 'nonce_fifu_form_validate_featured_image_urls' ) ) {
+            self::update_single_option( 'fifu_input_validate_featured_image_urls', 'fifu_validate_featured_image_urls' );
+        }
+
         if ( self::is_valid_nonce( 'nonce_fifu_form_default_url' ) ) {
             self::update_single_option( 'fifu_input_default_url', 'fifu_default_url' );
         }
@@ -445,6 +450,7 @@ class Fifu_Settings_Manager {
             'fifu_cloud_delete_auto',
             'fifu_cloud_hotlink',
             'fifu_order_email',
+            'fifu_validate_featured_image_urls',
         );
         if ( in_array( $option_name, $arr_boolean, true ) ) {
             if ( in_array( $value, array( 'on', 'off' ), true ) ) {

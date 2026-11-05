@@ -3150,6 +3150,69 @@
 
                 <div class="fifubox">
 
+                    <h2><span class="dashicons dashicons-admin-links"></span> <?php $fifu['title']['link_checker']() ?></h2>
+
+                    <div class="greybox">
+                        <?php $fifu['link_checker']['desc']() ?>
+                    </div>
+
+                    <br>
+
+                    <div id="tabsLinkChecker">
+                        <ul>
+                            <li><a href="#tabsLinkChecker-settings"><?php $fifu['link_checker']['tab']['settings']() ?></a></li>
+                            <li><a href="#tabsLinkChecker-broken-links"><?php $fifu['link_checker']['tab']['broken-links']() ?></a></li>
+                        </ul>
+                        <div id="tabsLinkChecker-settings">
+                            <table style="text-align:left">
+                                <tr>
+                                    <th>
+                                        <form
+                                            id="fifu_form_validate_featured_image_urls"
+                                            action="javascript:void(0)"
+                                            method="post">
+                                            <?php wp_nonce_field(Fifu_Admin_Menu::ACTION_SETTINGS, 'nonce_fifu_form_validate_featured_image_urls'); ?>
+                                            <input
+                                                type="submit"
+                                                href="javascript:void(0)"
+                                                id="fifu_toggle_validate_featured_image_urls"
+                                                onclick="invert('validate_featured_image_urls')"
+                                                name="fifu_toggle_validate_featured_image_urls"
+                                                class="<?php echo esc_attr($enable_validate_featured_image_urls); ?>"
+                                                value=""
+                                                style="display:block;border:none">
+
+                                            <input
+                                                type="hidden"
+                                                id="fifu_input_validate_featured_image_urls"
+                                                name="fifu_input_validate_featured_image_urls"
+                                                value="">
+                                        </form>
+                                    </th>
+                                </tr>
+                            </table>
+                        </div>
+                        <div id="tabsLinkChecker-broken-links">
+                            <?php $fifu['broken-links']['desc']() ?>
+                            <br>
+                            <div style="background:white;padding:10px;border-radius:1em;">
+                                <table id="fifu_broken_links_table" class="display cell-border">
+                                    <thead>
+                                        <tr>
+                                            <th><?php $fifu['broken-links']['post']() ?></th>
+                                            <th><?php $fifu['broken-links']['url']() ?></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="fifubox">
+
                     <h2>
                         <a href="https://fifu.app/#go-pricing" target="_blank" class="fifu-pro-link fifu-pro-inline" aria-label="FIFU PRO"><span class="dashicons dashicons-lock fifu-pro-icon"></span></a><i class="fa-solid fa-user-group"></i> <?php $fifu['title']['bbpress']() ?>
                     </h2>
@@ -4562,8 +4625,6 @@
                                 <div class="polaroid" style="background-color: #f1f1f1">
                                     <img src="https://storage.googleapis.com/featuredimagefromurl/wpai3.jpg">
                                 </div>
-                                <br>
-                                <br>
                             </div>
                         </div>
                     </div>
@@ -6061,6 +6122,21 @@
                                         </th>
                                         <th>
                                             https://...
+                                        </th>
+                                    </tr>
+                                    <tr class="color">
+                                        <th>
+                                            <?php $fifu['tab']['image']() ?>
+                                        </th>
+                                        <th>
+                                            <?php $fifu['title']['link_checker']() ?>
+                                        </th>
+                                        <th></th>
+                                        <th>
+                                            wp fifu image --validate-featured-image-urls=&lt;toggle&gt;
+                                        </th>
+                                        <th>
+                                            on, off
                                         </th>
                                     </tr>
                                     <tr class="color">

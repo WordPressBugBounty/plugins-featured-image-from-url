@@ -257,6 +257,57 @@ jQuery(function () {
     jQuery("#tabsContent").tabs();
     jQuery("#tabsCli").tabs();
     jQuery("#tabsGallery").tabs();
+    var brokenLinksTableLoading = false;
+    jQuery("#tabsLinkChecker").tabs({
+        activate: function (event, ui) {
+            if (ui.newPanel.attr('id') !== 'tabsLinkChecker-broken-links') {
+                return;
+            }
+
+            var table = jQuery('#fifu_broken_links_table');
+            if (jQuery.fn.DataTable && jQuery.fn.DataTable.isDataTable(table[0])) {
+                table.DataTable().columns.adjust();
+                return;
+            }
+
+            if (brokenLinksTableLoading) {
+                return;
+            }
+
+            brokenLinksTableLoading = true;
+            if (!jQuery('#fifu-datatable-css').length) {
+                jQuery('<link>', {
+                    id: 'fifu-datatable-css',
+                    rel: 'stylesheet',
+                    href: 'https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css'
+                }).appendTo('head');
+            }
+
+            jQuery.getScript('https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js')
+                .done(function () {
+                    table.DataTable({
+                        language: {emptyTable: fifuScriptVars.noBrokenImageUrls},
+                        autoWidth: false,
+                        ajax: {
+                            url: fifuScriptVars.adminAjaxUrl,
+                            type: 'POST',
+                            data: {
+                                action: 'fifu_broken_links',
+                                nonce: fifuScriptVars.brokenLinksNonce
+                            },
+                            dataSrc: 'data'
+                        },
+                        columns: [
+                            {data: 0},
+                            {data: 1}
+                        ]
+                    });
+                })
+                .always(function () {
+                    brokenLinksTableLoading = false;
+                });
+        }
+    });
 
     FIFU_FREE_PRO_ONLY_TOGGLE_IDS.forEach(function (id) {
         fifu_force_free_pro_only_toggle_off(id);
