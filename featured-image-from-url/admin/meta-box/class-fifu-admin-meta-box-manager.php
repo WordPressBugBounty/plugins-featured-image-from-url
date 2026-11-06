@@ -18,6 +18,20 @@ class Fifu_Admin_Meta_Box_Manager {
         return 0;
     }
 
+    private static function is_wordpress_72_or_newer(): bool {
+        global $wp_version;
+
+        $version = isset($wp_version) && is_string($wp_version)
+            ? $wp_version
+            : '';
+
+        if (!preg_match('/^(\d+\.\d+)/', $version, $matches)) {
+            return false;
+        }
+
+        return version_compare($matches[1], '7.2', '>=');
+    }
+
     public static function should_hide_native_featured_image_for_post(int $post_id): bool {
         if ($post_id <= 0) {
             return false;
@@ -91,6 +105,15 @@ class Fifu_Admin_Meta_Box_Manager {
             return $classes;
         }
 
+        $is_wordpress_72_or_newer = self::is_wordpress_72_or_newer();
+
+        if (
+            $is_wordpress_72_or_newer
+            && strpos($classes, 'fifu-wp72-or-newer') === false
+        ) {
+            $classes = trim($classes . ' fifu-wp72-or-newer');
+        }
+
         $post_id = self::get_current_editor_post_id();
         if ($post_id <= 0) {
             return $classes;
@@ -100,8 +123,12 @@ class Fifu_Admin_Meta_Box_Manager {
             return $classes;
         }
 
-        if (strpos($classes, 'fifu-hide-native-featured-image') === false) {
-            $classes = trim($classes . ' fifu-hide-native-featured-image');
+        $visibility_class = $is_wordpress_72_or_newer
+            ? 'fifu-wp72-featured-image-disabled'
+            : 'fifu-hide-native-featured-image';
+
+        if (strpos($classes, $visibility_class) === false) {
+            $classes = trim($classes . ' ' . $visibility_class);
         }
 
         return $classes;
@@ -200,6 +227,15 @@ class Fifu_Admin_Meta_Box_Manager {
             }
         }
 
+        global $wp_version;
+
+        $wordpress_version = isset($wp_version) && is_string($wp_version)
+            ? $wp_version
+            : '';
+
+        $is_rank_math_active = class_exists('Fifu_Plugin_Detector')
+            && Fifu_Plugin_Detector::is_rank_math_seo_active();
+
         wp_localize_script('fifu-meta-box-js', 'fifuMetaBoxVars', [
             'get_the_ID' => get_the_ID(),
             'term_id' => $termId,
@@ -211,6 +247,8 @@ class Fifu_Admin_Meta_Box_Manager {
             'is_taxonomy' => $screen->taxonomy ?? null,
             'is_product' => $current_post_type === 'product',
             'is_gutenberg' => Fifu_Wp_Context::is_gutenberg_screen(),
+            'wordpress_version' => $wordpress_version,
+            'is_rank_math_active' => $is_rank_math_active,
             'is_classic_editor' => is_plugin_active('classic-editor/classic-editor.php'),
             'txt_title_examples' => $fifu_help['title']['examples'](),
             'txt_title_keywords' => $fifu_help['title']['keywords'](),

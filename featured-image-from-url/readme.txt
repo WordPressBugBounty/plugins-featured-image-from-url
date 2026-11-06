@@ -4,8 +4,10 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=KY7MRYTANZN9A
 Tags: featured image, image url, external image, remote image, product image
 Requires at least: 5.6
 Tested up to: 7.2
-Stable tag: 6.1.5
+Stable tag: 6.1.6
 Requires PHP: 8.1
+WC requires at least: 4.0
+WC tested up to: 11.2.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -80,7 +82,6 @@ Using external URLs for multiple-image product galleries, product video gallerie
 
 * **Featured image from post content:** Automatically assign featured images from post content, eliminating the need to set them manually for each post. Choose supported post types, exclude image-host domains, and control whether existing featured images can be replaced.
 * **WP-CLI:** Configure FIFU settings and manage featured images from the command line.
-  Enable or disable Broken Link Checker with `wp fifu image --validate-featured-image-urls=<on|off>`.
 * **FIFU Image block:** Add remote images with FIFU's image block in the WordPress block editor.
 * **FIFU Featured Media widget:** Display the current post's remote featured image in a WordPress widget area.
 
@@ -305,11 +306,11 @@ No. Featured videos, featured audio, featured sliders, and remote media gallerie
 == Screenshots ==
 
 1. **Remote featured image:** Set a featured image for a post, page, or WooCommerce product using an external image URL.
-2. **Quick Editor:** Preview, replace, or remove remote featured images from WordPress content lists.
-3. **Unsplash image search:** Search Unsplash and select an image URL for featured media.
-4. **Featured video (PRO):** Add featured media from a video URL.
-5. **Remote product gallery (PRO):** Build WooCommerce galleries from external image URLs.
-6. **Variable product media (PRO):** Configure remote images for WooCommerce variations.
+2. **Unsplash Image Search:** Search Unsplash and select an image for a post.
+3. **Featured Video:** Set a video URL as the featured media for a post.
+4. **Product Image and Image Gallery:** Set a product image and add images to the WooCommerce gallery.
+5. **Variation Image and Gallery:** Assign images and galleries to product variations.
+6. **Quick Editor:** Preview, replace, or remove remote featured images from WordPress content lists.
 7. **Settings - Help:** Find guidance on configuring and using FIFU.
 8. **Settings - Image:** Configure featured image display, defaults, and image options.
 9. **Settings - Video / Audio (PRO):** Preview the featured video and audio options.
@@ -322,10 +323,18 @@ No. Featured videos, featured audio, featured sliders, and remote media gallerie
 
 == Changelog ==
 
+= 6.1.6 =
+* Fix: FIFU now recovers automatically from incomplete upgrades, including on multisite networks.
+* Compatibility: Featured and category images keep working while older sites complete their URL-checking update.
+* Compatibility: Improved compatibility with WordPress 7.2.
+* Enhancement: Improved Broken Link Checker reliability for image URL checks.
+* Performance: Completed upgrades no longer repeat repair work.
+
 = 6.1.5 =
 * New free feature: Broken Link Checker for featured image URLs.
 * Fix: Resolved a security issue reported by Patchstack.
 * Fix: Fixed the optimized images feature so it serves Flickr-hosted images.
+* Compatibility: Added support for WooCommerce 11.2.2.
 
 = 6.1.4 =
 * New free feature: Add image to order email to display product images in WooCommerce order emails.
@@ -387,20 +396,7 @@ No. Featured videos, featured audio, featured sliders, and remote media gallerie
 * Fix: Featured images are now synchronized correctly with third-party plugins that process posts immediately after they are saved.
 * Fix: WooCommerce product featured images no longer disappear after changing a product permalink.
 
-= 6.0.4 =
-* Fix: Fixed featured image synchronization in the block editor (Gutenberg) when setting, changing, or removing a remote featured image.
-
 == Upgrade Notice ==
 
-= 6.1.5 =
-* New free feature: Broken Link Checker for featured image URLs.
-* Fix: Resolved a security issue reported by Patchstack.
-* Fix: Fixed the optimized images feature so it serves Flickr-hosted images.
-
-= 6.1.4 =
-* New free feature: Add image to order email for WooCommerce.
-* Improves image synchronization, attachment cleanup, and compatibility with WordPress 7.2.
-
-= 6.1.3 =
-* Adds replacement images for broken remote image URLs and improves Quick Editor previews.
-* Improves the safety and reliability of remote image synchronization and cleanup.
+= 6.1.6 =
+* Improves recovery from incomplete upgrades, WordPress 7.2 compatibility, and Broken Link Checker reliability.

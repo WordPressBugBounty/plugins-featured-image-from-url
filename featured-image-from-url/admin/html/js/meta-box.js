@@ -651,12 +651,183 @@ function fifu_register_help() {
     });
 }
 
+function fifu_is_wp_72_or_newer() {
+    var metaBoxVars = typeof fifuMetaBoxVars !== 'undefined'
+        ? fifuMetaBoxVars
+        : {};
+
+    var version = typeof metaBoxVars.wordpress_version === 'string'
+        ? metaBoxVars.wordpress_version
+        : '';
+
+    var match = version.match(/^(\d+)\.(\d+)/);
+
+    if (!match) {
+        return false;
+    }
+
+    var major = parseInt(match[1], 10);
+    var minor = parseInt(match[2], 10);
+
+    return major > 7 || (major === 7 && minor >= 2);
+}
+
+function fifu_set_dataform_featured_image_disabled(disabled) {
+    if (typeof document === 'undefined' || !document.body) {
+        return;
+    }
+
+    var body = document.body;
+    var fieldSelector = 'fieldset.media-edit[data-field-id="featured_media"]';
+    var disabledClass = 'fifu-wp72-featured-image-disabled';
+
+    var initializedDocuments =
+        fifu_set_dataform_featured_image_disabled.initializedDocuments
+        || (
+            fifu_set_dataform_featured_image_disabled.initializedDocuments = []
+        );
+
+    function updateField(field, shouldDisable) {
+        if (shouldDisable) {
+            if (!field.hasAttribute('inert')) {
+                field.setAttribute('inert', '');
+                field.setAttribute('data-fifu-owned-inert', '1');
+            }
+
+            if (!field.hasAttribute('aria-disabled')) {
+                field.setAttribute('aria-disabled', 'true');
+                field.setAttribute('data-fifu-owned-aria-disabled', '1');
+            }
+
+            if (!field.classList.contains('fifu-featured-image-disabled')) {
+                field.classList.add('fifu-featured-image-disabled');
+                field.setAttribute('data-fifu-owned-disabled-class', '1');
+            }
+
+            return;
+        }
+
+        if (field.getAttribute('data-fifu-owned-inert') === '1') {
+            field.removeAttribute('inert');
+            field.removeAttribute('data-fifu-owned-inert');
+        }
+
+        if (field.getAttribute('data-fifu-owned-aria-disabled') === '1') {
+            field.removeAttribute('aria-disabled');
+            field.removeAttribute('data-fifu-owned-aria-disabled');
+        }
+
+        if (field.getAttribute('data-fifu-owned-disabled-class') === '1') {
+            field.classList.remove('fifu-featured-image-disabled');
+            field.removeAttribute('data-fifu-owned-disabled-class');
+        }
+    }
+
+    function updateFields() {
+        var shouldDisable = body.classList.contains(disabledClass);
+
+        document.querySelectorAll(fieldSelector).forEach(function (field) {
+            updateField(field, shouldDisable);
+        });
+    }
+
+    if (initializedDocuments.indexOf(document) === -1) {
+        initializedDocuments.push(document);
+
+        var blockInteraction = function (event) {
+            if (!body.classList.contains(disabledClass)) {
+                return;
+            }
+
+            var target = event.target && event.target.nodeType === 1
+                ? event.target
+                : event.target && event.target.parentElement;
+
+            if (!target || !target.closest(fieldSelector)) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        };
+
+        [
+            'click',
+            'dblclick',
+            'pointerdown',
+            'mousedown',
+            'touchstart',
+            'keydown',
+            'keypress',
+            'keyup',
+            'dragstart',
+            'dragover',
+            'drop',
+            'beforeinput',
+            'input',
+            'change'
+        ].forEach(function (eventName) {
+            document.addEventListener(
+                eventName,
+                blockInteraction,
+                true
+            );
+        });
+
+        if (
+            typeof window !== 'undefined'
+            && typeof window.MutationObserver === 'function'
+        ) {
+            var observer = new window.MutationObserver(updateFields);
+
+            var observerTarget = document.querySelector('#editor')
+                || document.querySelector('.editor-post-summary');
+
+            if (observerTarget) {
+                observer.observe(observerTarget, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+        }
+    }
+
+    if (disabled) {
+        body.classList.add(disabledClass);
+    } else {
+        body.classList.remove(disabledClass);
+    }
+
+    updateFields();
+}
+
 function fifu_set_native_featured_image_visibility(show) {
     var $body = jQuery('body');
     var $postImageDiv = jQuery('#postimagediv');
-    var isGutenberg = !!(fifuMetaBoxVars && fifuMetaBoxVars.is_gutenberg);
+    var metaBoxVars = typeof fifuMetaBoxVars !== 'undefined'
+        ? fifuMetaBoxVars
+        : {};
+
+    var isGutenberg = !!metaBoxVars.is_gutenberg;
 
     if (isGutenberg) {
+        if (fifu_is_wp_72_or_newer()) {
+            var imageUrl = (
+                jQuery('#fifu_input_url').val() || ''
+            ).trim();
+
+            var shouldDisable = !!imageUrl
+                && !metaBoxVars.is_rank_math_active;
+
+            $body.removeClass('fifu-hide-native-featured-image');
+
+            fifu_set_dataform_featured_image_disabled(
+                shouldDisable
+            );
+
+            return;
+        }
+
         if (show) {
             $body.removeClass('fifu-hide-native-featured-image');
         } else {

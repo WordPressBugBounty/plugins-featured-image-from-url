@@ -105,6 +105,55 @@ class Fifu_Schema_Manager {
 	}
 
 	/**
+	 * Repairs and verifies only the URL validation schema used by the link checker.
+	 *
+	 * @return bool True when all required URL validation columns and the queue index exist.
+	 */
+	public function repair_url_validation_schema(): bool {
+		$table = $this->wpdb->prefix . 'fifu_url';
+
+		if ( ! $this->table_exists( $table ) ) {
+			return false;
+		}
+
+		$success = true;
+		$columns = array(
+			'validation_failures'    => 'SMALLINT UNSIGNED NOT NULL DEFAULT 0',
+			'validation_checked_at'  => 'DATETIME NULL',
+			'validation_queued_at'   => 'DATETIME NULL',
+		);
+
+		foreach ( $columns as $column => $definition ) {
+			$column_success = $this->add_column_if_missing( $table, $column, $definition );
+			$success = $column_success && $success;
+		}
+
+		if ( $this->column_exists( $table, 'validation_queued_at' ) ) {
+			$index_success = $this->add_index_if_missing( $table, 'idx_validation_queued_at', '(validation_queued_at)' );
+			$success = $index_success && $success;
+		} else {
+			$success = false;
+		}
+
+		if ( ! $success ) {
+			return false;
+		}
+
+		foreach ( array_keys( $columns ) as $column ) {
+			if ( ! $this->column_exists( $table, $column ) ) {
+				return false;
+			}
+		}
+
+		$verified = $this->index_exists( $table, 'idx_validation_queued_at' );
+		if ( $verified && class_exists( 'Fifu_Db2_Url_Validation_Schema', false ) ) {
+			Fifu_Db2_Url_Validation_Schema::forget( $this->wpdb, $table );
+		}
+
+		return $verified;
+	}
+
+	/**
 	 * @return string[]
 	 */
 	protected function get_schema_files(): array {
@@ -190,9 +239,6 @@ class Fifu_Schema_Manager {
 			'fifu_url'  => [
 				'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
 				'updated_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
-				'validation_failures' => 'SMALLINT UNSIGNED NOT NULL DEFAULT 0',
-				'validation_checked_at' => 'DATETIME NULL',
-				'validation_queued_at' => 'DATETIME NULL',
 			],
 			'fifu_alt'  => [
 				'created_at' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
@@ -221,8 +267,8 @@ class Fifu_Schema_Manager {
 					$success = $drop_success && $success;
 				}
 
-				$index_success = $this->add_index_if_missing( $table, 'idx_validation_queued_at', '(validation_queued_at)' );
-				$success = $index_success && $success;
+				$validation_success = $this->repair_url_validation_schema();
+				$success = $validation_success && $success;
 			}
 		}
 

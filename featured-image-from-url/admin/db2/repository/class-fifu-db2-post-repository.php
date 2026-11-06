@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/class-fifu-db2-url-validation-schema.php';
+
 /**
  * Handles post-based mappings using the new FIFU tables.
  */
@@ -97,12 +99,25 @@ class Fifu_Db2_Post_Repository {
 
         $placeholders = implode(',', array_fill(0, count($normalizedHashes), '%s'));
 
-        $query = $this->wpdb->prepare(
-            "SELECT hash, url, w, h, validation_failures, validation_checked_at, validation_queued_at FROM {$this->tableUrl} WHERE hash IN ({$placeholders})",
-            ...$normalizedHashes
-        );
+        $buildQuery = function (bool $defaultsOnly = false) use ($placeholders, $normalizedHashes): string {
+            $validationColumns = Fifu_Db2_Url_Validation_Schema::select_columns(
+                $this->wpdb,
+                $this->tableUrl,
+                '',
+                $defaultsOnly
+            );
 
-        $rows = $this->wpdb->get_results($query, ARRAY_A);
+            return $this->wpdb->prepare(
+                "SELECT hash, url, w, h, {$validationColumns} FROM {$this->tableUrl} WHERE hash IN ({$placeholders})",
+                ...$normalizedHashes
+            );
+        };
+
+        $rows = $this->wpdb->get_results($buildQuery(), ARRAY_A);
+        if ( Fifu_Db2_Url_Validation_Schema::is_missing_validation_column_error( $this->wpdb ) ) {
+            Fifu_Db2_Url_Validation_Schema::forget( $this->wpdb, $this->tableUrl );
+            $rows = $this->wpdb->get_results($buildQuery(true), ARRAY_A);
+        }
 
         if (!is_array($rows)) {
             return [];
@@ -324,7 +339,15 @@ class Fifu_Db2_Post_Repository {
             return $this->postMappingsCache[$cacheKey];
         }
 
-        $query = $this->wpdb->prepare(
+        $buildQuery = function (bool $defaultsOnly = false) use ($postId, $keyId): string {
+            $validationColumns = Fifu_Db2_Url_Validation_Schema::select_columns(
+                $this->wpdb,
+                $this->tableUrl,
+                'u',
+                $defaultsOnly
+            );
+
+            return $this->wpdb->prepare(
             "
             SELECT
                 m.hash,
@@ -332,9 +355,7 @@ class Fifu_Db2_Post_Repository {
                 u.url,
                 u.w,
                 u.h,
-                u.validation_failures,
-                u.validation_checked_at,
-                u.validation_queued_at
+                {$validationColumns}
             FROM {$this->tableMap} m
             LEFT JOIN {$this->tableUrl} u ON u.hash = m.hash
             WHERE m.post_id = %d AND m.key_id = %d
@@ -342,9 +363,14 @@ class Fifu_Db2_Post_Repository {
             ",
             $postId,
             $keyId
-        );
+            );
+        };
 
-        $rows = $this->wpdb->get_results($query, ARRAY_A);
+        $rows = $this->wpdb->get_results($buildQuery(), ARRAY_A);
+        if ( Fifu_Db2_Url_Validation_Schema::is_missing_validation_column_error( $this->wpdb ) ) {
+            Fifu_Db2_Url_Validation_Schema::forget( $this->wpdb, $this->tableUrl );
+            $rows = $this->wpdb->get_results($buildQuery(true), ARRAY_A);
+        }
         if ($rows === null || $rows === false) {
             if ($this->postReadCacheEnabled) {
                 $this->postMappingsCache[$cacheKey] = [];
@@ -437,7 +463,15 @@ class Fifu_Db2_Post_Repository {
             return $this->postMappingCache[$cacheKey];
         }
 
-        $query = $this->wpdb->prepare(
+        $buildQuery = function (bool $defaultsOnly = false) use ($postId, $keyId, $keyIndex): string {
+            $validationColumns = Fifu_Db2_Url_Validation_Schema::select_columns(
+                $this->wpdb,
+                $this->tableUrl,
+                'u',
+                $defaultsOnly
+            );
+
+            return $this->wpdb->prepare(
             "
             SELECT
                 m.hash,
@@ -445,9 +479,7 @@ class Fifu_Db2_Post_Repository {
                 u.url,
                 u.w,
                 u.h,
-                u.validation_failures,
-                u.validation_checked_at,
-                u.validation_queued_at
+                {$validationColumns}
             FROM {$this->tableMap} m
             LEFT JOIN {$this->tableUrl} u ON u.hash = m.hash
             WHERE m.post_id = %d AND m.key_id = %d AND m.key_index = %d
@@ -456,9 +488,14 @@ class Fifu_Db2_Post_Repository {
             $postId,
             $keyId,
             $keyIndex
-        );
+            );
+        };
 
-        $row = $this->wpdb->get_row($query, ARRAY_A);
+        $row = $this->wpdb->get_row($buildQuery(), ARRAY_A);
+        if ( Fifu_Db2_Url_Validation_Schema::is_missing_validation_column_error( $this->wpdb ) ) {
+            Fifu_Db2_Url_Validation_Schema::forget( $this->wpdb, $this->tableUrl );
+            $row = $this->wpdb->get_row($buildQuery(true), ARRAY_A);
+        }
         if ($row === null || $row === false) {
             if ($this->postReadCacheEnabled) {
                 $this->postMappingCache[$cacheKey] = null;
@@ -690,12 +727,25 @@ class Fifu_Db2_Post_Repository {
      * @return array{hash:string,url:string|null,width:int|null,height:int|null,validation_failures:int,validation_checked_at:string|null,validation_queued_at:string|null}|null
      */
     public function getUrlByHash(string $hash): ?array {
-        $query = $this->wpdb->prepare(
-            "SELECT hash, url, w, h, validation_failures, validation_checked_at, validation_queued_at FROM {$this->tableUrl} WHERE hash = %s LIMIT 1",
-            $hash
-        );
+        $buildQuery = function (bool $defaultsOnly = false) use ($hash): string {
+            $validationColumns = Fifu_Db2_Url_Validation_Schema::select_columns(
+                $this->wpdb,
+                $this->tableUrl,
+                '',
+                $defaultsOnly
+            );
 
-        $row = $this->wpdb->get_row($query, ARRAY_A);
+            return $this->wpdb->prepare(
+                "SELECT hash, url, w, h, {$validationColumns} FROM {$this->tableUrl} WHERE hash = %s LIMIT 1",
+                $hash
+            );
+        };
+
+        $row = $this->wpdb->get_row($buildQuery(), ARRAY_A);
+        if ( Fifu_Db2_Url_Validation_Schema::is_missing_validation_column_error( $this->wpdb ) ) {
+            Fifu_Db2_Url_Validation_Schema::forget( $this->wpdb, $this->tableUrl );
+            $row = $this->wpdb->get_row($buildQuery(true), ARRAY_A);
+        }
         if ($row === null || $row === false) {
             return null;
         }

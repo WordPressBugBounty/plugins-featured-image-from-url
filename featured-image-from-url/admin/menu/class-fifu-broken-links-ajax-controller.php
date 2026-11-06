@@ -35,8 +35,8 @@ final class Fifu_Broken_Links_Ajax_Controller
             }
 
             $rows[] = [
-                sprintf('<a href="%s">%s</a>', esc_url($editUrl), esc_html((string) ($post['post_title'] ?? ''))),
-                esc_url((string) ($post['url'] ?? '')),
+                sprintf('<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>', esc_url($editUrl), esc_html((string) ($post['post_title'] ?? ''))),
+                sprintf('<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>', esc_url((string) ($post['url'] ?? '')), esc_html((string) ($post['url'] ?? ''))),
             ];
         }
 

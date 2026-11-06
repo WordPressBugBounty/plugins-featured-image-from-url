@@ -11,6 +11,7 @@ final class Fifu_Url_Validation_Checker
 {
     private const TIMEOUT_SECONDS = 8;
     private const MAX_REDIRECTIONS = 3;
+    private const USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
     public static function is_valid(string $url): bool
     {
@@ -25,6 +26,10 @@ final class Fifu_Url_Validation_Checker
             'timeout' => self::TIMEOUT_SECONDS,
             'redirection' => self::MAX_REDIRECTIONS,
             'reject_unsafe_urls' => true,
+            'headers' => [
+                'User-Agent' => self::USER_AGENT,
+                'Accept' => 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            ],
         ];
         $response = wp_safe_remote_get($url, $args);
         if (is_wp_error($response)) {
